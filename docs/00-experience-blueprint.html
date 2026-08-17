@@ -1,0 +1,529 @@
+<title>Boost Web Digital — Experience Blueprint</title>
+<style>
+  :root{
+    --bg:#08080a; --bg-raise:#0b0b0f; --fg:#f2f2f5; --accent:#1627C6;
+    --line:rgba(242,242,245,0.10); --line-strong:rgba(242,242,245,0.18);
+    --muted:rgba(242,242,245,0.62); --faint:rgba(242,242,245,0.4);
+    --serif: ui-serif, Iowan Old Style, Palatino Linotype, Georgia, serif;
+    --sans: ui-sans-serif, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --mono: ui-monospace, "SF Mono", Consolas, monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--bg); color:var(--fg); font-family:var(--sans); line-height:1.6; -webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1080px; margin:0 auto; padding:0 24px;}
+  a{color:inherit;}
+  .eyebrow{font-family:var(--mono); font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--accent); display:flex; align-items:center; gap:8px; margin-bottom:14px;}
+  .eyebrow::before{content:""; width:6px; height:6px; border-radius:50%; background:var(--accent); box-shadow:0 0 8px var(--accent);}
+  h1{font-family:var(--serif); font-weight:500; font-size:clamp(2rem,4vw,3rem); line-height:1.06; letter-spacing:-0.01em; margin:0 0 16px; text-wrap:balance; max-width:16ch;}
+  h2{font-family:var(--serif); font-weight:500; font-size:clamp(1.4rem,2.4vw,1.9rem); line-height:1.15; letter-spacing:-0.01em; margin:0 0 8px; text-wrap:balance;}
+  h3{font-family:var(--sans); font-weight:600; font-size:0.95rem; margin:0 0 6px; color:var(--fg);}
+  p{color:var(--muted); max-width:66ch;}
+  .lede{font-size:1.05rem; max-width:58ch;}
+
+  nav.toc{position:sticky; top:0; background:rgba(8,8,10,0.9); backdrop-filter:blur(14px); border-bottom:1px solid var(--line); z-index:50; padding:14px 0;}
+  nav.toc .wrap{display:flex; gap:18px; overflow-x:auto; scrollbar-width:none;}
+  nav.toc a{font-family:var(--mono); font-size:0.72rem; white-space:nowrap; color:var(--faint); text-decoration:none; letter-spacing:0.03em;}
+  nav.toc a:hover{color:var(--accent);}
+
+  header.masthead{padding:72px 0 48px; border-bottom:1px solid var(--line);}
+  section{padding:64px 0; border-bottom:1px solid var(--line); scroll-margin-top:70px;}
+
+  .note{margin-top:24px; padding:18px 20px; border-left:2px solid var(--accent); background:var(--bg-raise); border-radius:0 10px 10px 0;}
+  .note p{color:var(--fg); font-size:0.92rem; margin:0;}
+
+  /* scene cards */
+  .scene{border:1px solid var(--line); border-radius:16px; margin-top:24px; overflow:hidden; background:var(--bg-raise);}
+  .scene-head{padding:20px 24px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:baseline; gap:16px; flex-wrap:wrap;}
+  .scene-head .num{font-family:var(--mono); color:var(--accent); font-size:0.78rem;}
+  .scene-head h3{font-size:1.15rem; font-family:var(--serif); font-weight:500;}
+  .register{font-family:var(--mono); font-size:0.66rem; letter-spacing:0.08em; text-transform:uppercase; padding:3px 9px; border-radius:20px; border:1px solid var(--line-strong);}
+  .register.signal{color:var(--accent); border-color:var(--accent);}
+  .register.noise{color:var(--faint);}
+  .register.mixed{color:var(--fg);}
+  .scene-grid{display:grid; grid-template-columns:repeat(2,1fr);}
+  .field{padding:16px 24px; border-bottom:1px solid var(--line); border-right:1px solid var(--line);}
+  .field:nth-child(2n){border-right:none;}
+  .field label{display:block; font-family:var(--mono); font-size:0.64rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--faint); margin-bottom:6px;}
+  .field p{font-size:0.88rem; margin:0; color:var(--fg);}
+
+  /* motion storyboard table */
+  .motion-table{overflow-x:auto; margin-top:24px; border:1px solid var(--line); border-radius:14px;}
+  table{width:100%; border-collapse:collapse; font-size:0.82rem; min-width:920px;}
+  th,td{text-align:left; padding:10px 12px; border-bottom:1px solid var(--line); vertical-align:top;}
+  th{font-family:var(--mono); font-size:0.65rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--faint); background:var(--bg-raise);}
+  td{color:var(--muted);}
+  td.scene-name{color:var(--fg); font-weight:600; white-space:nowrap;}
+
+  /* signature interactions grid */
+  .interactions{display:grid; grid-template-columns:repeat(2,1fr); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:14px; overflow:hidden; margin-top:24px;}
+  .interaction{background:var(--bg); padding:22px;}
+  .interaction .idx{font-family:var(--mono); color:var(--accent); font-size:0.75rem;}
+  .interaction h3{margin-top:6px;}
+  .interaction p{font-size:0.87rem; margin:0;}
+  .demo-box{margin-top:14px; border:1px solid var(--line); border-radius:12px; height:150px; position:relative; overflow:hidden; background:var(--bg-raise);}
+  .demo-label{position:absolute; top:10px; left:12px; font-family:var(--mono); font-size:0.62rem; color:var(--faint); text-transform:uppercase; letter-spacing:0.06em; z-index:5;}
+
+  /* aperture demo */
+  .aperture-demo{width:100%; height:100%; display:flex; align-items:center; justify-content:center; cursor:pointer;}
+  .aperture-circle{width:60px; height:60px; border-radius:50%; border:2px solid var(--accent); display:flex; align-items:center; justify-content:center; transition:transform 0.5s cubic-bezier(0.16,1,0.3,1);}
+  .aperture-demo.open .aperture-circle{transform:scale(6);}
+  .aperture-circle span{font-family:var(--mono); font-size:0.6rem; color:var(--accent); opacity:1; transition:opacity 0.2s;}
+  .aperture-demo.open .aperture-circle span{opacity:0;}
+
+  /* depth of field hover demo */
+  .dof-demo{width:100%; height:100%; display:flex; align-items:center; justify-content:center; gap:14px;}
+  .dof-card{width:60px; height:80px; border-radius:8px; background:var(--line-strong); filter:blur(2px); transition:filter 0.3s, transform 0.3s; display:flex; align-items:center; justify-content:center;}
+  .dof-card:hover{filter:blur(0px); transform:translateY(-4px); background:var(--accent);}
+
+  /* noise field demo */
+  .noise-field-demo{width:100%; height:100%; position:relative; overflow:hidden;}
+  .grain-dot{position:absolute; border-radius:50%; background:rgba(242,242,245,0.5); filter:blur(1px);}
+
+  .principles{margin-top:24px; padding-left:0; list-style:none; counter-reset:principle;}
+  .principles li{counter-increment:principle; padding:12px 0 12px 42px; border-bottom:1px solid var(--line); position:relative; font-size:0.9rem; color:var(--fg);}
+  .principles li::before{content:counter(principle, decimal-leading-zero); position:absolute; left:0; top:12px; font-family:var(--mono); color:var(--accent); font-size:0.8rem;}
+  .principles li span{color:var(--muted); display:block; font-size:0.85rem; margin-top:2px;}
+
+  .risk{border:1px solid var(--line); border-radius:12px; padding:18px 20px; margin-top:16px; background:var(--bg-raise);}
+  .risk h3{color:var(--accent);}
+  .risk .mitigate{margin-top:8px; font-size:0.85rem; color:var(--fg);}
+  .risk .mitigate b{color:var(--accent);}
+
+  footer{padding:56px 0 88px;}
+  footer p{font-size:0.9rem;}
+
+  @media (max-width:720px){
+    .scene-grid, .interactions{grid-template-columns:1fr;}
+    .field{border-right:none;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .aperture-circle, .dof-card{transition:none !important;}
+  }
+</style>
+
+<nav class="toc">
+  <div class="wrap">
+    <a href="#manifesto">01 Manifesto</a>
+    <a href="#storyboard">02 Storyboard</a>
+    <a href="#motion">03 Motion</a>
+    <a href="#interactions">04 Interactions</a>
+    <a href="#motif">05 Visual Motif</a>
+    <a href="#animation-principles">06 Animation Rules</a>
+    <a href="#design-principles">07 Design Principles</a>
+    <a href="#future-pages">08 Future Pages</a>
+    <a href="#risks">09 Risks</a>
+  </div>
+</nav>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Experience Blueprint — built on locked Direction C</div>
+    <h1>Signal &amp; Noise, translated into a complete experience.</h1>
+    <p class="lede">Everything below assumes "Signal &amp; Noise" as fixed. No redesign here — this is the philosophy applied to the homepage, the motion system, and every future page.</p>
+    <div class="note">
+      <p><b>One tension worth naming before the rest of this document, not after:</b> "motion should never stop" and "Signal &amp; Noise" pull in different directions if applied naively — the whole point of the locked direction is that <em>stillness at the moment of proof is earned</em>, not that everything moves constantly. The resolution used throughout this document: motion never stops, but its <em>character</em> shifts — restless/drifting for "noise" moments, calm/breathing for "signal" moments. Uniform busyness everywhere would quietly undo the concept you just locked; this document avoids that without dropping the "always alive" requirement.</p>
+    </div>
+  </div>
+</header>
+
+<section id="manifesto">
+  <div class="wrap">
+    <div class="eyebrow">01 · Experience Manifesto</div>
+    <h2>What this experience does to a visitor</h2>
+    <div class="scene-grid" style="border:1px solid var(--line); border-radius:14px; margin-top:20px;">
+      <div class="field"><label>What they should feel</label><p>Recognition first ("another agency claiming the same things"), then a specific, small jolt of surprise when something resolves into real clarity — then trust that deepens because the site never asks them to just take its word for it.</p></div>
+      <div class="field"><label>What they should remember</label><p>Not a visual trick — the <em>sensation</em> of watching noise resolve into signal, and that Boost Web Digital was the one that gave them that unprompted, honestly, without inflating what's real.</p></div>
+      <div class="field"><label>Why this is unique</label><p>No other healthcare-marketing site makes its own honesty constraint the engine of its visual system. Most agencies either fabricate more proof (dishonest) or hide the gap (generic). This makes the limitation the design's whole point.</p></div>
+      <div class="field"><label>Why competitors can't easily copy it</label><p>A competitor could copy the blur/focus mechanic, but not the substance behind it — the moment a visitor notices there's nothing real to be "in focus," the copy reads as an empty gimmick. Real replication requires the competitor to <em>become honest first</em>, not just to reskin the effect.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="storyboard">
+  <div class="wrap">
+    <div class="eyebrow">02 · Homepage Storyboard</div>
+    <h2>Nine scenes, one continuous resolve from noise to signal</h2>
+    <p>Built on the locked homepage table in <a href="00-PROJECT-BLUEPRINT.md">00-PROJECT-BLUEPRINT.md §3</a> — same nine scenes, restaged cinematically. The register badge (Signal / Noise / Mixed) is the actual narrative engine: noise is front-loaded and burns off; signal takes over and holds through the close.</p>
+
+    <div class="scene">
+      <div class="scene-head"><span class="num">Scene 01</span><h3>Hero — Clean Premium Arrival</h3><span class="register mixed">Transition</span></div>
+      <div class="scene-grid">
+        <div class="field"><label>Purpose</label><p>Establish the whole visual grammar in one moment: this site tells the difference between real and generic, visibly.</p></div>
+        <div class="field"><label>Visitor emotion</label><p>Skeptical pattern-recognition, then a flicker of "oh — this is different."</p></div>
+        <div class="field"><label>Main message</label><p><em>Superseded 2026 —</em> was "Healthcare-only, not a generalist agency wearing a healthcare badge." Repositioned around AI-search visibility: patients now get a named recommendation from ChatGPT/AI Overviews/Perplexity before they ever see a ranked link, so the H1's job is to name that shift, not just claim specialization.</p></div>
+        <div class="field"><label>Visual composition</label><p><em>Superseded 2026 — was a "noise-dissolve" field of generic-agency phrases; replaced after live feedback pushed toward a clean SaaS-premium register (Linear/Stripe/Framer), not a futuristic/cyberpunk one.</em> Two soft off-center accent blooms plus a sparse, near-invisible architectural grid give the scene depth without clutter. Real capability keywords (Patient Growth, Healthcare SEO, AI Visibility, etc. — never fabricated stats) frame the sharp H1 in the margins.</p></div>
+        <div class="field"><label>Motion behaviour</label><p>Entrance: H1 arrives at full size and sharpness immediately — confidence over blur-resolve spectacle. Ambient: keyword pills drift independently at a slight, unsynchronized bob; the grid stays near-invisible until disturbed.</p></div>
+        <div class="field"><label>Scroll transition</label><p>Calm fade as Scene 02 enters — no scroll-jacking, nothing to unwind.</p></div>
+        <div class="field"><label>Signature interaction</label><p>Cursor-driven grid reveal — a single soft radial mask locally brightens nearby grid lines/intersections as the cursor passes, then fades. Elegant and minimal; no per-element glow effects.</p></div>
+        <div class="field"><label>CTA objective</label><p><em>Superseded 2026 —</em> was "None yet, this scene earns attention not clicks." A single magnetic CTA ("Check My Practice's AI Visibility →") now closes the reveal sequence, per explicit instruction — the AI-visibility framing gives the Hero a concrete, low-friction next action rather than none at all.</p></div>
+        <div class="field"><label>SEO objective</label><p>H1 carries the primary target keyword; the grid is decorative, not indexed content.</p></div>
+      </div>
+    </div>
+
+    <div class="scene">
+      <div class="scene-head"><span class="num">Scene 02</span><h3>Specialty Recognition</h3><span class="register mixed">Mixed</span></div>
+      <div class="scene-grid">
+        <div class="field"><label>Purpose</label><p>Fast self-identification, then depth on demand — merged per the locked homepage decision (no redundant second "who we serve" scene later).</p></div>
+        <div class="field"><label>Visitor emotion</label><p>"This is for people like me," specifically.</p></div>
+        <div class="field"><label>Main message</label><p>Every specialty this agency serves, named plainly — and rendered honestly.</p></div>
+        <div class="field"><label>Visual composition</label><p>A strip of specialty tiles. Hair restoration renders fully sharp (real proof exists); every other specialty renders at a slightly softer focus level — an honest signal, not a flaw.</p></div>
+        <div class="field"><label>Motion behaviour</label><p>Entrance: staggered resolve-in. Ambient: each tile breathes very slightly (2–3px scale) at its own resting focus level.</p></div>
+        <div class="field"><label>Scroll transition</label><p>Tiles lock to their resting focus state as the scene centers in viewport — no scroll-jacking, a calm settle.</p></div>
+        <div class="field"><label>Signature interaction</label><p>Depth-of-Field Hover (§04) — hovering a tile pulls it to full sharpness and reveals its one-line value prop + link; siblings recede further.</p></div>
+        <div class="field"><label>CTA objective</label><p>Internal navigation to specialty hubs — a soft click-intent, not a hard conversion ask.</p></div>
+        <div class="field"><label>SEO objective</label><p>The internal-linking backbone the whole URL architecture depends on — every specialty hub gets a homepage link here.</p></div>
+      </div>
+    </div>
+
+    <div class="scene">
+      <div class="scene-head"><span class="num">Scene 03</span><h3>Honest Proof Spotlight</h3><span class="register signal">Signal</span></div>
+      <div class="scene-grid">
+        <div class="field"><label>Purpose</label><p>The one real argument on the page. Everything before this scene was setup; this is the payoff.</p></div>
+        <div class="field"><label>Visitor emotion</label><p>The "oh — they actually have something real" moment. Relief, then trust.</p></div>
+        <div class="field"><label>Main message</label><p>Kaja Hair Studio, presented with full confidence — not apologetically, not padded.</p></div>
+        <div class="field"><label>Visual composition</label><p>The only scene already fully in focus at rest. No blur anywhere. Deliberately quieter background than every other scene.</p></div>
+        <div class="field"><label>Motion behaviour</label><p>Entrance: the result metric draws in as a live line (ties to Direction A's waveform idea, reused here specifically because it's real). Ambient: near-still — a single slow breathing glow on the in-focus marker, nothing else moves.</p></div>
+        <div class="field"><label>Scroll transition</label><p>The page's motion visibly calms entering this scene and stays calm through it — the contrast <em>is</em> the transition.</p></div>
+        <div class="field"><label>Signature interaction</label><p>None required — this is the one scene that doesn't need the visitor to do anything to "earn" clarity, unlike every aspirational scene around it.</p></div>
+        <div class="field"><label>CTA objective</label><p>Link through to the full hair-restoration case study.</p></div>
+        <div class="field"><label>SEO objective</label><p>Feeds `/case-studies/hair-restoration-.../` — the one case-study page allowed to exist per the honesty gate.</p></div>
+      </div>
+    </div>
+
+    <div class="scene">
+      <div class="scene-head"><span class="num">Scene 04</span><h3>Why Boost Web Digital</h3><span class="register signal">Signal-leaning</span></div>
+      <div class="scene-grid">
+        <div class="field"><label>Purpose</label><p>Objection handling: why a healthcare specialist, why this size of agency, why now.</p></div>
+        <div class="field"><label>Visitor emotion</label><p>Confidence building on the trust just earned in Scene 03.</p></div>
+        <div class="field"><label>Main message</label><p>Three differentiators, including the confident exclusion statement ("we don't work outside healthcare") locked in the blueprint.</p></div>
+        <div class="field"><label>Visual composition</label><p>Three crisp statements, generous whitespace, no competing visual noise — this scene should feel like it's talking directly to the visitor.</p></div>
+        <div class="field"><label>Motion behaviour</label><p>Entrance: simple resolve-in, no blur stage needed (these are stated facts, already signal). Ambient: a faint, slow accent-glow drift in the background — quiet life, not distraction.</p></div>
+        <div class="field"><label>Scroll transition</label><p>Straightforward — the drama already happened in Scene 03; this scene doesn't compete for it.</p></div>
+        <div class="field"><label>Signature interaction</label><p>Minor hover emphasis only (underline-style accent reveal) — restrained on purpose.</p></div>
+        <div class="field"><label>CTA objective</label><p>None hard — this scene builds the case for the CTA two scenes later.</p></div>
+        <div class="field"><label>SEO objective</label><p>E-E-A-T signal — differentiation language that supports "why choose us" search intent.</p></div>
+      </div>
+    </div>
+
+    <div class="scene">
+      <div class="scene-head"><span class="num">Scene 05</span><h3>Featured Services</h3><span class="register mixed">Mixed</span></div>
+      <div class="scene-grid">
+        <div class="field"><label>Purpose</label><p>Set expectation of scope before any process/FAQ detail.</p></div>
+        <div class="field"><label>Visitor emotion</label><p>Practical evaluation mode — "can they actually do what I need."</p></div>
+        <div class="field"><label>Main message</label><p>SEO / AI Search (AEO/GEO) / Web Design / Google Ads, linking to the `/services/` pillars.</p></div>
+        <div class="field"><label>Visual composition</label><p>A clean card grid — real, delivered services rendered sharp; nothing here should be soft, since these are actual offerings, not aspiration.</p></div>
+        <div class="field"><label>Motion behaviour</label><p>Entrance: staggered card resolve. Ambient: card icon accents pulse very subtly on a slow, offset loop — alive without being busy.</p></div>
+        <div class="field"><label>Scroll transition</label><p>Simple staggered reveal, no scene-level trick — restraint here keeps Scene 03 as the memory anchor.</p></div>
+        <div class="field"><label>Signature interaction</label><p>Depth-of-Field Hover, same mechanic as Scene 02 — consistency across the site's "recognition" moments.</p></div>
+        <div class="field"><label>CTA objective</label><p>Click-through to service pillar pages — internal-linking equity.</p></div>
+        <div class="field"><label>SEO objective</label><p>Links to the pages an LLM cites when asked what this agency does.</p></div>
+      </div>
+    </div>
+
+    <div class="scene">
+      <div class="scene-head"><span class="num">Scene 06</span><h3>Our Process — conditional</h3><span class="register noise">Cut unless real</span></div>
+      <div class="scene-grid">
+        <div class="field"><label>Purpose</label><p>Unchanged from the locked blueprint: only exists if a real, distinct process exists. No placeholder version.</p></div>
+        <div class="field"><label>Visitor emotion</label><p>Reduced perceived risk of engaging — but only if genuine.</p></div>
+        <div class="field"><label>Main message</label><p>How engagement actually works, step by step — if there is a real step-by-step.</p></div>
+        <div class="field"><label>Visual composition</label><p>If real: a numbered sequence, per the "structure encodes real info" rule — numbering only because the order genuinely matters.</p></div>
+        <div class="field"><label>Motion behaviour</label><p>If real: a genuine scroll-driven sequence (this is where GSAP + ScrollTrigger pin/scrub earns its place, per the locked motion system).</p></div>
+        <div class="field"><label>Scroll transition</label><p>A pinned sequence, not a staggered reveal — the one place a heavier scroll mechanic is justified.</p></div>
+        <div class="field"><label>Signature interaction</label><p>Step markers resolve from soft to sharp as each step becomes "current" during the pin.</p></div>
+        <div class="field"><label>CTA objective</label><p>Reduces friction ahead of the Final CTA.</p></div>
+        <div class="field"><label>SEO objective</label><p>Minor — HowTo-adjacent structure if it ever ships as a page in its own right.</p></div>
+      </div>
+    </div>
+
+    <div class="scene">
+      <div class="scene-head"><span class="num">Scene 07</span><h3>FAQ</h3><span class="register signal">Signal</span></div>
+      <div class="scene-grid">
+        <div class="field"><label>Purpose</label><p>Close remaining objections in the visitor's own language.</p></div>
+        <div class="field"><label>Visitor emotion</label><p>Reassurance — the last doubts get answered directly.</p></div>
+        <div class="field"><label>Main message</label><p>Direct answers, no hedging.</p></div>
+        <div class="field"><label>Visual composition</label><p>Plain accordion. Locked motion rule: no decorative motion on FAQ body copy — this is a reading task, not a spectacle.</p></div>
+        <div class="field"><label>Motion behaviour</label><p>Entrance: simple resolve-in on scroll. Ambient: none. Exit: none needed.</p></div>
+        <div class="field"><label>Scroll transition</label><p>None — deliberately the quietest scene on the page.</p></div>
+        <div class="field"><label>Signature interaction</label><p>Accordion expand/collapse only, standard easing from the locked motion tokens.</p></div>
+        <div class="field"><label>CTA objective</label><p>Removes the last blocker before the close.</p></div>
+        <div class="field"><label>SEO objective</label><p>Direct `FAQPage` schema — high AEO/AI-citation value.</p></div>
+      </div>
+    </div>
+
+    <div class="scene">
+      <div class="scene-head"><span class="num">Scene 08</span><h3>Final CTA</h3><span class="register signal">Signal</span></div>
+      <div class="scene-grid">
+        <div class="field"><label>Purpose</label><p>The narrative's resolution and the primary conversion moment.</p></div>
+        <div class="field"><label>Visitor emotion</label><p>Decisive confidence — ready to act.</p></div>
+        <div class="field"><label>Main message</label><p>A direct, uncluttered ask.</p></div>
+        <div class="field"><label>Visual composition</label><p>Maximum whitespace, one sharp statement, one button — no competing elements.</p></div>
+        <div class="field"><label>Motion behaviour</label><p>Entrance: simple resolve-in. Ambient: a single slow breathing glow behind the button — alive, not busy. No cursor-driven effects near the button itself (see Motion Principles — forms/CTAs get minimal motion at the moment of action).</p></div>
+        <div class="field"><label>Scroll transition</label><p>Calm arrival — the drama already happened in Scene 03.</p></div>
+        <div class="field"><label>Signature interaction</label><p>Magnetic CTA (§04) — the only motion directly on the button itself, and it's restrained.</p></div>
+        <div class="field"><label>CTA objective</label><p>Primary conversion: book a consultation.</p></div>
+        <div class="field"><label>SEO objective</label><p>Minimal — this scene is for the visitor, not the crawler.</p></div>
+      </div>
+    </div>
+
+    <div class="scene">
+      <div class="scene-head"><span class="num">Scene 09</span><h3>Premium Footer</h3><span class="register noise">Quiet / utility</span></div>
+      <div class="scene-grid">
+        <div class="field"><label>Purpose</label><p>Closing chrome and sitewide navigation.</p></div>
+        <div class="field"><label>Visitor emotion</label><p>Neutral — footers shouldn't ask for feeling.</p></div>
+        <div class="field"><label>Main message</label><p>Utility: links, secondary CTA, legal.</p></div>
+        <div class="field"><label>Visual composition</label><p>Flat, quiet, no depth-of-field effects — the story is over.</p></div>
+        <div class="field"><label>Motion behaviour</label><p><b>Exception, 2026-08-17</b> (Ritik's explicit request, overriding this originally-locked "still" concept — see `docs/12-DESIGN-STANDARDS.md` §8's Footer row): six slow, low-opacity, accent-hue ambient wave paths now run continuously behind the footer content. Every other register still applies elsewhere on the site — this is the one section, not a sitewide reversal.</p></div>
+        <div class="field"><label>Scroll transition</label><p>None.</p></div>
+        <div class="field"><label>Signature interaction</label><p><b>Added 2026-08-17:</b> a cursor-reactive "BOOST" wordmark — a radial-gradient mask reveals an accent+white gradient fill as the cursor passes over the outline text, plus a one-time stroke-draw entrance. Beyond that, standard link hover states as originally specified.</p></div>
+        <div class="field"><label>CTA objective</label><p>Secondary CTA + sitewide navigation.</p></div>
+        <div class="field"><label>SEO objective</label><p>Sitewide internal linking.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="motion">
+  <div class="wrap">
+    <div class="eyebrow">03 · Motion Storyboard</div>
+    <h2>The eight motion layers, applied by register — not uniformly</h2>
+    <p>Every scene gets all eight layers the brief asks for. What changes is intensity: <b>noise</b> scenes get active/restless versions, <b>signal</b> scenes get minimal/breathing versions. Nothing is ever fully static — "minimal" is still a deliberate, alive choice, never a gap.</p>
+    <div class="motion-table">
+      <table>
+        <tr><th>Scene</th><th>Entrance</th><th>Ambient</th><th>Scroll-triggered</th><th>Hover</th><th>Cursor</th><th>Looping bg</th><th>Depth/Parallax</th><th>Exit</th></tr>
+        <tr><td class="scene-name">01 Hero</td><td>Full-sharp arrival, no blur stage</td><td>Keyword pills bob, independent</td><td>—</td><td>—</td><td>Cursor-masked grid reveal</td><td>Faint grain drift</td><td>Grid + blooms sit behind H1</td><td>Calm fade into Scene 02</td></tr>
+        <tr><td class="scene-name">02 Specialty</td><td>Staggered resolve</td><td>Per-tile breathing at resting focus</td><td>Tiles settle to resting state</td><td>Depth-of-Field Hover</td><td>—</td><td>—</td><td>Hovered tile lifts, siblings recede</td><td>Calm settle into Scene 03</td></tr>
+        <tr><td class="scene-name">03 Proof spotlight</td><td>Live metric line-draw</td><td>Single slow breathing glow only</td><td>Motion visibly calms entering here</td><td>—</td><td>—</td><td>—</td><td>Flattest scene on the page, on purpose</td><td>Calm exit, no flourish</td></tr>
+        <tr><td class="scene-name">04 Why us</td><td>Simple resolve-in</td><td>Slow accent-glow drift, background only</td><td>Straightforward reveal</td><td>Underline accent reveal</td><td>—</td><td>—</td><td>Flat, no competing depth</td><td>Simple</td></tr>
+        <tr><td class="scene-name">05 Services</td><td>Staggered card resolve</td><td>Icon accents pulse, offset loop</td><td>Staggered reveal</td><td>Depth-of-Field Hover</td><td>—</td><td>—</td><td>Card lift on hover</td><td>Simple</td></tr>
+        <tr><td class="scene-name">06 Process (if real)</td><td>Pinned sequence start</td><td>Current-step marker breathes</td><td>Pin + scrub (GSAP)</td><td>—</td><td>—</td><td>—</td><td>Step layers shift during pin</td><td>Unpin, release scroll</td></tr>
+        <tr><td class="scene-name">07 FAQ</td><td>Simple resolve-in</td><td>None</td><td>None</td><td>Accordion only</td><td>—</td><td>—</td><td>None</td><td>None</td></tr>
+        <tr><td class="scene-name">08 Final CTA</td><td>Simple resolve-in</td><td>Single breathing glow behind button</td><td>Calm arrival</td><td>Magnetic pull</td><td>—</td><td>—</td><td>Minimal</td><td>—</td></tr>
+        <tr><td class="scene-name">09 Footer</td><td>Simple entrance only</td><td>None — deliberately still</td><td>None</td><td>Standard link hover</td><td>—</td><td>—</td><td>None</td><td>—</td></tr>
+      </table>
+    </div>
+    <div class="note"><p><b>Why Scene 03, 07, and 09 are deliberately the quietest:</b> if every scene were equally active, the proof spotlight would have to compete for attention with the hero's noise field — and it would lose the exact contrast that makes it memorable. Quiet is not the absence of a motion decision here; it <em>is</em> the motion decision.</p></div>
+  </div>
+</section>
+
+<section id="interactions">
+  <div class="wrap">
+    <div class="eyebrow">04 · Ten Signature Interactions</div>
+    <h2>Reusable across every future page — not one-off tricks</h2>
+    <div class="interactions">
+      <div class="interaction">
+        <span class="idx">01</span><h3>Focus Pull</h3>
+        <p>Cursor proximity sharpens nearby blurred elements. The core mechanic — already demoed in the Creative Direction doc.</p>
+      </div>
+      <div class="interaction">
+        <span class="idx">02</span><h3>Resolve-on-Scroll</h3>
+        <p>Elements enter blurred and sharpen as they cross into view — not a generic fade+translate, a focus change specifically.</p>
+      </div>
+      <div class="interaction">
+        <span class="idx">03</span><h3>Live Metric Draw</h3>
+        <p>Real numbers/results draw in as a live line rather than counting up — reserved for verifiably real content only.</p>
+      </div>
+      <div class="interaction">
+        <span class="idx">04</span><h3>Noise Field</h3>
+        <p>Ambient drifting field of faint, illegible generic-marketing phrases — the site's aspirational/generic-agency register, made visible and literal.</p>
+      </div>
+      <div class="interaction">
+        <span class="idx">05</span><h3>In-Focus Marker</h3>
+        <p>A small accent-colored dot/ring beside anything independently verifiable. Never used decoratively — its presence is a claim of truth.</p>
+      </div>
+      <div class="interaction">
+        <span class="idx">06</span><h3>Magnetic CTA</h3>
+        <p>Primary buttons pull slightly toward the cursor within a small radius — signals "this is real and interactive," reserved for actual conversion actions only.</p>
+      </div>
+      <div class="interaction">
+        <span class="idx">07</span><h3>Depth-of-Field Hover</h3>
+        <p>Hovering a card pulls it to full sharp focus while siblings recede further — an aperture-rack effect, not a generic lift+shadow.</p>
+        <div class="demo-box"><span class="demo-label">Live — hover a card</span><div class="dof-demo"><div class="dof-card"></div><div class="dof-card"></div><div class="dof-card"></div></div></div>
+      </div>
+      <div class="interaction">
+        <span class="idx">08</span><h3>Aperture Transition</h3>
+        <p>Section-to-section transitions use a literal iris/aperture reveal instead of a generic fade — every transition ties back to the one concept.</p>
+        <div class="demo-box"><span class="demo-label">Live — click to trigger</span><div class="aperture-demo" id="apertureDemo"><div class="aperture-circle"><span>OPEN</span></div></div></div>
+      </div>
+      <div class="interaction">
+        <span class="idx">09</span><h3>Signal Ping</h3>
+        <p>A rare, deliberate pulse on the accent marker the moment something newly real appears — used sparingly enough to still mean something.</p>
+      </div>
+      <div class="interaction">
+        <span class="idx">10</span><h3>Grain &amp; Bokeh Ambient</h3>
+        <p>A constant, very subtle film-grain/bokeh drift across "noise" zones — perpetual quiet life in backgrounds without competing for attention.</p>
+        <div class="demo-box"><span class="demo-label">Live — ambient, always on</span><div class="noise-field-demo" id="grainDemo"></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="motif">
+  <div class="wrap">
+    <div class="eyebrow">05 · Visual Motif</div>
+    <h2>Signal &amp; Noise, formalized as a permanent system</h2>
+    <div class="scene-grid" style="border:1px solid var(--line); border-radius:14px; margin-top:20px;">
+      <div class="field"><label>Blur</label><p>0px for anything real/verifiable, always. 2–4px for aspirational/unproven content at rest. Never applied to body text meant to be read at rest — only to decorative or explicitly-aspirational elements.</p></div>
+      <div class="field"><label>Focus</label><p>Earned, not default. Something becomes sharp because it's real, or because the visitor's attention (cursor/scroll) pulled it into focus — never sharp by default with no reason.</p></div>
+      <div class="field"><label>Lighting</label><p>Photographic depth-of-field logic — soft bokeh-like glows behind sharp focal subjects, not flat glassmorphism panels.</p></div>
+      <div class="field"><label>Depth</label><p>Created by focus contrast first (sharp subject / blurred field), shadow and glass second. Depth without a focus story is just decoration.</p></div>
+      <div class="field"><label>Accent color behaviour</label><p>Marks truth exclusively — the in-focus marker, a live data line, a verified badge. If it's not marking something real, it doesn't get the accent.</p></div>
+      <div class="field"><label>Typography behaviour</label><p>Fraunces headlines are never blurred at rest — words are always the trustworthy layer, even in a hero built around noise dissolving.</p></div>
+      <div class="field"><label>Background system</label><p>Near-black base (#08080a), noise/aspirational zones carry faint drifting grain, signal zones stay calm and flat.</p></div>
+      <div class="field"><label>Grid system</label><p>The shared `max-w-[1400px]` container from the design standards, unchanged — Signal &amp; Noise is a focus/lighting language, not a new layout grid.</p></div>
+      <div class="field"><label>Ambient elements</label><p>Slow, low-opacity, always in motion but never demanding attention — bokeh glows, grain drift, breathing pulses. The "always alive" requirement lives here.</p></div>
+      <div class="field"><label>Particle behaviour</label><p>Sparse, soft-focus, drifting — never sharp, never many at once. Particles belong to the noise register; they should never appear in a signal scene (see Scene 03/07/09 above).</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="animation-principles">
+  <div class="wrap">
+    <div class="eyebrow">06 · Animation Principles</div>
+    <h2>Permanent motion rules for the project</h2>
+    <ol class="principles">
+      <li>Motion never fully stops after load — but its <em>intensity</em> is set by register (signal = calm/breathing, noise = active/drifting), never uniform.<span>This is the resolution to the tension named at the top of this document.</span></li>
+      <li>Every major scene has its own signature motion identity — but only one true showstopper moment per page (Scene 03).<span>Distinct ≠ equally loud.</span></li>
+      <li>Every interactive element has meaningful hover/focus feedback, visually distinct from a plain cursor change.</li>
+      <li>Every scroll reveals something — but revealing is not the same as animating everything on a fade-up.</li>
+      <li>Motion guides attention before it creates delight — delight is a byproduct, not the goal.</li>
+      <li>No decorative animation. Every movement must trace back to blur/focus, depth, or the honesty rule.</li>
+      <li>Forms and reading-heavy content (FAQ body, case-study prose) get minimal-to-no motion — clarity wins at the moment of comprehension or action.</li>
+      <li>Performance always outranks visual complexity. Target 60fps; if an effect can't hold it on mid-tier mobile, simplify the effect, not the target.</li>
+      <li>No more than one heavy animation library (GSAP or Three.js) loaded per page — per the locked performance budget in <a href="07-ARCHITECTURE.md">07-ARCHITECTURE.md</a>.</li>
+      <li>`prefers-reduced-motion` removes ambient/continuous motion and resolves all blur to full sharpness immediately — never removes content, never leaves text illegibly soft.</li>
+    </ol>
+  </div>
+</section>
+
+<section id="design-principles">
+  <div class="wrap">
+    <div class="eyebrow">07 · Twenty Permanent Design Principles</div>
+    <h2>Project rules — not suggestions</h2>
+    <ol class="principles">
+      <li>Real, verifiable content is always sharp; aspirational or unproven content is always allowed to recede or blur.</li>
+      <li>The accent color marks truth, never decoration.</li>
+      <li>One true signature moment per page; everything else is quiet variation, not reinvention.</li>
+      <li>Stillness at a resolved moment is a deliberate choice, not an unfinished animation.</li>
+      <li>Never fabricate proof to fill a gap — an honest blur beats a dishonest sharpness.</li>
+      <li>Motion explains hierarchy before it delights.</li>
+      <li>No decorative animation — every movement must be traceable to a reason.</li>
+      <li>Respect `prefers-reduced-motion` by removing ambient/continuous motion, never by removing content.</li>
+      <li>Depth comes from focus/blur contrast first, glassmorphism/shadow second.</li>
+      <li>Typography never blurs at rest — words are always the trustworthy layer.</li>
+      <li>One accent hex, applied consistently — never introduce a second accent color for "variety."</li>
+      <li>Dark theme only, permanently — no light-mode exception for any future page.</li>
+      <li>Every scroll reveals something, but never at the cost of comprehension speed.</li>
+      <li>Forms and reading-heavy content get minimal-to-no motion at the moment of action.</li>
+      <li>No more than one heavy animation library per page.</li>
+      <li>Every interactive element has a hover/focus state that's visually distinct, never a cursor change alone.</li>
+      <li>New pages inherit the Signal &amp; Noise system; they may apply it in a new way, never introduce a new visual language.</li>
+      <li>If an interaction needs explaining to make sense, cut it — the metaphor should be legible without a caption.</li>
+      <li>Numbered/sequential structural devices only appear where the underlying content is genuinely sequential.</li>
+      <li>When choosing between a bolder and a quieter version of an effect, ship the quieter one — restraint is the actual differentiator, not a compromise.</li>
+    </ol>
+  </div>
+</section>
+
+<section id="future-pages">
+  <div class="wrap">
+    <div class="eyebrow">08 · Future Pages</div>
+    <h2>How About, Services, Case Studies, Blog, and Contact inherit this</h2>
+    <div class="motion-table">
+      <table>
+        <tr><th>Page</th><th>What's rendered signal</th><th>What stays noise / deferred</th><th>Inherited rule</th></tr>
+        <tr><td class="scene-name">About / Team</td><td>Real founder story (Ritik, hands-on ownership — the locked founder-credibility angle)</td><td>Generic "our culture" stock-photo filler — skip entirely, don't soften it, just don't build it</td><td>A real person rendered sharp beats a generic team page rendered pretty</td></tr>
+        <tr><td class="scene-name">Services</td><td>Actually-delivered scope per service</td><td>Aspirational capabilities marked openly as "not yet," never blurred to hide the gap</td><td>Aspiration is stated plainly, not disguised as achievement</td></tr>
+        <tr><td class="scene-name">Case Studies hub</td><td>Kaja Hair Studio, fully sharp</td><td>Specialties with no case study yet simply aren't listed — no blurred "coming soon" placeholder tile</td><td>Absence beats a fake placeholder — this is the highest-stakes page for the honesty rule</td></tr>
+        <tr><td class="scene-name">Blog</td><td>Published posts, authored and cited</td><td>No index/preview grid for a category until 3+ real posts exist (already locked in the roadmap)</td><td>An empty "Latest Insights" grid reads as broken, not premium</td></tr>
+        <tr><td class="scene-name">Contact</td><td>The whole page — most "signal" page on the site</td><td>Nothing — no noise register belongs here at all</td><td>Least decorative motion anywhere; forms get minimal motion per the animation principles</td></tr>
+      </table>
+    </div>
+    <div class="note"><p><b>The test for any future page:</b> does this page have something real to be sharp about, or is it entirely aspirational? If entirely aspirational, lean the whole page toward the noise register honestly (a clearly-labeled "here's our approach," not a dressed-up claim of achievement) rather than borrowing signal-register confidence it hasn't earned.</p></div>
+  </div>
+</section>
+
+<section id="risks">
+  <div class="wrap">
+    <div class="eyebrow">09 · Risks</div>
+    <h2>Where this could fail, and how to stop it becoming a gimmick</h2>
+
+    <div class="risk">
+      <h3>Overuse — focus becomes wallpaper</h3>
+      <p>If every element gets a blur/focus treatment, the effect stops meaning anything. The entire concept depends on focus being rare and earned.</p>
+      <div class="mitigate"><b>Mitigation:</b> the twenty design principles above are the enforcement mechanism — especially #1, #3, and #20. Any new section proposal should be checked against them before it ships.</div>
+    </div>
+
+    <div class="risk">
+      <h3>Confusion — blur reads as a bug</h3>
+      <p>A visitor might read soft-focus content as a loading glitch or their own eyesight, not an intentional choice.</p>
+      <div class="mitigate"><b>Mitigation:</b> nothing stays permanently illegible — every blurred element resolves on interaction or scroll-into-view. Permanent illegible blur is a bug, not a feature, full stop.</div>
+    </div>
+
+    <div class="risk">
+      <h3>Accessibility — blur is structural here, not decorative</h3>
+      <p>Blur-as-meaning is a bigger accessibility risk than blur-as-decoration, because removing it for reduced-motion or low-vision users could remove information, not just flourish.</p>
+      <div class="mitigate"><b>Mitigation:</b> `prefers-reduced-motion` resolves ALL content to full legibility immediately — no exceptions, no "softer but still blurred" compromise state.</div>
+    </div>
+
+    <div class="risk">
+      <h3>Cliché — depth-of-field is trending broadly</h3>
+      <p>Camera-blur/bokeh aesthetics are increasingly common in premium sites generally. Without the honesty-mapping underneath, this collapses into "just another blur site."</p>
+      <div class="mitigate"><b>Mitigation:</b> every use of blur must map to real/unproven, never applied for pure atmosphere. If a future designer can't explain what a blurred element represents, it shouldn't be blurred.</div>
+    </div>
+
+    <div class="risk">
+      <h3>Performance — real-time filters are expensive</h3>
+      <p>Cursor-driven blur/focus on many elements at once is real CPU/GPU cost, especially on mid-tier mobile.</p>
+      <div class="mitigate"><b>Mitigation:</b> bound the number of elements computing live cursor-distance blur at once; use pre-rendered blur where static suffices. Ties directly to the locked performance budget (Lighthouse ≥90 mobile).</div>
+    </div>
+
+    <div class="risk">
+      <h3>The one that actually matters most — a fabricated "signal" moment</h3>
+      <p>If a future testimonial or case study ever gets added because a section "needs to look complete," the entire system collapses instantly and visibly — this isn't a copy problem anymore, it's a design-system contradiction anyone can see.</p>
+      <div class="mitigate"><b>Mitigation:</b> this design system makes violating the honesty rule <em>more</em> consequential than before, not less. Treat that as a feature — it's a structural reason to actually stay honest, not just a policy on paper.</div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p>Nothing implemented. Next step per the locked roadmap: the Design System pass — translating this experience blueprint into the actual token/component layer, informed by this and by <a href="00-creative-direction.html">the locked Creative Direction</a>.</p>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var aperture = document.getElementById('apertureDemo');
+  if (aperture) {
+    aperture.addEventListener('click', function(){ aperture.classList.toggle('open'); });
+  }
+
+  var grain = document.getElementById('grainDemo');
+  if (grain && !reduced) {
+    var dots = [];
+    for (var i=0;i<14;i++){
+      var d = document.createElement('div');
+      d.className='grain-dot';
+      var size = 2+Math.random()*5;
+      d.style.width=size+'px'; d.style.height=size+'px';
+      d.style.left=(Math.random()*100)+'%'; d.style.top=(Math.random()*100)+'%';
+      d.style.opacity=String(0.15+Math.random()*0.35);
+      grain.appendChild(d);
+      dots.push({el:d, vx:(Math.random()-0.5)*0.15, vy:(Math.random()-0.5)*0.15, x:parseFloat(d.style.left), y:parseFloat(d.style.top)});
+    }
+    function driftLoop(){
+      dots.forEach(function(p){
+        p.x += p.vx; p.y += p.vy;
+        if (p.x<0) p.x=100; if (p.x>100) p.x=0;
+        if (p.y<0) p.y=100; if (p.y>100) p.y=0;
+        p.el.style.left=p.x+'%'; p.el.style.top=p.y+'%';
+      });
+      requestAnimationFrame(driftLoop);
+    }
+    requestAnimationFrame(driftLoop);
+  }
+})();
+</script>

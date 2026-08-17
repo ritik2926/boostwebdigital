@@ -1,31 +1,413 @@
 @import "tailwindcss";
 
-@custom-variant dark (&:where(.dark, .dark *));
+/*
+  Design System tokens — docs/12-DESIGN-STANDARDS.md is the source of truth.
+  Do not invent a new value here without updating that file in the same pass.
 
+  Consumption pattern for the new (non-color) tokens below: Tailwind v4's
+  canonical shorthand references a CSS var directly, e.g. `blur-(--blur-noise)`,
+  `opacity-(--opacity-ghost)`, `z-(--z-nav)` — no new @theme namespace needed.
+  JS/Framer Motion consumers use the mirrored constants in src/lib/tokens.ts
+  instead of re-deriving these values.
+
+  Custom classes below (e.g. .shiny-cta, .ghost-cta) live outside any
+  @layer, so they always beat Tailwind's own utilities (wrapped in
+  @layer utilities) regardless of specificity or breakpoint — never set
+  `display` in one of these classes if a consumer needs to toggle it with
+  `hidden`/`flex`/etc.; leave display to the className at the call site.
+*/
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-  --accent: #1627C6;
-}
+  /* 2.1 Color */
+  --background: #08080a;
+  --foreground: #f2f2f5;
+  /* Dark-UI-calibrated shade of the brand blue (2026-08-15) — the raw logo
+     hex (#1627C6, tuned for light/print contexts) read flat/muddy directly
+     on #08080a; docs/02-BRAND.md already called for a lighter dark-mode
+     variant but it was never actually wired in. Chosen by rendering the
+     candidate against the real background as text/button/glow and judging
+     the actual result, not by reasoning about hex values in the abstract.
+     The literal logo asset stays #1627C6 — only this UI token changed. */
+  --accent: #3b4fdb;
+  --accent-rgb: 59, 79, 219;
 
-.dark {
-  --background: #0a0a0a;
-  --foreground: #ededed;
-  --accent: #5b6ef5;
+  /* 2.3 Blur scale */
+  --blur-signal: 0px;
+  --blur-partial: 2px;
+  --blur-noise: 3px;
+  --blur-ambient: 4px;
+
+  /* 2.3 Glow scale — accent hue only, feathered falloff assumed at point of use */
+  --glow-whisper: 0 0 8px rgba(var(--accent-rgb), 0.15);
+  --glow-soft: 0 0 20px rgba(var(--accent-rgb), 0.25);
+  --glow-live: 0 0 32px rgba(var(--accent-rgb), 0.4);
+
+  /* 2.3 Opacity scale */
+  --opacity-ghost: 0.15;
+  --opacity-faint: 0.4;
+  --opacity-muted: 0.65;
+  --opacity-visible: 0.9;
+  --opacity-full: 1;
+
+  /* 2.5 Container widths */
+  /* Fluid, not a flat cap (revised 2026-08-17, Ritik: "full width content to
+     responsive in all screens") — at 1400px flat, a 1920px+ monitor showed
+     ~260px of dead black margin on each side, with section-level decoration
+     (AmbientGlow, anchored to the real viewport edge) stranded out in that
+     margin, disconnected from the content column — the direct cause of a
+     "not centered / right-aligned" complaint on wide screens. Floors at the
+     old 1400px value (never smaller — see clamp() semantics: the min still
+     wins even when 94vw resolves smaller, which only happens well under the
+     viewport widths where this cap binds at all) and caps at 1800px so body
+     copy's own narrower `--container-prose`/`--container-heading` widths
+     (untouched, readability-driven, not viewport-driven) still read as
+     intentional columns rather than the whole page going edge-to-edge. */
+  --container-page: clamp(1400px, 94vw, 1800px);
+  --container-heading: 768px;
+  --container-prose: 672px;
+  --container-prose-narrow: 576px;
+
+  /* 2.5 Z-index scale */
+  --z-ambient: 0;
+  --z-base: 10;
+  --z-raised: 20;
+  --z-nav: 40;
+  --z-overlay: 50;
+  --z-toast: 60;
+  --z-cursor-fx: 70;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-accent: var(--accent);
-  --font-sans: var(--font-geist-sans);
+  /* Switzer is the one sitewide typeface — both tokens point to the same
+     family now (see docs/12-DESIGN-STANDARDS.md §2.2); kept as two Tailwind
+     keys so existing font-display/font-sans call sites stay meaningful
+     intent-markers even though they resolve identically. */
+  --font-sans: var(--font-switzer);
   --font-mono: var(--font-geist-mono);
-  --font-display: var(--font-display);
+  --font-display: var(--font-switzer);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  /* `--font-sans` (above) is a Tailwind v4 `@theme inline` token — inline
+     tokens are only ever baked directly into generated utility classes
+     (.font-sans etc.), never emitted as a real runtime CSS variable, so
+     `var(--font-sans)` here always resolved to nothing and silently fell
+     back past Arial to the browser's system-font stack. Reference the real
+     next/font-generated variable directly instead. */
+  font-family: var(--font-switzer), Arial, Helvetica, sans-serif;
+}
+
+/* §6 Motion System — always-on ambient loops, CSS-driven (zero JS cost) */
+@keyframes breathe {
+  0%, 100% { opacity: var(--opacity-ghost); }
+  50% { opacity: var(--opacity-faint); }
+}
+@keyframes drift {
+  0% { transform: translate(0, 0); }
+  50% { transform: translate(var(--drift-x, 12px), var(--drift-y, -10px)); }
+  100% { transform: translate(0, 0); }
+}
+@keyframes grain-shift {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(-2%, 2%); }
+}
+/* Why Choose Us — the "solar system" orbit rings. A literal, requested
+   visual metaphor (not decorative filler on unrelated content, unlike the
+   earlier-removed dashboard scan-ring), so a continuous rotation is the
+   right call here specifically. */
+@keyframes orbit-spin {
+  to { transform: rotate(360deg); }
+}
+.orbit-ring {
+  animation: orbit-spin 110s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .orbit-ring {
+    animation: none;
+  }
+}
+/* Logo carousel marquee — two identical adjacent rows, each translated by
+   exactly its own width; as the first slides fully offscreen the second
+   (already positioned right after it) is at the exact start position, so
+   the loop restarts with zero visible seam. Pure CSS: no JS control needed
+   for a constant-speed always-on loop. */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-100%); }
+}
+/* Who We Serve — animated per-industry gradient tile. Colors come from
+   inline --tile-from/--tile-to custom properties set per card; only the pan
+   animation itself is shared here. */
+.tile-gradient {
+  background-image: linear-gradient(120deg, var(--tile-from), var(--tile-to), var(--tile-from));
+  background-size: 200% 200%;
+  animation: tile-gradient-pan 10s ease-in-out infinite alternate;
+}
+@keyframes tile-gradient-pan {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 100% 50%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tile-gradient {
+    animation: none;
+  }
+}
+/* Testimonials — vertical zero-seam marquee per column (same doubled-content
+   technique as the horizontal logo marquee above, rotated 90°). Duration,
+   delay (phase offset) and direction are set per-column via CSS custom
+   properties on the element (--marquee-duration/--marquee-delay/
+   --marquee-name), NOT via an inline `animation` shorthand — an inline
+   style always wins over a stylesheet rule regardless of :hover, so the
+   hover-to-pause rule below could never actually override it if the
+   shorthand itself were set inline. Keeping animation-* entirely in this
+   class is what makes :hover work. */
+.testimonial-track {
+  animation-name: var(--marquee-name, testimonial-scroll-down);
+  animation-duration: var(--marquee-duration, 100s);
+  animation-delay: var(--marquee-delay, 0s);
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+.testimonial-track:hover {
+  animation-play-state: paused;
+}
+@keyframes testimonial-scroll-up {
+  from { transform: translateY(0); }
+  to { transform: translateY(-50%); }
+}
+@keyframes testimonial-scroll-down {
+  from { transform: translateY(-50%); }
+  to { transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .testimonial-track {
+    animation: none !important;
+  }
+}
+/*
+  CTA — "shiny" glowing pill (§8 Navigation / §04 Magnetic CTA skin).
+  A rotating conic-gradient ring registered via @property so the browser can
+  tween it as an angle/percentage/color instead of snapping between frames —
+  plain custom properties can't be animated smoothly without this.
+  Colors are pinned to the locked accent (--accent / --accent-rgb); sized to
+  match the existing text-sm / px-5 py-2.5 button scale used elsewhere.
+*/
+@property --gradient-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+@property --gradient-angle-offset {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+@property --gradient-percent {
+  syntax: "<percentage>";
+  initial-value: 5%;
+  inherits: false;
+}
+@property --gradient-shine {
+  syntax: "<color>";
+  initial-value: white;
+  inherits: false;
+}
+
+.shiny-cta {
+  --shiny-cta-bg: #0c0c11;
+  --shiny-cta-bg-subtle: #1e1e2a;
+  --shiny-cta-fg: #ffffff;
+  --shiny-cta-highlight: var(--accent);
+  --shiny-cta-highlight-subtle: #7f88e0;
+  --animation: shiny-cta-angle linear infinite;
+  --duration: 3s;
+  --shadow-size: 2px;
+  --transition: 800ms cubic-bezier(0.25, 1, 0.5, 1);
+
+  isolation: isolate;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  outline-offset: 4px;
+  padding: 0.625rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.2;
+  border: 1px solid transparent;
+  border-radius: 360px;
+  color: var(--shiny-cta-fg);
+  white-space: nowrap;
+  background:
+    linear-gradient(var(--shiny-cta-bg), var(--shiny-cta-bg)) padding-box,
+    conic-gradient(
+      from calc(var(--gradient-angle) - var(--gradient-angle-offset)),
+      transparent,
+      var(--shiny-cta-highlight) var(--gradient-percent),
+      var(--gradient-shine) calc(var(--gradient-percent) * 2),
+      var(--shiny-cta-highlight) calc(var(--gradient-percent) * 3),
+      transparent calc(var(--gradient-percent) * 4)
+    ) border-box;
+  box-shadow: inset 0 0 0 1px var(--shiny-cta-bg-subtle);
+  transition: var(--transition);
+  transition-property: --gradient-angle-offset, --gradient-percent, --gradient-shine;
+}
+
+.shiny-cta::before,
+.shiny-cta::after,
+.shiny-cta span::before {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset-inline-start: 50%;
+  inset-block-start: 50%;
+  translate: -50% -50%;
+  z-index: -1;
+}
+
+.shiny-cta:active {
+  translate: 0 1px;
+}
+
+/* Dot texture, masked to a ring so it only shows near the border */
+.shiny-cta::before {
+  --size: calc(100% - var(--shadow-size) * 3);
+  --position: 2px;
+  --space: calc(var(--position) * 2);
+  width: var(--size);
+  height: var(--size);
+  background: radial-gradient(
+      circle at var(--position) var(--position),
+      white calc(var(--position) / 4),
+      transparent 0
+    )
+    padding-box;
+  background-size: var(--space) var(--space);
+  background-repeat: space;
+  mask-image: conic-gradient(from calc(var(--gradient-angle) + 45deg), black, transparent 10% 90%, black);
+  border-radius: inherit;
+  opacity: 0.4;
+}
+
+/* Diagonal shimmer sweep */
+.shiny-cta::after {
+  --animation: shiny-cta-shimmer linear infinite;
+  width: 100%;
+  aspect-ratio: 1;
+  background: linear-gradient(-50deg, transparent, var(--shiny-cta-highlight), transparent);
+  mask-image: radial-gradient(circle at bottom, transparent 40%, black);
+  opacity: 0.6;
+}
+
+.shiny-cta span {
+  position: relative;
+  z-index: 1;
+}
+
+/* Breathing glow behind the label, blooms in on hover/focus */
+.shiny-cta span::before {
+  --size: calc(100% + 1rem);
+  width: var(--size);
+  height: var(--size);
+  box-shadow: inset 0 -1ex 2rem 4px var(--shiny-cta-highlight);
+  opacity: 0;
+  transition: opacity var(--transition);
+  animation: calc(var(--duration) * 1.5) shiny-cta-breathe linear infinite;
+}
+
+.shiny-cta,
+.shiny-cta::before,
+.shiny-cta::after {
+  animation:
+    var(--animation) var(--duration),
+    var(--animation) calc(var(--duration) / 0.4) reverse paused;
+  animation-composition: add;
+}
+
+.shiny-cta:is(:hover, :focus-visible) {
+  --gradient-percent: 20%;
+  --gradient-angle-offset: 95deg;
+  --gradient-shine: var(--shiny-cta-highlight-subtle);
+}
+
+.shiny-cta:is(:hover, :focus-visible),
+.shiny-cta:is(:hover, :focus-visible)::before,
+.shiny-cta:is(:hover, :focus-visible)::after {
+  animation-play-state: running;
+}
+
+.shiny-cta:is(:hover, :focus-visible) span::before {
+  opacity: 1;
+}
+
+@keyframes shiny-cta-angle {
+  to {
+    --gradient-angle: 360deg;
+  }
+}
+@keyframes shiny-cta-shimmer {
+  to {
+    rotate: 360deg;
+  }
+}
+@keyframes shiny-cta-breathe {
+  from, to { scale: 1; }
+  50% { scale: 1.2; }
+}
+
+/*
+  CTA — secondary/supportive skin. Shares .shiny-cta's exact shape (padding,
+  360px radius, type) so every button on the site reads as one family —
+  color is the only thing that tells primary and secondary apart. The
+  design standards reserve solid accent fill for one primary CTA per view,
+  so this stays a plain glass chip: light border/bg, no fill, no glow ring.
+  Timing matches the locked secondary easing (tokens.ts EASE.secondary).
+*/
+.ghost-cta {
+  /* display intentionally omitted — Tailwind's hidden/xl:inline-flex utilities
+     control it. This class lives outside any @layer, so it would otherwise
+     always beat a layered Tailwind utility regardless of breakpoint. */
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.625rem 1.25rem;
+  border-radius: 360px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.2;
+  color: rgba(255, 255, 255, 0.7);
+  white-space: nowrap;
+  transition:
+    color 250ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 250ms cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 250ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.ghost-cta:hover,
+.ghost-cta:focus-visible {
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.ghost-cta .icon {
+  width: 0;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateX(-4px);
+  transition:
+    width 300ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 200ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 300ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.ghost-cta:hover .icon,
+.ghost-cta:focus-visible .icon {
+  width: 0.875rem;
+  opacity: 1;
+  transform: translateX(0);
 }

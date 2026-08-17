@@ -1,0 +1,330 @@
+<title>Boost Web Digital — Creative Direction</title>
+<style>
+  :root{
+    --bg:#08080a; --bg-raise:#0b0b0f; --fg:#f2f2f5; --accent:#1627C6;
+    --line:rgba(242,242,245,0.10); --line-strong:rgba(242,242,245,0.16);
+    --muted:rgba(242,242,245,0.62); --faint:rgba(242,242,245,0.4);
+    --serif: ui-serif, Iowan Old Style, Palatino Linotype, Georgia, serif;
+    --sans: ui-sans-serif, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --mono: ui-monospace, "SF Mono", Consolas, monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg); color:var(--fg); font-family:var(--sans);
+    line-height:1.6; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1040px; margin:0 auto; padding:0 24px;}
+  .eyebrow{
+    font-family:var(--mono); font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase;
+    color:var(--accent); display:flex; align-items:center; gap:8px; margin-bottom:14px;
+  }
+  .eyebrow::before{content:""; width:6px; height:6px; border-radius:50%; background:var(--accent); box-shadow:0 0 8px var(--accent);}
+  h1{
+    font-family:var(--serif); font-weight:500; font-size:clamp(2rem,4vw,3.2rem);
+    line-height:1.05; letter-spacing:-0.01em; margin:0 0 20px; text-wrap:balance; max-width:14ch;
+  }
+  h2{
+    font-family:var(--serif); font-weight:500; font-size:clamp(1.5rem,2.6vw,2.1rem);
+    line-height:1.15; letter-spacing:-0.01em; margin:0 0 6px; text-wrap:balance;
+  }
+  h3{font-family:var(--sans); font-weight:600; font-size:0.95rem; margin:0 0 8px; color:var(--fg);}
+  p{color:var(--muted); max-width:62ch;}
+  header.masthead{padding:88px 0 56px; border-bottom:1px solid var(--line);}
+  .lede{font-size:1.08rem; color:var(--muted); max-width:56ch;}
+  .constraint-box{
+    margin-top:32px; padding:18px 20px; border:1px solid var(--line); border-radius:14px;
+    background:var(--bg-raise); display:grid; grid-template-columns:1fr 1fr; gap:20px;
+  }
+  .constraint-box .col b{color:var(--fg); font-weight:600; display:block; margin-bottom:6px; font-size:0.85rem;}
+  .constraint-box .col span{color:var(--faint); font-size:0.85rem;}
+  section{padding:64px 0; border-bottom:1px solid var(--line);}
+  section.directions-header{padding-bottom:8px; border-bottom:none;}
+
+  /* reference grid */
+  .ref-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:14px; overflow:hidden; margin-top:32px;}
+  .ref-card{background:var(--bg); padding:24px;}
+  .ref-card .url{font-family:var(--mono); font-size:0.78rem; color:var(--accent); margin-bottom:10px; display:block;}
+  .ref-card p{font-size:0.92rem; margin:0 0 10px;}
+  .ref-card .lesson{font-size:0.85rem; color:var(--fg); border-top:1px solid var(--line); margin-top:12px; padding-top:12px;}
+  .ref-card .lesson b{color:var(--accent); font-weight:600;}
+
+  /* direction sections */
+  .direction{padding:72px 0; border-bottom:1px solid var(--line); position:relative;}
+  .direction .tag{font-family:var(--mono); font-size:0.72rem; color:var(--faint); letter-spacing:0.1em; text-transform:uppercase;}
+  .direction .concept{font-size:1.05rem; color:var(--fg); max-width:58ch; margin-top:6px;}
+  .demo-box{
+    margin:28px 0 40px; border:1px solid var(--line); border-radius:16px; overflow:hidden;
+    background:var(--bg-raise); position:relative; height:220px;
+  }
+  .demo-label{position:absolute; top:14px; left:16px; font-family:var(--mono); font-size:0.68rem; color:var(--faint); text-transform:uppercase; letter-spacing:0.08em; z-index:5;}
+  .dims{display:grid; grid-template-columns:repeat(2,1fr); gap:0; border:1px solid var(--line); border-radius:14px; overflow:hidden;}
+  .dim{padding:20px 22px; border-bottom:1px solid var(--line); border-right:1px solid var(--line);}
+  .dim:nth-child(2n){border-right:none;}
+  .dim p{font-size:0.9rem; margin:0;}
+  .differentiator{margin-top:24px; padding:18px 20px; border-left:2px solid var(--accent); background:var(--bg-raise); border-radius:0 10px 10px 0;}
+  .differentiator p{color:var(--fg); font-size:0.92rem; margin:0;}
+
+  /* Direction A demo: waveform */
+  .waveform-svg{width:100%; height:100%; display:block;}
+  .waveform-path{fill:none; stroke:var(--accent); stroke-width:2; filter:drop-shadow(0 0 6px rgba(22,39,198,0.6));}
+
+  /* Direction B demo: altitude bands */
+  .altitude-demo{width:100%; height:100%; position:relative; cursor:none; overflow:hidden;}
+  .band{position:absolute; left:0; right:0; height:1px; background:var(--line-strong);}
+  .altitude-glow{position:absolute; width:280px; height:280px; border-radius:50%; pointer-events:none;
+    background:radial-gradient(circle, rgba(22,39,198,0.35), transparent 70%); transform:translate(-50%,-50%);
+    transition:opacity 0.2s; filter:blur(4px);}
+
+  /* Direction C demo: focus pull */
+  .focus-demo{width:100%; height:100%; position:relative; display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:10px 18px; padding:20px 28px;}
+  .noise-word{font-family:var(--sans); font-size:0.95rem; color:var(--faint); filter:blur(3px); transition:filter 0.25s ease; user-select:none;}
+  .signal-word{font-family:var(--serif); font-size:1.3rem; color:var(--fg); font-weight:500; filter:blur(0px); position:relative;}
+  .signal-word::after{content:""; position:absolute; left:-14px; top:50%; width:5px; height:5px; border-radius:50%; background:var(--accent); transform:translateY(-50%); box-shadow:0 0 6px var(--accent);}
+
+  .verdict{margin-top:0;}
+  .verdict table{width:100%; border-collapse:collapse; margin-top:20px;}
+  .verdict th,.verdict td{text-align:left; padding:12px 14px; border-bottom:1px solid var(--line); font-size:0.88rem;}
+  .verdict th{color:var(--faint); font-weight:500; font-family:var(--mono); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em;}
+  .verdict td.pick{color:var(--accent); font-weight:600;}
+  .reco{margin-top:32px; padding:22px 24px; border:1px solid var(--line); border-radius:14px; background:var(--bg-raise);}
+  .reco b{color:var(--accent);}
+  footer{padding:56px 0 88px;}
+  footer p{font-size:0.9rem;}
+
+  @media (max-width:720px){
+    .constraint-box, .ref-grid, .dims{grid-template-columns:1fr;}
+    .dim{border-right:none;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .waveform-path{animation:none !important;}
+  }
+</style>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Creative Direction — Direction C locked</div>
+    <h1>Three directions, one locked system, zero generic agency defaults.</h1>
+    <p style="color:var(--accent); font-family:var(--mono); font-size:0.85rem; margin:-6px 0 18px;">✓ LOCKED: "Signal &amp; Noise" is the creative philosophy of Boost Web Digital. Not up for redesign — see the Experience Blueprint for how it's applied.</p>
+    <p class="lede">Per <a href="00-PROJECT-BLUEPRINT.md" style="color:var(--fg)">the locked blueprint's</a> open item: the design tokens are execution-ready, but the <em>direction</em> wasn't yet distinctly Boost Web Digital. This is that exploration.</p>
+    <div class="constraint-box">
+      <div class="col">
+        <b>Held fixed (CLAUDE.md hard rules)</b>
+        <span>Permanent dark theme (#08080a / #f2f2f5), accent #1627C6, Fraunces + Geist pairing. Not up for debate today — this exploration works within them.</span>
+      </div>
+      <div class="col">
+        <b>What's actually being varied</b>
+        <span>Visual motif, layout rhythm, motion language, lighting/depth, signature interaction, scroll storytelling — the execution choices that create (or fail to create) real distinction.</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <div class="eyebrow">Reference study</div>
+    <h2>What actually makes each reference work</h2>
+    <p>Fetched and read directly rather than assumed — text/structure/positioning verified, visual specifics (exact motion timing, precise hues) are informed inference where WebFetch can't see pixels. Not copied from below; each entry ends in the one lesson carried into the directions.</p>
+    <div class="ref-grid">
+      <div class="ref-card">
+        <span class="url">digitz.fr</span>
+        <p>Confident restraint: numbered sections (01–09) as real methodology, not decoration, and a deliberately tempered AI claim — <em>"AI as new layer, not new métier."</em> Monochrome palette lets the content carry the page.</p>
+        <div class="lesson"><b>Lesson:</b> structural numbering only earns its place when it maps to something genuinely sequential — and restraint reads as more confident than hype.</div>
+      </div>
+      <div class="ref-card">
+        <span class="url">trionn.com</span>
+        <p>Bold statement typography, a split-reveal treatment on "Designed to mean something," and a playful hold-to-interact micro-mechanic. High black/white/accent contrast does the work, not decoration volume.</p>
+        <div class="lesson"><b>Lesson:</b> one memorable interaction mechanic, committed to fully, beats several timid ones.</div>
+      </div>
+      <div class="ref-card">
+        <span class="url">delucks.com</span>
+        <p>A genuine precedent — a specialized agency positioning on <em>"search engines and AI"</em> specifically, blue accent, and copy built entirely around accountability: <em>"no anonymous ticket systems, no rotating junior contacts."</em></p>
+        <div class="lesson"><b>Lesson:</b> the boutique/accountable-senior-contact angle is a proven differentiator in exactly this category, not a hypothetical.</div>
+      </div>
+      <div class="ref-card">
+        <span class="url">orionix.framer.website</span>
+        <p>Oversized headlines with deliberate line-break rhythm ("From Complexity to Clarity in 3 Steps"), strategy-before-execution positioning, reel-forward case-study presentation.</p>
+        <div class="lesson"><b>Lesson:</b> a structural conceit ("complexity → clarity") stated once and then executed everywhere is stronger than restating the theme in every section's copy.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="directions-header">
+  <div class="wrap">
+    <div class="eyebrow">Three original directions</div>
+    <h2>Each grounded in something only Boost Web Digital can say</h2>
+    <p>Not three reskins of the same idea — each stakes out different territory: the healthcare subject itself, the actual product (rankings moving up), and the actual differentiator (honesty + AI-search extraction). Explained in full below; my recommendation is at the end, not withheld until then.</p>
+  </div>
+</section>
+
+<div class="direction">
+  <div class="wrap">
+    <span class="tag">Direction A</span>
+    <h2>Vital Signal</h2>
+    <p class="concept">Treats search visibility as a vital sign to monitor — a single visual pun ties healthcare and SEO together literally: the same line reads as an ECG trace and a ranking-trend chart.</p>
+    <div class="demo-box">
+      <span class="demo-label">Live motif — waveform / trend-line</span>
+      <svg class="waveform-svg" viewBox="0 0 600 220" preserveAspectRatio="none">
+        <line x1="0" y1="110" x2="600" y2="110" stroke="var(--line)" stroke-width="1"/>
+        <path id="wavepath" class="waveform-path" d="M0,110 L100,110 L120,110 L135,40 L150,180 L165,110 L400,110 L420,110 L440,60 L455,150 L470,90 L490,110 L600,110"/>
+      </svg>
+    </div>
+    <div class="dims">
+      <div class="dim"><h3>Design philosophy</h3><p>Visibility monitored like a vital sign — calm authority, not marketing hype.</p></div>
+      <div class="dim"><h3>Visual identity</h3><p>Hairline chart-grid, tick-mark dividers, monospace annotations beside real numbers.</p></div>
+      <div class="dim"><h3>Typography</h3><p>Fraunces large and tight-tracked, like a single bold chart reading; Geist body with tabular-nums wherever digits appear.</p></div>
+      <div class="dim"><h3>Color usage</h3><p>Accent reserved almost exclusively for the live line itself — never a decorative fill.</p></div>
+      <div class="dim"><h3>Layout principles</h3><p>Strict horizontal-rule grid; sections divided by thin lines, not large gaps — a printout's structure.</p></div>
+      <div class="dim"><h3>Motion language</h3><p>The waveform is ambient and continuous, amplitude tied to scroll position — always quietly running.</p></div>
+      <div class="dim"><h3>Signature interaction</h3><p>The proof spotlight's real metric draws itself in as a live line, not a counting-up number.</p></div>
+      <div class="dim"><h3>Lighting &amp; depth</h3><p>Flat and clinical on purpose — depth comes from the grid receding, not soft ambient glow.</p></div>
+      <div class="dim"><h3>Scroll storytelling</h3><p>Each section break is a brief flatline that resumes — "caught it, fixed it," literally the value prop.</p></div>
+      <div class="dim"><h3>Hero concept</h3><p>One calm waveform spanning the hero width; the H1 sits on it like a chart annotation.</p></div>
+      <div class="dim"><h3>Homepage flow</h3><p>Calm line → splits into one trace per specialty → spikes for the real case study → flat/healthy comparison → services → FAQ → CTA.</p></div>
+    </div>
+    <div class="differentiator"><p><b>Differentiation:</b> most healthcare-marketing sites default to generic corporate-blue or soft wellness aesthetics. Nobody else says "we monitor your visibility like a vital sign" this literally — and it's specifically credible <em>because</em> the client base is healthcare.</p></div>
+  </div>
+</div>
+
+<div class="direction">
+  <div class="wrap">
+    <span class="tag">Direction B</span>
+    <h2>Ascent</h2>
+    <p class="concept">The product is "we move you up" — expressed architecturally through composition and light, not through the up-and-to-the-right stock chart every growth agency already uses.</p>
+    <div class="demo-box">
+      <span class="demo-label">Live motif — altitude glow (move cursor)</span>
+      <div class="altitude-demo" id="altitudeDemo">
+        <div class="band" style="top:20%"></div>
+        <div class="band" style="top:45%"></div>
+        <div class="band" style="top:70%"></div>
+        <div class="altitude-glow" id="altitudeGlow"></div>
+      </div>
+    </div>
+    <div class="dims">
+      <div class="dim"><h3>Design philosophy</h3><p>Growth as spatial confidence — altitude and light, not an illustrated arrow.</p></div>
+      <div class="dim"><h3>Visual identity</h3><p>Layered horizontal strata suggesting depth/atmosphere, like looking up through layers toward light.</p></div>
+      <div class="dim"><h3>Typography</h3><p>Fraunces escalates in scale and confidence as the page progresses — quiet at the hero, largest at the CTA.</p></div>
+      <div class="dim"><h3>Color usage</h3><p>The one accent hex, but its glow warms and brightens deeper into the page — altitude as light, not hue-shift.</p></div>
+      <div class="dim"><h3>Layout principles</h3><p>Negative space sits above each section, not below — content rises into view rather than fades up from below.</p></div>
+      <div class="dim"><h3>Motion language</h3><p>True parallax bands (GSAP + ScrollTrigger earns its place here) — background moves slower than foreground.</p></div>
+      <div class="dim"><h3>Signature interaction</h3><p>A cursor-reactive altitude glow that brightens the further down the page you've scrolled.</p></div>
+      <div class="dim"><h3>Lighting &amp; depth</h3><p>The richest of the three — real layered Z-space and directional glow, kept as the one signature, not stacked with others.</p></div>
+      <div class="dim"><h3>Scroll storytelling</h3><p>Each section is visibly higher/brighter/more confident than the last, peaking at the final CTA.</p></div>
+      <div class="dim"><h3>Hero concept</h3><p>Type set small and grounded low in the viewport, vast space above it — "there's room to rise."</p></div>
+      <div class="dim"><h3>Homepage flow</h3><p>Quiet grounded hero → first rise at specialty recognition → visible jump in scale/brightness at proof → services → FAQ → the brightest, largest final CTA.</p></div>
+    </div>
+    <div class="differentiator"><p><b>Differentiation:</b> "growth" in this category is almost always illustrated literally (a chart, an arrow). This expresses it as composition and atmosphere instead — the page itself performs the metaphor rather than depicting it.</p></div>
+  </div>
+</div>
+
+<div class="direction">
+  <div class="wrap">
+    <span class="tag">Direction C</span>
+    <h2>Signal &amp; Noise</h2>
+    <p class="concept">Healthcare marketing is full of identical, unverifiable claims (noise). Boost Web Digital's honesty rule and AI-search specialty are both, literally, about extracting real signal from noise — so the design system <em>enforces</em> honesty rather than just stating it.</p>
+    <div class="demo-box">
+      <span class="demo-label">Live motif — focus pull (move cursor)</span>
+      <div class="focus-demo" id="focusDemo">
+        <span class="noise-word">results-driven</span>
+        <span class="signal-word">Kaja Hair Studio</span>
+        <span class="noise-word">data-backed</span>
+        <span class="noise-word">industry-leading</span>
+        <span class="noise-word">full-service</span>
+      </div>
+    </div>
+    <div class="dims">
+      <div class="dim"><h3>Design philosophy</h3><p>Be the one real signal in a category full of noise — literally, not just in copy.</p></div>
+      <div class="dim"><h3>Visual identity</h3><p>Unproven/aspirational content renders soft and blurred; anything real and verifiable renders crisp.</p></div>
+      <div class="dim"><h3>Typography</h3><p>Fraunces headlines are always tack-sharp — never blurred — reinforcing that words here are trustworthy.</p></div>
+      <div class="dim"><h3>Color usage</h3><p>The accent marks "this is real, look here" exclusively — an in-focus ring beside anything independently verifiable.</p></div>
+      <div class="dim"><h3>Layout principles</h3><p>One sharp focal element per section, soft receded context around it — a depth-of-field composition, not flat uniform sharpness.</p></div>
+      <div class="dim"><h3>Motion language</h3><p>A cursor-driven focus pull — nearby blurred elements sharpen slightly as the cursor approaches.</p></div>
+      <div class="dim"><h3>Signature interaction</h3><p>The proof spotlight is the one section already in perfect focus at rest — no interaction needed to "earn" clarity, unlike the aspirational sections.</p></div>
+      <div class="dim"><h3>Lighting &amp; depth</h3><p>Photographic depth-of-field — aperture blur and bokeh-like glow, a more cinematic depth than flat glassmorphism.</p></div>
+      <div class="dim"><h3>Scroll storytelling</h3><p>Scrolling from aspirational (softly blurred edges) into the one proof section (fully sharp) performs the honesty rule visually.</p></div>
+      <div class="dim"><h3>Hero concept</h3><p>The real headline resolves into focus out of a field of blurred, illegible generic-agency phrases dissolving behind it.</p></div>
+      <div class="dim"><h3>Homepage flow</h3><p>Noise dissolving to signal → specialties rendered at different focus levels based on real proof → the one fully-resolved proof section → services → FAQ → sharp, decisive CTA.</p></div>
+    </div>
+    <div class="differentiator"><p><b>Differentiation:</b> a competitor fabricating testimonials structurally could not adopt this direction without becoming honest first — it's the only one of the three that's defensible by policy, not just by aesthetics.</p></div>
+  </div>
+</div>
+
+<section class="verdict">
+  <div class="wrap">
+    <div class="eyebrow">Recommendation</div>
+    <h2>My call, stated plainly — yours to override</h2>
+    <table>
+      <tr><th>Direction</th><th>Strongest on</th><th>Weakest on</th></tr>
+      <tr><td>Vital Signal</td><td>Healthcare-specific credibility, visceral subject-grounding</td><td>Risks feeling cold/clinical if overapplied to warmer sections (FAQ, footer)</td></tr>
+      <tr><td>Ascent</td><td>Conventional premium beauty, most "Awwards-safe"</td><td>Growth-as-metaphor is common across agencies generally — least structurally unique of the three</td></tr>
+      <tr><td class="pick">Signal &amp; Noise</td><td class="pick">Ties directly to the two things only this agency can claim (the honesty rule, AI-search extraction) — structurally, not just aesthetically defensible</td><td>Most conceptually demanding to execute consistently across every future page</td></tr>
+    </table>
+    <div class="reco">
+      <p><b>Recommendation: Signal &amp; Noise.</b> Vital Signal is the most viscerally on-brand for healthcare; Ascent is the safest premium bet. But Signal &amp; Noise is the only direction where a competitor literally couldn't copy it without also becoming honest — it turns this project's actual constraint (one real case study) into the design system's organizing idea, instead of a limitation to design around. That's the strongest, most defensible differentiation of the three, not just the prettiest option.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p>Nothing implemented. Once a direction (or a deliberate hybrid) is picked, next step per <a href="00-PROJECT-BLUEPRINT.md" style="color:var(--fg)">the locked roadmap</a> is the Design System pass — translating the chosen motif into the actual token/component layer before any page gets built.</p>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Direction A: waveform ambient draw loop
+  var wave = document.getElementById('wavepath');
+  if (wave && !reduced) {
+    var len = wave.getTotalLength();
+    wave.style.strokeDasharray = len;
+    wave.style.strokeDashoffset = len;
+    var t0 = null;
+    function animateWave(ts){
+      if (!t0) t0 = ts;
+      var elapsed = (ts - t0) % 4000;
+      var progress = elapsed / 4000;
+      wave.style.strokeDashoffset = len * (1 - progress);
+      requestAnimationFrame(animateWave);
+    }
+    requestAnimationFrame(animateWave);
+  }
+
+  // Direction B: altitude glow follows cursor, brightens toward bottom
+  var demo = document.getElementById('altitudeDemo');
+  var glow = document.getElementById('altitudeGlow');
+  if (demo && glow) {
+    demo.addEventListener('pointermove', function(e){
+      var rect = demo.getBoundingClientRect();
+      var x = e.clientX - rect.left;
+      var y = e.clientY - rect.top;
+      var depthRatio = y / rect.height;
+      glow.style.left = x + 'px';
+      glow.style.top = y + 'px';
+      glow.style.opacity = String(0.3 + depthRatio * 0.7);
+    });
+    demo.addEventListener('pointerleave', function(){ glow.style.opacity = '0'; });
+  }
+
+  // Direction C: focus pull — nearby words sharpen
+  var focusDemo = document.getElementById('focusDemo');
+  if (focusDemo) {
+    var words = focusDemo.querySelectorAll('.noise-word');
+    focusDemo.addEventListener('pointermove', function(e){
+      words.forEach(function(w){
+        var r = w.getBoundingClientRect();
+        var cx = r.left + r.width/2, cy = r.top + r.height/2;
+        var dist = Math.hypot(e.clientX - cx, e.clientY - cy);
+        var blur = Math.min(3, Math.max(0, (dist - 20) / 40));
+        w.style.filter = 'blur(' + blur + 'px)';
+      });
+    });
+    focusDemo.addEventListener('pointerleave', function(){
+      words.forEach(function(w){ w.style.filter = 'blur(3px)'; });
+    });
+  }
+})();
+</script>

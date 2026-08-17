@@ -1,83 +1,271 @@
 "use client";
 
+import { useRef, useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { Container } from "@/components/Container";
+import { Reveal, RevealGroup, RevealItem, usePrefersReducedMotion } from "@/components/Reveal";
+import { GhostButton } from "@/components/Buttons";
+import { cn, seeded } from "@/lib/utils";
+import { EASE } from "@/lib/tokens";
 
-export default function Footer() {
+// ---------------------------------------------------------------------------
+// Footer — "Premium Footer." Adapted from two pasted external references
+// (a TextHoverEffect cursor-reveal wordmark, a FloatingPaths ambient
+// background) rebuilt against this site's own system rather than either
+// original: no rainbow gradient (accent+white only), no light/dark
+// variants (permanent dark theme), no Helvetica (font-display/Switzer), and
+// Math.random() replaced with the already-established seeded() helper —
+// generative SVG paths computed with real randomness differ between server
+// and client and break hydration.
+//
+// Deliberate exception to the locked footer spec: docs/12-DESIGN-STANDARDS.md
+// §8 and the Scene 09 footer concept in 00-experience-blueprint.html both
+// call for "zero ambient motion... the one scene genuinely allowed to be
+// still." Ritik's explicit request here ("footer animation... make it more
+// elegant and smooth") overrides that for this section — noted here and in
+// both docs rather than silently dropped, per CLAUDE.md's decision
+// hierarchy. The motion itself still stays inside every other §4 Lighting
+// constraint (accent-hue-only, low-opacity, slow) — only the "none at all"
+// rule for this one section changed.
+//
+// Content (CTA line, four-column nav, copyright bar) is the real footer
+// that existed before the full-site reset (recovered from git history at
+// src/components/Footer.tsx), rebuilt in the current design system with
+// current URL-architecture-locked links — the newsletter-signup column
+// (no real backend to submit to) and the two never-wired "#" social links
+// were dropped rather than carried forward as fake functional UI; a real
+// specialty-links column replaced them, serving the same "sitewide internal
+// linking" SEO objective Scene 09 already calls for.
+// ---------------------------------------------------------------------------
+
+const FOOTER_NAV = {
+  company: [
+    { label: "About", href: "#about" },
+    { label: "Services", href: "#services" },
+    { label: "Pricing", href: "#pricing" },
+  ],
+};
+
+/** Deterministic — seeded(), not Math.random(); see the section comment
+ * above. Six gentle horizontal waves spread down the footer, each its own
+ * seeded vertical position/amplitude/duration so they don't look tiled. */
+const FOOTER_PATHS = Array.from({ length: 6 }, (_, i) => {
+  const seed = i * 5.7;
+  const baseY = 40 + i * 70;
+  const amplitude = Math.round((26 + seeded(seed + 0.1) * 30) * 100) / 100;
+  const phase = Math.round(seeded(seed + 0.2) * Math.PI * 200) / 100;
+  const y1 = Math.round((baseY + Math.sin(phase) * amplitude) * 100) / 100;
+  const y2 = Math.round((baseY + Math.sin(phase + Math.PI) * amplitude) * 100) / 100;
+  return {
+    id: i,
+    d: `M-100 ${baseY} C 300 ${y1}, 600 ${y2}, 900 ${baseY} C 1200 ${y1}, 1500 ${y2}, 1900 ${baseY}`,
+    duration: Math.round((26 + seeded(seed + 0.3) * 18) * 100) / 100,
+    delay: Math.round(seeded(seed + 0.4) * 4 * 100) / 100,
+    peakOpacity: Math.round((0.06 + seeded(seed + 0.5) * 0.06) * 1000) / 1000,
+  };
+});
+
+function FooterPaths() {
+  const reducedMotion = usePrefersReducedMotion();
   return (
-    <footer className="relative overflow-hidden border-t border-foreground/10 bg-foreground/[0.02]">
-      <div className="absolute -top-32 -right-32 w-96 h-96 bg-accent/10 rounded-full blur-3xl pointer-events-none" />
+    <svg
+      aria-hidden
+      viewBox="0 0 900 500"
+      preserveAspectRatio="none"
+      className="pointer-events-none absolute inset-0 h-full w-full"
+    >
+      {FOOTER_PATHS.map((path) => (
+        <motion.path
+          key={path.id}
+          d={path.d}
+          stroke="rgb(var(--accent-rgb))"
+          strokeWidth={1}
+          fill="none"
+          initial={{ pathLength: reducedMotion ? 1 : 0, opacity: 0 }}
+          animate={{
+            pathLength: 1,
+            opacity: reducedMotion ? path.peakOpacity : [0, path.peakOpacity, path.peakOpacity * 1.5, path.peakOpacity],
+          }}
+          transition={{
+            pathLength: { duration: reducedMotion ? 0 : 2.5, delay: path.delay, ease: EASE.primary },
+            opacity: reducedMotion
+              ? { duration: 0 }
+              : { duration: path.duration, delay: path.delay, repeat: Infinity, ease: "easeInOut" },
+          }}
+        />
+      ))}
+    </svg>
+  );
+}
 
-      <div className="relative px-8 py-24 max-w-6xl mx-auto">
-        <motion.h2
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.6 }}
-          className="font-display text-4xl sm:text-6xl font-medium tracking-tight max-w-2xl"
+/** Adapted from a pasted TextHoverEffect reference. Same mechanism (a
+ * cursor-position-driven radialGradient mask revealing a solid fill over an
+ * outline), restyled to the site's own palette: accent+white reveal
+ * instead of a five-color rainbow, font-display instead of Helvetica, and
+ * an accent stroke-draw instead of a fixed unrelated blue hex. This is the
+ * same cursor-as-flashlight language already established by CursorGlow/
+ * useSpotlight elsewhere, applied to a wordmark instead of ambient light. */
+function BoostWordmark() {
+  const svgRef = useRef<SVGSVGElement>(null);
+  const reducedMotion = usePrefersReducedMotion();
+  const [hovered, setHovered] = useState(false);
+  const [maskPosition, setMaskPosition] = useState({ cx: "50%", cy: "50%" });
+
+  function handleMouseMove(e: React.MouseEvent<SVGSVGElement>) {
+    if (!svgRef.current) return;
+    const rect = svgRef.current.getBoundingClientRect();
+    setMaskPosition({
+      cx: `${((e.clientX - rect.left) / rect.width) * 100}%`,
+      cy: `${((e.clientY - rect.top) / rect.height) * 100}%`,
+    });
+  }
+
+  return (
+    <svg
+      ref={svgRef}
+      role="img"
+      aria-label="Boost Web Digital"
+      width="100%"
+      height="100%"
+      viewBox="0 0 500 160"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      onMouseMove={handleMouseMove}
+      className="select-none uppercase"
+    >
+      <defs>
+        <radialGradient id="footerWordmarkGradient" gradientUnits="userSpaceOnUse" cx="50%" cy="50%" r="30%">
+          <stop offset="0%" stopColor="#ffffff" />
+          <stop offset="100%" stopColor="rgb(var(--accent-rgb))" />
+        </radialGradient>
+        <motion.radialGradient
+          id="footerWordmarkReveal"
+          gradientUnits="userSpaceOnUse"
+          r="28%"
+          initial={{ cx: "50%", cy: "50%" }}
+          animate={maskPosition}
+          transition={{ duration: 0, ease: "easeOut" }}
         >
-          Let&apos;s grow your practice.
-        </motion.h2>
+          <stop offset="0%" stopColor="white" />
+          <stop offset="100%" stopColor="black" />
+        </motion.radialGradient>
+        <mask id="footerWordmarkMask">
+          <rect x="0" y="0" width="100%" height="100%" fill="url(#footerWordmarkReveal)" />
+        </mask>
+      </defs>
 
-        <Link
-          href="/contact"
-          className="inline-block mt-8 bg-accent text-white px-7 py-3.5 rounded-full font-medium hover:opacity-90 transition-opacity"
+      <text
+        x="50%"
+        y="50%"
+        textAnchor="middle"
+        dominantBaseline="middle"
+        strokeWidth="0.5"
+        className="fill-transparent stroke-white/10 font-display text-8xl font-bold sm:text-9xl"
+      >
+        Boost
+      </text>
+      <motion.text
+        x="50%"
+        y="50%"
+        textAnchor="middle"
+        dominantBaseline="middle"
+        strokeWidth="0.6"
+        stroke="rgb(var(--accent-rgb))"
+        className="fill-transparent font-display text-8xl font-bold sm:text-9xl"
+        initial={{ pathLength: reducedMotion ? 1 : 0, opacity: reducedMotion ? 0.7 : 0 }}
+        whileInView={{ pathLength: 1, opacity: 0.7 }}
+        viewport={{ once: true, amount: 0.6 }}
+        transition={{ duration: reducedMotion ? 0 : 2.4, ease: EASE.primary }}
+      />
+      {!reducedMotion && (
+        <text
+          x="50%"
+          y="50%"
+          textAnchor="middle"
+          dominantBaseline="middle"
+          fill="url(#footerWordmarkGradient)"
+          stroke="url(#footerWordmarkGradient)"
+          strokeWidth="0.6"
+          mask="url(#footerWordmarkMask)"
+          className="font-display text-8xl font-bold sm:text-9xl"
+          style={{ opacity: hovered ? 1 : 0, transition: "opacity 0.4s ease" }}
         >
-          Start a conversation →
-        </Link>
+          Boost
+        </text>
+      )}
+    </svg>
+  );
+}
 
-        <div className="mt-20 grid sm:grid-cols-2 md:grid-cols-4 gap-10 text-sm">
-          <div>
-            <p className="font-semibold mb-4">Boost Web Digital</p>
-            <p className="text-foreground/60 leading-relaxed">
-              A healthcare-only marketing agency for dental, dermatology, med
-              spa, and hair restoration practices.
+export function Footer() {
+  return (
+    <footer className="relative overflow-hidden border-t border-white/8">
+      <FooterPaths />
+      <Container className="relative">
+        <div className={cn("flex flex-col gap-8 py-16 sm:flex-row sm:items-end sm:justify-between")}>
+          <RevealItem>
+            <h2 className="font-display text-[1.875rem] font-bold leading-[1.1] tracking-[-0.01em] text-white sm:text-[2.5rem]">
+              Let&apos;s Grow Your Practice.
+            </h2>
+          </RevealItem>
+          <RevealItem>
+            <GhostButton href="mailto:hello@boostwebdigital.com" className="inline-flex">
+              Start a Conversation
+            </GhostButton>
+          </RevealItem>
+        </div>
+
+        <RevealGroup as="div" className="grid gap-10 border-t border-white/8 py-14 sm:grid-cols-2 md:grid-cols-3">
+          <RevealItem>
+            <span className="font-display text-lg font-semibold text-white">Boost Web Digital</span>
+            <p className="mt-3 max-w-xs text-sm text-white/50">
+              A healthcare-only marketing agency for hair restoration, dental, med spa, dermatology, plastic surgery
+              and orthodontic practices.
             </p>
-          </div>
+          </RevealItem>
 
-          <div>
-            <p className="font-semibold mb-4">Company</p>
-            <ul className="space-y-2 text-foreground/60">
-              <li><Link href="/about" className="hover:text-foreground transition-colors">About</Link></li>
-              <li><Link href="/services" className="hover:text-foreground transition-colors">Services</Link></li>
-              <li><Link href="/case-studies" className="hover:text-foreground transition-colors">Case Studies</Link></li>
+          <RevealItem>
+            <span className="font-mono text-xs uppercase tracking-[0.14em] text-white/40">Company</span>
+            <ul className="mt-4 flex flex-col gap-3">
+              {FOOTER_NAV.company.map((link) => (
+                <li key={link.href}>
+                  <Link href={link.href} className="text-sm text-white/70 transition-colors hover:text-white">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
-          </div>
+          </RevealItem>
 
-          <div>
-            <p className="font-semibold mb-4">Contact</p>
-            <ul className="space-y-2 text-foreground/60">
-              <li>hello@boostwebdigital.com</li>
-              <li><Link href="/contact" className="hover:text-foreground transition-colors">Book a call</Link></li>
+          <RevealItem>
+            <span className="font-mono text-xs uppercase tracking-[0.14em] text-white/40">Contact</span>
+            <ul className="mt-4 flex flex-col gap-3">
+              <li>
+                <a href="mailto:hello@boostwebdigital.com" className="text-sm text-white/70 transition-colors hover:text-white">
+                  hello@boostwebdigital.com
+                </a>
+              </li>
+              <li>
+                <a href="mailto:hello@boostwebdigital.com" className="text-sm text-white/70 transition-colors hover:text-white">
+                  Book a Call
+                </a>
+              </li>
             </ul>
-          </div>
+          </RevealItem>
+        </RevealGroup>
 
-          <div>
-            <p className="font-semibold mb-4">Stay Updated</p>
-            <form className="flex gap-2">
-              <input
-                type="email"
-                placeholder="you@practice.com"
-                className="bg-transparent border border-foreground/20 rounded-full px-4 py-2 text-sm flex-1 min-w-0 focus:outline-none focus:border-accent"
-              />
-              <button
-                type="submit"
-                className="bg-accent text-white text-sm px-4 py-2 rounded-full hover:opacity-90 transition-opacity shrink-0"
-              >
-                Join
-              </button>
-            </form>
+        <Reveal className="border-t border-white/8 py-10">
+          <div className="h-36 w-full sm:h-44 md:h-52">
+            <BoostWordmark />
           </div>
-        </div>
+        </Reveal>
 
-        <div className="mt-20 pt-8 border-t border-foreground/10 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-foreground/50">
-          <p>© {new Date().getFullYear()} Boost Web Digital. All rights reserved.</p>
-          <div className="flex gap-6">
-            <Link href="#" className="hover:text-foreground transition-colors">LinkedIn</Link>
-            <Link href="#" className="hover:text-foreground transition-colors">Instagram</Link>
-          </div>
+        <div className="flex flex-col gap-4 border-t border-white/8 py-8 text-xs text-white/40 sm:flex-row sm:items-center sm:justify-between">
+          <span>© {new Date().getFullYear()} Boost Web Digital. All rights reserved.</span>
+          {/* TODO: add /privacy-policy/ and /terms/ links back once those pages exist */}
         </div>
-      </div>
+      </Container>
     </footer>
   );
 }
