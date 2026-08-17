@@ -913,7 +913,6 @@ function SpecialtyCard({
 }) {
   const isHovered = hoveredIndex === index;
   const siblingHovered = hoveredIndex !== null && !isHovered;
-  const reducedMotion = usePrefersReducedMotion();
   const { ref, inView } = useInView<HTMLDivElement>();
 
   return (
@@ -941,7 +940,7 @@ function SpecialtyCard({
             loop
             playsInline
             preload="metadata"
-            autoPlay={!reducedMotion}
+            autoPlay
           />
         )}
         <div aria-hidden className="pointer-events-none absolute inset-0 bg-black/20" />

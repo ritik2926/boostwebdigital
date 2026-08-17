@@ -198,7 +198,7 @@ export function Navbar() {
 
             <DesktopNavLinks className="justify-self-center" />
 
-            <div className="flex items-center justify-self-end gap-2 sm:gap-4">
+            <div className="col-start-3 flex items-center justify-self-end gap-2 sm:gap-4">
               <MagneticButton className="hidden shrink-0 sm:inline-flex">Book a consultation</MagneticButton>
               <MobileNav />
             </div>
