@@ -10,7 +10,14 @@ Read this file before touching any component. Do not redesign the philosophy —
 
 Two states, no third: **signal** (real, verified, always sharp) and **noise** (aspirational, unproven, allowed to blur and recede). The accent color marks truth, never decoration. One true signature moment per page — everything else is quiet variation, not reinvention. Motion never fully stops, but its *intensity* is set by register: calm/breathing for signal, active/drifting for noise — never uniform. Restraint is the actual differentiator; when in doubt, ship the quieter version of an effect. Full principles: [00-experience-blueprint.html §06–07](00-experience-blueprint.html).
 
-**Permanent dark theme — one explicit, contained exception (2026-08-15):** the homepage's Why Choose Us section inverts to a light background (`#f2f2f5`/`#08080a`, the site's own two core tokens swapped) as a deliberate one-section design moment, confirmed with Ritik after flagging that it reverses the locked "no light mode" hard rule (`CLAUDE.md`). Hardcoded locally in that one component — not a CSS variable, not a `data-theme` system, not a toggle. Every other section stays permanently dark; this is not a precedent for lightening anything else.
+**Permanent dark theme — two explicit, contained exceptions:**
+
+1. **(2026-08-15)** the homepage's Why Choose Us section inverts to a light background (`#f2f2f5`/`#08080a`, the site's own two core tokens swapped) as a deliberate one-section design moment, confirmed with Ritik after flagging that it reverses the locked "no light mode" hard rule (`CLAUDE.md`). Hardcoded locally in that one component — not a CSS variable, not a `data-theme` system, not a toggle.
+2. **(2026-08-18)** `/about/`'s "How I work" section, same `#f2f2f5` inversion, built via `/design-from-reference` against a pasted reference whose colour-blocking (dark→light→dark as a narrative device) Ritik explicitly asked to override the theme lock for on that page — see `docs/refs/about-spec.md`. Also hardcoded locally, one-time scroll cross-fade (not the bidirectional fade Why Choose Us uses).
+
+Every other section on every other page stays permanently dark; this is not a precedent for lightening anything else without the same explicit confirmation.
+
+**`/about/` also runs looser section padding (`py-32`/`lg:py-40` vs. the sitewide `py-20` `SECTION_PADDING` token) and a denser, pattern-varied composition (full-bleed hero and data section, asymmetric stat rail, offset numeral) per `docs/DESIGN-CRAFT.md`'s density/pattern-repetition rules — scoped to that page's own file, not a change to the token itself.**
 
 ---
 

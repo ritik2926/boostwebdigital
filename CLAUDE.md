@@ -22,7 +22,7 @@ Ritik wants work broken into confirmable steps, not everything built at once. Pr
 
 ## Creative & technical latitude
 
-This latitude is about *how* to execute a requested change with better craft or a stronger technical approach — never about *what* gets built. It doesn't license adding scope beyond the request; see Scope discipline, above.
+This latitude is about _how_ to execute a requested change with better craft or a stronger technical approach — never about _what_ gets built. It doesn't license adding scope beyond the request; see Scope discipline, above.
 
 Don't just follow instructions literally — understand the objective behind a request, and if a significantly better solution exists, explain why and implement it. Challenge weak design, weak UX, and weak technical choices; think from first principles rather than defaulting to the easiest option.
 
@@ -54,17 +54,18 @@ Don't just follow instructions literally — understand the objective behind a r
 
 The user has the global `frontend-design` skill installed at `~/.claude/skills/frontend-design/` (applies to every project on this machine, not just this one), plus `frontend-design-pro`, `motion-framer`, `gsap-scrolltrigger`, `locomotive-scroll`, and a full SEO skill/agent set (`seo-audit`, `seo-technical`, `seo-schema`, `seo-sitemap`, `seo-cluster`, `seo-geo`, `seo-plan`, and more — see [06-SEO.md](docs/06-SEO.md)).
 
-**Precedence order: project documentation (this file + `/docs`) > installed skills > unstructured own reasoning.** Skills inform *how* to execute a task well; docs decide *what's allowed* on this project. Where a skill conflicts with `CLAUDE.md`, anything in `/docs`, the brand guidelines, the design standards, or the technical architecture — **follow the project documentation.**
+**Precedence order: project documentation (this file + `/docs`) > installed skills > unstructured own reasoning.** Skills inform _how_ to execute a task well; docs decide _what's allowed_ on this project. Where a skill conflicts with `CLAUDE.md`, anything in `/docs`, the brand guidelines, the design standards, or the technical architecture — **follow the project documentation.**
 
 **Skill discipline (standing instruction):**
+
 - Before starting any non-trivial task, actively check which installed skills are relevant — don't solve from scratch when a matching skill exists.
-- Combine multiple skills when more than one applies (e.g. a design skill for craft *and* an SEO skill for the same page's technical structure) — never lean on just one skill in isolation when others bear on the task.
+- Combine multiple skills when more than one applies (e.g. a design skill for craft _and_ an SEO skill for the same page's technical structure) — never lean on just one skill in isolation when others bear on the task.
 - Invoke a relevant skill proactively — don't wait to be told to use it.
 
 - ✅ Use skills for: craftsmanship, interaction quality, typography refinement, spacing, composition, visual hierarchy, self-critique discipline, avoiding templated/generic output, SEO audits/schema/sitemap execution.
 - ❌ Do not let them override: brand identity, the accent-colour rules, the locked font pairing, the permanent dark theme, the stack constraints, the honesty rule, the national-not-local SEO scope, or any decision recorded in `/docs`.
 
-This is consistent with the `frontend-design` skill's own instruction that "the brief's own words always win" — here, `/docs` *is* the brief. The same precedence applies to any future external skill, plugin, or marketplace component.
+This is consistent with the `frontend-design` skill's own instruction that "the brief's own words always win" — here, `/docs` _is_ the brief. The same precedence applies to any future external skill, plugin, or marketplace component.
 
 ## Before starting work
 
@@ -98,3 +99,12 @@ This is consistent with the `frontend-design` skill's own instruction that "the 
 - [11-HOMEPAGE.md](docs/11-HOMEPAGE.md) — homepage section order and rationale
 - [12-DESIGN-STANDARDS.md](docs/12-DESIGN-STANDARDS.md) — **LOCKED. The engineering specification**, not a UI kit — full Design Tokens, Lighting System, Background System, Motion System, Interaction physics, Component Personality, Accessibility, Performance Budget, Mobile Experience, build-order Component Inventory, and Quality Standards gates. Translates the locked Creative Direction + Experience Blueprint into implementable values. Read before writing any component.
 - [13-URL-ARCHITECTURE.md](docs/13-URL-ARCHITECTURE.md) — **the sitemap/IA bible.** Locked URL structure, slug formulas, per-page target keywords, build priorities (P1–P4), and the honesty gate for specialty/case-study pages. Read before creating any new route.
+
+## Visual work
+
+Any task that changes how a page looks is not done until you have SEEN it.
+Build it → run `npm run shot <url> <name>` → OPEN the screenshots → find what
+looks empty, boring, or broken → fix it → screenshot again. At least twice.
+
+Never tell me a design task is complete without showing me the screenshot.
+Read docs/DESIGN-CRAFT.md before building any page.

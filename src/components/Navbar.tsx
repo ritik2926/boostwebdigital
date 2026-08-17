@@ -15,8 +15,8 @@ import { EASE } from "@/lib/tokens";
 // ---------------------------------------------------------------------------
 
 const NAV_LINKS = [
-  { label: "Home", href: "#hero" },
-  { label: "About", href: "#about" },
+  { label: "Home", href: "/" },
+  { label: "About", href: "/about/" },
   { label: "Services", href: "#services" },
   { label: "Pricing", href: "#pricing" },
   { label: "FAQ", href: "#faq" },
@@ -185,7 +185,7 @@ export function Navbar() {
             style={{ paddingTop: contentPaddingY, paddingBottom: contentPaddingY, paddingLeft: contentPaddingX, paddingRight: contentPaddingX }}
             className="relative z-10 grid grid-cols-[1fr_auto_1fr] items-center"
           >
-            <Link href="#hero" className="flex items-center justify-self-start">
+            <Link href="/" className="flex items-center justify-self-start">
               <Image
                 src="/logo/logo-dark.svg"
                 alt="Boost Web Digital"

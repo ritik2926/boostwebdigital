@@ -41,7 +41,7 @@ import { EASE } from "@/lib/tokens";
 
 const FOOTER_NAV = {
   company: [
-    { label: "About", href: "#about" },
+    { label: "About", href: "/about/" },
     { label: "Services", href: "#services" },
     { label: "Pricing", href: "#pricing" },
   ],

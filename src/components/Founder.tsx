@@ -30,9 +30,7 @@ import { EASE, SPRING, SECTION_PADDING } from "@/lib/tokens";
 // proof point are the same fact, not two claims to reconcile.
 // ---------------------------------------------------------------------------
 
-/** TODO(Ritik): confirm the real number before this ships — honesty gate
- * (CLAUDE.md), never guess a founder credential. */
-const FOUNDER_YEARS_IN_SEO = "[X]";
+const FOUNDER_YEARS_IN_SEO = "8";
 
 function FounderPhoto() {
   const trackRef = useRef<HTMLDivElement>(null);

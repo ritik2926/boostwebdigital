@@ -14,7 +14,7 @@ const LAST_UPDATED = new Date("2026-08-17");
  * Planned routes (not yet built — do not add until the page exists), per
  * docs/13-URL-ARCHITECTURE.md:
  *
- * Core & trust: /about/ /team/ /contact/ /pricing/ /case-studies/
+ * Core & trust: /team/ /contact/ /pricing/ /case-studies/
  *   /privacy-policy/ /terms/
  * Healthcare vertical pillar: /healthcare-marketing/ and its
  *   /healthcare-marketing/{healthcare-seo,healthcare-web-design,
@@ -44,6 +44,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: LAST_UPDATED,
       changeFrequency: "weekly",
       priority: 1.0,
+    },
+    {
+      url: `${SITE_URL}/about/`,
+      lastModified: LAST_UPDATED,
+      changeFrequency: "monthly",
+      priority: 0.6,
     },
   ];
 }

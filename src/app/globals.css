@@ -130,6 +130,21 @@ body {
     animation: none;
   }
 }
+/* Idle icon loop — a gentle scale breathe, each icon staggered via its own
+   animation-delay (set inline per instance) so a row doesn't pulse in
+   perfect unison. */
+@keyframes icon-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.12); }
+}
+.icon-pulse {
+  animation: icon-pulse 3.2s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .icon-pulse {
+    animation: none;
+  }
+}
 /* Logo carousel marquee — two identical adjacent rows, each translated by
    exactly its own width; as the first slides fully offscreen the second
    (already positioned right after it) is at the exact start position, so
