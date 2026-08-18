@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { getAllPosts } from "@/lib/blog/source";
 
 const SITE_URL = "https://boostwebdigital.com";
 
@@ -8,8 +9,11 @@ const SITE_URL = "https://boostwebdigital.com";
 const LAST_UPDATED = new Date("2026-08-17");
 
 /**
- * Only the homepage is live today. `/design-lab` is a `noindex` dev
- * playground and is intentionally excluded — it should never appear here.
+ * Homepage, /about/, and /blog/ (+ every post) are live today. `/design-lab`
+ * is a `noindex` dev playground and is intentionally excluded — it should
+ * never appear here. Blog post entries are generated from getAllSlugs() via
+ * getAllPosts(), so a new post appears here automatically the day it's added
+ * to content/blog/ — nothing to hand-maintain for those.
  *
  * Planned routes (not yet built — do not add until the page exists), per
  * docs/13-URL-ARCHITECTURE.md:
@@ -31,13 +35,15 @@ const LAST_UPDATED = new Date("2026-08-17");
  *   web-design/, google-ads/, meta-ads/, social-media-marketing/,
  *   content-marketing/, ai-automation/, ai-chatbots/,
  *   conversion-rate-optimization/, reputation-management/ children
- * Content/proof: /blog/{slug}/, /resources/, /resources/what-is-{term}/,
+ * Content/proof: /resources/, /resources/what-is-{term}/,
  *   /case-studies/{specialty}-{service}-{result}/
  * Comparison: /vs/{competitor}/ — reserved pattern, no pages yet
  *
  * Add each route to this file the same day its page ships, not before.
  */
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const posts = await getAllPosts();
+
   return [
     {
       url: SITE_URL,
@@ -51,5 +57,17 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly",
       priority: 0.6,
     },
+    {
+      url: `${SITE_URL}/blog/`,
+      lastModified: LAST_UPDATED,
+      changeFrequency: "weekly",
+      priority: 0.7,
+    },
+    ...posts.map((post) => ({
+      url: `${SITE_URL}/blog/${post.slug}/`,
+      lastModified: new Date(post.updatedAt ?? post.publishedAt),
+      changeFrequency: "monthly" as const,
+      priority: 0.6,
+    })),
   ];
 }

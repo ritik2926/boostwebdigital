@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 800" width="1400" height="800">
+  <rect width="1400" height="800" fill="#0b0b0f" />
+  <circle cx="700" cy="400" r="70" fill="#08080a" stroke="#3b4fdb" stroke-width="2.5" />
+  <text x="700" y="395" text-anchor="middle" fill="#f2f2f5" font-family="Arial, sans-serif" font-size="20" font-weight="700">Your</text>
+  <text x="700" y="420" text-anchor="middle" fill="#f2f2f5" font-family="Arial, sans-serif" font-size="20" font-weight="700">Practice</text>
+
+  <g stroke="#3b4fdb" stroke-opacity="0.5" stroke-width="1.5">
+    <line x1="700" y1="400" x2="330" y2="220" />
+    <line x1="700" y1="400" x2="1070" y2="220" />
+    <line x1="700" y1="400" x2="300" y2="480" />
+    <line x1="700" y1="400" x2="1100" y2="480" />
+    <line x1="700" y1="400" x2="420" y2="640" />
+    <line x1="700" y1="400" x2="980" y2="640" />
+  </g>
+
+  <g font-family="Arial, sans-serif" font-size="17" fill="#f2f2f5" fill-opacity="0.85" text-anchor="middle">
+    <circle cx="330" cy="220" r="52" fill="#141420" stroke="#ffffff" stroke-opacity="0.15" />
+    <text x="330" y="216">Google</text>
+    <text x="330" y="238">Business</text>
+
+    <circle cx="1070" cy="220" r="52" fill="#141420" stroke="#ffffff" stroke-opacity="0.15" />
+    <text x="1070" y="224">Website</text>
+
+    <circle cx="300" cy="480" r="52" fill="#141420" stroke="#ffffff" stroke-opacity="0.15" />
+    <text x="300" y="476">Review</text>
+    <text x="300" y="498">Sites</text>
+
+    <circle cx="1100" cy="480" r="52" fill="#141420" stroke="#ffffff" stroke-opacity="0.15" />
+    <text x="1100" y="476">Health</text>
+    <text x="1100" y="498">Directories</text>
+
+    <circle cx="420" cy="640" r="52" fill="#141420" stroke="#ffffff" stroke-opacity="0.15" />
+    <text x="420" y="636">Social</text>
+    <text x="420" y="658">Profiles</text>
+
+    <circle cx="980" cy="640" r="52" fill="#141420" stroke="#ffffff" stroke-opacity="0.15" />
+    <text x="980" y="644">Press &amp;</text>
+    <text x="980" y="666">Citations</text>
+  </g>
+</svg>

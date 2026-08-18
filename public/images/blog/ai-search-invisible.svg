@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="1600" height="900">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="38%" r="75%">
+      <stop offset="0%" stop-color="#121225" />
+      <stop offset="100%" stop-color="#08080a" />
+    </radialGradient>
+    <radialGradient id="centerGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#3b4fdb" stop-opacity="0.55" />
+      <stop offset="70%" stop-color="#3b4fdb" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+
+  <rect width="1600" height="900" fill="url(#bg)" />
+
+  <!-- dim outer nodes representing other engines/answers that don't cite the practice -->
+  <g stroke="#ffffff" stroke-opacity="0.14" stroke-width="1.5" fill="none">
+    <line x1="800" y1="450" x2="360" y2="220" />
+    <line x1="800" y1="450" x2="300" y2="520" />
+    <line x1="800" y1="450" x2="470" y2="700" />
+    <line x1="800" y1="450" x2="1150" y2="190" />
+    <line x1="800" y1="450" x2="1280" y2="470" />
+    <line x1="800" y1="450" x2="1080" y2="700" />
+  </g>
+
+  <circle cx="360" cy="220" r="9" fill="#ffffff" fill-opacity="0.22" />
+  <circle cx="300" cy="520" r="7" fill="#ffffff" fill-opacity="0.18" />
+  <circle cx="470" cy="700" r="10" fill="#ffffff" fill-opacity="0.2" />
+  <circle cx="1150" cy="190" r="8" fill="#ffffff" fill-opacity="0.18" />
+  <circle cx="1280" cy="470" r="9" fill="#ffffff" fill-opacity="0.22" />
+  <circle cx="1080" cy="700" r="7" fill="#ffffff" fill-opacity="0.16" />
+
+  <!-- the practice: small, isolated, unlit at center -->
+  <circle cx="800" cy="450" r="130" fill="url(#centerGlow)" />
+  <circle cx="800" cy="450" r="16" fill="#08080a" stroke="#3b4fdb" stroke-width="2.5" />
+  <circle cx="800" cy="450" r="16" fill="none" stroke="#3b4fdb" stroke-opacity="0.4" stroke-width="10" />
+
+  <!-- faint concentric scan rings -->
+  <circle cx="800" cy="450" r="220" fill="none" stroke="#ffffff" stroke-opacity="0.06" stroke-width="1" />
+  <circle cx="800" cy="450" r="330" fill="none" stroke="#ffffff" stroke-opacity="0.04" stroke-width="1" />
+</svg>
