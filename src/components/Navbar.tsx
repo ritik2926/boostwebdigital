@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { AnimatePresence, motion, useScroll, useTransform } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Container } from "@/components/Container";
 import { MagneticButton } from "@/components/Buttons";
 import { cn } from "@/lib/utils";
@@ -29,13 +30,32 @@ const NAV_LINKS = [
 
 const MotionLink = motion.create(Link);
 
+// Real routes (no "#") are matched against the current pathname so the
+// underline follows the page you're actually on; homepage anchor links
+// (Services/Pricing/FAQ) only ever activate on hover since there's no
+// scroll-spy tracking which section is in view.
+function getActiveLabel(pathname: string) {
+  if (pathname === "/") return "Home";
+  for (const item of NAV_LINKS) {
+    if (item.href === "/" || item.href.includes("#")) continue;
+    const hrefPath = item.href.replace(/\/$/, "");
+    if (pathname === hrefPath || pathname.startsWith(`${hrefPath}/`)) {
+      return item.label;
+    }
+  }
+  return "";
+}
+
 function DesktopNavLinks({ className }: { className?: string }) {
-  const [active, setActive] = useState<string>(NAV_LINKS[0].label);
+  const pathname = usePathname();
+  const currentLabel = getActiveLabel(pathname);
+  const [hovered, setHovered] = useState<string | null>(null);
+  const active = hovered ?? currentLabel;
 
   return (
     <div
       className={cn("relative hidden items-center gap-1 lg:flex", className)}
-      onMouseLeave={() => setActive(NAV_LINKS[0].label)}
+      onMouseLeave={() => setHovered(null)}
     >
       {NAV_LINKS.map((item) => {
         const isActive = active === item.label;
@@ -43,7 +63,7 @@ function DesktopNavLinks({ className }: { className?: string }) {
           <Link
             key={item.label}
             href={item.href}
-            onMouseEnter={() => setActive(item.label)}
+            onMouseEnter={() => setHovered(item.label)}
             className="relative px-4 py-2 text-sm"
           >
             {isActive && (
