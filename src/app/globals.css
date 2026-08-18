@@ -154,6 +154,22 @@ body {
   from { transform: translateX(0); }
   to { transform: translateX(-100%); }
 }
+/* Blog archive marquee strip — same zero-seam `marquee` keyframe as the
+   Logo Marquee above, wrapped in its own class (instead of the inline
+   `animate-[marquee_52s_linear_infinite]` utility LogoMarqueeRow uses) so it
+   can add the two behaviors that strip doesn't need: pause-on-hover and a
+   reduced-motion override, matching `.testimonial-track`'s pattern. */
+.blog-marquee-track {
+  animation: marquee var(--marquee-duration, 40s) linear infinite;
+}
+.blog-marquee-track:hover {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .blog-marquee-track {
+    animation: none;
+  }
+}
 /* Who We Serve — animated per-industry gradient tile. Colors come from
    inline --tile-from/--tile-to custom properties set per card; only the pan
    animation itself is shared here. */

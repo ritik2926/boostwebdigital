@@ -79,7 +79,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
       blogPosting,
       breadcrumb([
         { name: "Home", url: SITE_URL },
-        { name: "Blog", url: `${SITE_URL}/blog/` },
+        { name: "Blog", url: `${SITE_URL}/blogs/` },
         { name: post.title, url: postUrl },
       ]),
     ],

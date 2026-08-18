@@ -14,12 +14,17 @@ import { EASE } from "@/lib/tokens";
 // docs/12-DESIGN-STANDARDS.md §8 (Navigation).
 // ---------------------------------------------------------------------------
 
+// Services/Pricing/FAQ are same-page anchors on the homepage, not routes —
+// root-relative ("/#services") so they still resolve correctly when clicked
+// from a real route like /about/ or /blogs/ instead of just appending an
+// inert hash to the current URL.
 const NAV_LINKS = [
   { label: "Home", href: "/" },
   { label: "About", href: "/about/" },
-  { label: "Services", href: "#services" },
-  { label: "Pricing", href: "#pricing" },
-  { label: "FAQ", href: "#faq" },
+  { label: "Services", href: "/#services" },
+  { label: "Blog", href: "/blogs/" },
+  { label: "Pricing", href: "/#pricing" },
+  { label: "FAQ", href: "/#faq" },
 ];
 
 const MotionLink = motion.create(Link);

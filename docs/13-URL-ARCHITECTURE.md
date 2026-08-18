@@ -35,6 +35,7 @@ Concretely:
 | Specialty × other service | `/{specialty}-marketing/{service}-for-{plural}/` | `/dental-marketing/ai-chatbots-for-dentists/` |
 | Generic service pillar | `/services/{service}/` | `/services/seo/` |
 | Generic sub-service | `/services/{pillar}/{sub-service}/` | `/services/seo/technical-seo/` |
+| Blog archive | `/blogs/` (fixed page; `/blog/` 301-redirects here, permanent) | `/blogs/` |
 | Blog post | `/blog/{slug}/` (category = taxonomy, never in URL) | `/blog/dental-seo-cost/` |
 | Case study | `/case-studies/{specialty}-{service}-{result}/` | `/case-studies/dental-seo-3x-patients/` |
 | Resource / guide | `/resources/{asset}/` (+ `/{chapter}/`) | `/resources/dental-seo-guide/` |
@@ -144,6 +145,7 @@ Concretely:
 
 | URL | Role | Pri |
 |---|---|---|
+| `/blogs/` | archive/index — card grid of every post, client-side category filter only (no `?category=` query params — those create duplicate-content pages); built | P1 |
 | `/blog/{slug}/` | cluster posts — each supports exactly ONE money page; category as taxonomy, not in URL | P1+ |
 | `/blog/best-dental-marketing-agencies/` | own the listicle SERPs + primary LLM-recommendation vector | P2 |
 | `/blog/best-healthcare-seo-agencies/` | same — listicle SERP + LLM citation | P2 |

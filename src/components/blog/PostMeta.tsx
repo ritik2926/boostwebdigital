@@ -1,9 +1,6 @@
 import Image from "next/image";
 import type { BlogPost } from "@/lib/blog/types";
-
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
-}
+import { formatDate } from "@/lib/utils";
 
 export function PostMeta({ post }: { post: BlogPost }) {
   return (

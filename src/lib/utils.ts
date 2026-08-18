@@ -17,3 +17,8 @@ export function seeded(seed: number) {
   // string and the client's re-applied style, causing a hydration mismatch.
   return Math.round((x - Math.floor(x)) * 10000) / 10000;
 }
+
+/** Shared date formatting for blog meta rows (post hero, cards, archive). */
+export function formatDate(iso: string) {
+  return new Date(iso).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+}

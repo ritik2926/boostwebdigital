@@ -16,7 +16,7 @@ export function PostHero({ post }: { post: BlogPost }) {
                 Home
               </Link>
               <span aria-hidden>›</span>
-              <Link href="/blog/" className="transition-colors hover:text-white/80">
+              <Link href="/blogs/" className="transition-colors hover:text-white/80">
                 Blog
               </Link>
               <span aria-hidden>›</span>
@@ -26,7 +26,7 @@ export function PostHero({ post }: { post: BlogPost }) {
 
           <RevealItem className="mt-6">
             <Link
-              href={`/blog/?category=${post.category.slug}`}
+              href="/blogs/"
               className="inline-flex items-center rounded-full border border-white/15 bg-white/5 px-4 py-1.5 transition-colors hover:border-white/25 hover:bg-white/8"
             >
               <span className="font-mono text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-white/85">
