@@ -9,11 +9,12 @@ const SITE_URL = "https://boostwebdigital.com";
 const LAST_UPDATED = new Date("2026-08-17");
 
 /**
- * Homepage, /about/, and /blogs/ (+ every post at /blog/<slug>/) are live
- * today. `/blog/` itself is a 301 redirect to /blogs/ (next.config.ts) and is
- * deliberately NOT listed here — a redirecting URL in a sitemap is a Search
- * Console warning. `/design-lab` is a `noindex` dev playground and is
- * intentionally excluded — it should never appear here. Blog post entries
+ * Homepage, /about/, /contact/, and /blogs/ (+ every post at /blog/<slug>/)
+ * are live today. `/blog/` itself is a 301 redirect to /blogs/
+ * (next.config.ts) and is deliberately NOT listed here — a redirecting URL
+ * in a sitemap is a Search Console warning. `/design-lab` is a `noindex` dev
+ * playground and `/api/contact/` is a route handler, not a page — both are
+ * intentionally excluded, they should never appear here. Blog post entries
  * are generated from getAllSlugs() via getAllPosts(), so a new post appears
  * here automatically the day it's added to content/blog/ — nothing to
  * hand-maintain for those.
@@ -21,7 +22,7 @@ const LAST_UPDATED = new Date("2026-08-17");
  * Planned routes (not yet built — do not add until the page exists), per
  * docs/13-URL-ARCHITECTURE.md:
  *
- * Core & trust: /team/ /contact/ /pricing/ /case-studies/
+ * Core & trust: /team/ /pricing/ /case-studies/
  *   /privacy-policy/ /terms/
  * Healthcare vertical pillar: /healthcare-marketing/ and its
  *   /healthcare-marketing/{healthcare-seo,healthcare-web-design,
@@ -59,6 +60,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: LAST_UPDATED,
       changeFrequency: "monthly",
       priority: 0.6,
+    },
+    {
+      url: `${SITE_URL}/contact/`,
+      lastModified: LAST_UPDATED,
+      changeFrequency: "monthly",
+      priority: 0.8,
     },
     {
       url: `${SITE_URL}/blogs/`,

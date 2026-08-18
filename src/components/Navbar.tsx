@@ -146,7 +146,7 @@ function MobileNav() {
                 transition={{ duration: 0.4, delay: 0.16 + 0.06 * NAV_LINKS.length, ease: EASE.primary }}
                 className="mt-8 w-full max-w-xs px-2"
               >
-                <MagneticButton className="w-full">Book a consultation</MagneticButton>
+                <MagneticButton href="/contact/" className="w-full">Book a consultation</MagneticButton>
               </motion.div>
             </nav>
           </motion.div>
@@ -204,7 +204,7 @@ export function Navbar() {
             <DesktopNavLinks className="justify-self-center" />
 
             <div className="col-start-3 flex items-center justify-self-end gap-2 sm:gap-4">
-              <MagneticButton className="hidden shrink-0 sm:inline-flex">Book a consultation</MagneticButton>
+              <MagneticButton href="/contact/" className="hidden shrink-0 sm:inline-flex">Book a consultation</MagneticButton>
               <MobileNav />
             </div>
           </motion.div>

@@ -170,6 +170,24 @@ body {
     animation: none;
   }
 }
+/* Contact page hero particle field — each dot's own min/max opacity and
+   timing come from inline --twinkle-* custom properties (deterministic,
+   seeded() positions — see ParticleField.tsx) so no two dots pulse in sync
+   despite sharing this one animation. */
+.particle-twinkle {
+  animation: particle-twinkle var(--twinkle-duration, 4s) ease-in-out infinite;
+  animation-delay: var(--twinkle-delay, 0s);
+}
+@keyframes particle-twinkle {
+  0%, 100% { opacity: var(--twinkle-min, 0.15); }
+  50% { opacity: var(--twinkle-max, 0.55); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .particle-twinkle {
+    animation: none;
+    opacity: var(--twinkle-max, 0.55);
+  }
+}
 /* Who We Serve — animated per-industry gradient tile. Colors come from
    inline --tile-from/--tile-to custom properties set per card; only the pan
    animation itself is shared here. */

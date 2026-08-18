@@ -245,14 +245,19 @@ export function Footer() {
             <span className="font-mono text-xs uppercase tracking-[0.14em] text-white/40">Contact</span>
             <ul className="mt-4 flex flex-col gap-3">
               <li>
+                <Link href="/contact/" className="text-sm text-white/70 transition-colors hover:text-white">
+                  Contact
+                </Link>
+              </li>
+              <li>
                 <a href="mailto:hello@boostwebdigital.com" className="text-sm text-white/70 transition-colors hover:text-white">
                   hello@boostwebdigital.com
                 </a>
               </li>
               <li>
-                <a href="mailto:hello@boostwebdigital.com" className="text-sm text-white/70 transition-colors hover:text-white">
+                <Link href="/contact/" className="text-sm text-white/70 transition-colors hover:text-white">
                   Book a Call
-                </a>
+                </Link>
               </li>
             </ul>
           </RevealItem>

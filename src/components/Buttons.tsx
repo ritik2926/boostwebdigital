@@ -2,21 +2,28 @@
 
 import { useRef, type ReactNode } from "react";
 import { motion, useMotionValue, useSpring } from "framer-motion";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { MAGNETIC, SPRING } from "@/lib/tokens";
 
+const MotionLink = motion.create(Link);
+
 /**
  * Primary CTA — validated in /design-lab, reused as-is. One per view (§2.1)
- * — never two solid CTAs competing.
+ * — never two solid CTAs competing. `href` is optional and new: when given,
+ * renders as a real navigable link (`motion(Link)`) instead of a bare
+ * `<button>` — needed so the Navbar's CTA can point at /contact/ without a
+ * second, differently-styled button. Every existing call site omits `href`
+ * and is unaffected.
  */
-export function MagneticButton({ children, className }: { children: ReactNode; className?: string }) {
-  const ref = useRef<HTMLButtonElement>(null);
+export function MagneticButton({ children, className, href }: { children: ReactNode; className?: string; href?: string }) {
+  const ref = useRef<HTMLButtonElement & HTMLAnchorElement>(null);
   const x = useMotionValue(0);
   const y = useMotionValue(0);
   const springX = useSpring(x, SPRING.magnetic);
   const springY = useSpring(y, SPRING.magnetic);
 
-  function handleMouseMove(e: React.MouseEvent<HTMLButtonElement>) {
+  function handleMouseMove(e: React.MouseEvent<HTMLButtonElement | HTMLAnchorElement>) {
     const rect = ref.current!.getBoundingClientRect();
     const relX = e.clientX - (rect.left + rect.width / 2);
     const relY = e.clientY - (rect.top + rect.height / 2);
@@ -33,6 +40,22 @@ export function MagneticButton({ children, className }: { children: ReactNode; c
   function handleMouseLeave() {
     x.set(0);
     y.set(0);
+  }
+
+  if (href) {
+    return (
+      <MotionLink
+        href={href}
+        ref={ref}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        style={{ x: springX, y: springY }}
+        whileTap={{ scale: 0.97 }}
+        className={cn("shiny-cta", className)}
+      >
+        <span>{children}</span>
+      </MotionLink>
+    );
   }
 
   return (

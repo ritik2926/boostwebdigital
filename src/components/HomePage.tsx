@@ -23,6 +23,7 @@ import { Founder } from "@/components/Founder";
 import { MagneticButton } from "@/components/Buttons";
 import { Kicker } from "@/components/Kicker";
 import { AmbientGlow } from "@/components/AmbientGlow";
+import { GrainOverlay } from "@/components/GrainOverlay";
 import { SPECIALTIES } from "@/lib/specialties";
 import { useSpotlight } from "@/lib/useSpotlight";
 import { cn, seeded } from "@/lib/utils";
@@ -40,21 +41,6 @@ if (typeof window !== "undefined") {
 // Ambient background system — grain, bokeh, particles (validated in
 // /design-lab §5 Background System — reused as-is).
 // ---------------------------------------------------------------------------
-
-function GrainOverlay() {
-  return (
-    <div
-      aria-hidden
-      className="pointer-events-none fixed inset-0 opacity-[0.035]"
-      style={{
-        zIndex: Z_INDEX.ambient,
-        animation: "grain-shift 8s steps(2) infinite",
-        backgroundImage:
-          "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")",
-      }}
-    />
-  );
-}
 
 function CursorGlow() {
   // Global (mounted once at the page root, follows the cursor everywhere),
