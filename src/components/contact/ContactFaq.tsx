@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Container } from "@/components/Container";
 import { RevealGroup, RevealItem } from "@/components/Reveal";
 import { cn } from "@/lib/utils";
+import { SECTION_PADDING, STACK } from "@/lib/tokens";
 import { FAQ_CATEGORIES, FAQ_ITEMS, type FaqCategory } from "@/lib/contact-faq";
 
 function AccordionRow({ item, open, onToggle }: { item: (typeof FAQ_ITEMS)[number]; open: boolean; onToggle: () => void }) {
@@ -56,7 +57,7 @@ export function ContactFaq() {
   const visibleItems = FAQ_ITEMS.filter((item) => item.category === activeCategory);
 
   return (
-    <section className="py-17.5 lg:py-35">
+    <section className={SECTION_PADDING.spacious}>
       <Container size="heading" className="mx-auto text-center">
         <RevealGroup as="div">
           <RevealItem>
@@ -64,37 +65,36 @@ export function ContactFaq() {
               Got questions? We&apos;ve <span className="italic font-normal text-accent">got answers</span>
             </h2>
           </RevealItem>
-          <RevealItem className="mt-4">
+          <RevealItem className={STACK.headingToSub}>
             <p className="text-[15px] text-white/50">If yours isn&apos;t here, just ask in the form above.</p>
           </RevealItem>
+          <RevealItem className={cn(STACK.subToContent, "flex flex-wrap justify-center gap-2")}>
+            {FAQ_CATEGORIES.map((category) => {
+              const selected = activeCategory === category;
+              return (
+                <button
+                  key={category}
+                  type="button"
+                  aria-pressed={selected}
+                  onClick={() => {
+                    setActiveCategory(category);
+                    const firstInCategory = FAQ_ITEMS.find((item) => item.category === category);
+                    setOpenQuestion(firstInCategory?.question ?? null);
+                  }}
+                  className={cn(
+                    "chip border text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
+                    selected ? "border-accent bg-accent/12 text-accent" : "border-white/8 text-white/60 hover:border-white/20 hover:text-white"
+                  )}
+                >
+                  {category}
+                </button>
+              );
+            })}
+          </RevealItem>
         </RevealGroup>
-
-        <RevealItem className="mt-8 flex flex-wrap justify-center gap-2">
-          {FAQ_CATEGORIES.map((category) => {
-            const selected = activeCategory === category;
-            return (
-              <button
-                key={category}
-                type="button"
-                aria-pressed={selected}
-                onClick={() => {
-                  setActiveCategory(category);
-                  const firstInCategory = FAQ_ITEMS.find((item) => item.category === category);
-                  setOpenQuestion(firstInCategory?.question ?? null);
-                }}
-                className={cn(
-                  "flex min-h-9 items-center rounded-full border px-4 text-sm transition-colors duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
-                  selected ? "border-accent bg-accent/12 text-accent" : "border-white/10 text-white/60 hover:border-white/20 hover:text-white"
-                )}
-              >
-                {category}
-              </button>
-            );
-          })}
-        </RevealItem>
       </Container>
 
-      <Container size="heading" className="mx-auto mt-12 text-left">
+      <Container size="heading" className={cn(STACK.subToContent, "mx-auto text-left")}>
         {visibleItems.map((item) => (
           <AccordionRow
             key={item.question}

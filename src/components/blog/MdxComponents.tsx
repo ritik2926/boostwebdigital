@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { AlertTriangle, Info, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { CARD_PADDING, CARD_RADIUS, BORDER } from "@/lib/tokens";
 
 const CALLOUT_STYLES = {
   info: { icon: Info, border: "border-white/15", bg: "bg-white/[0.03]", iconColor: "text-white/70" },
@@ -13,7 +14,7 @@ const CALLOUT_STYLES = {
 export function Callout({ type = "info", children }: { type?: keyof typeof CALLOUT_STYLES; children: ReactNode }) {
   const { icon: Icon, border, bg, iconColor } = CALLOUT_STYLES[type];
   return (
-    <div className={cn("not-prose my-10 flex gap-4 rounded-2xl border-l-4 p-8", border, bg)}>
+    <div className={cn("not-prose my-10 flex gap-4 border-l-4", CARD_RADIUS.standard, CARD_PADDING.standard, border, bg)}>
       <Icon className={cn("mt-1 h-6 w-6 shrink-0", iconColor)} aria-hidden />
       <div className="text-[1.0625rem] leading-[1.7] text-white/80 [&>p]:m-0 [&>p+p]:mt-4">{children}</div>
     </div>
@@ -56,7 +57,7 @@ export function ImageWithCaption({
 
 export function Stat({ value, label }: { value: string; label: string }) {
   return (
-    <div className="not-prose my-10 rounded-2xl border border-white/10 bg-white/[0.03] px-8 py-10 text-center">
+    <div className="not-prose my-10 rounded-2xl border border-white/8 bg-white/[0.03] px-8 py-10 text-center">
       <div className="font-display text-5xl font-extrabold tracking-[-0.02em] text-accent tabular-nums sm:text-6xl">{value}</div>
       <p className="mx-auto mt-3 max-w-sm text-[0.9375rem] text-white/60">{label}</p>
     </div>
@@ -65,7 +66,7 @@ export function Stat({ value, label }: { value: string; label: string }) {
 
 export function InlineCTA({ heading, body, label, href }: { heading: string; body: string; label: string; href: string }) {
   return (
-    <div className="not-prose my-12 rounded-2xl border border-white/12 bg-white/[0.04] p-8 sm:p-10">
+    <div className={cn("not-prose my-12 border bg-white/[0.04]", BORDER, CARD_RADIUS.standard, CARD_PADDING.feature)}>
       <h3 className="font-display text-xl font-semibold text-white">{heading}</h3>
       <p className="mt-3 text-[0.9375rem] leading-relaxed text-white/65">{body}</p>
       <Link
@@ -134,7 +135,7 @@ function Blockquote({ children }: { children: ReactNode }) {
 }
 
 function InlineCode({ children }: { children: ReactNode }) {
-  return <code className="rounded-md border border-white/10 bg-white/[0.06] px-1.5 py-0.5 font-mono text-[0.875em] text-white/85">{children}</code>;
+  return <code className="rounded-md border border-white/8 bg-white/[0.06] px-1.5 py-0.5 font-mono text-[0.875em] text-white/85">{children}</code>;
 }
 
 function HorizontalRule() {
@@ -143,14 +144,14 @@ function HorizontalRule() {
 
 function TableWrap({ children }: { children: ReactNode }) {
   return (
-    <div className="not-prose my-10 overflow-x-auto rounded-xl border border-white/10">
+    <div className={cn("not-prose my-10 overflow-x-auto border border-white/8", CARD_RADIUS.standard)}>
       <table className="w-full border-collapse text-left text-sm">{children}</table>
     </div>
   );
 }
 
 function TableHead({ children }: { children: ReactNode }) {
-  return <thead className="border-b border-white/10 bg-white/[0.03]">{children}</thead>;
+  return <thead className="border-b border-white/8 bg-white/[0.03]">{children}</thead>;
 }
 
 function TableHeaderCell({ children }: { children: ReactNode }) {

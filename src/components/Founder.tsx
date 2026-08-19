@@ -8,7 +8,7 @@ import { Reveal, RevealGroup, RevealItem, usePrefersReducedMotion } from "@/comp
 import { Kicker } from "@/components/Kicker";
 import { AmbientGlow } from "@/components/AmbientGlow";
 import { cn } from "@/lib/utils";
-import { EASE, SPRING, SECTION_PADDING } from "@/lib/tokens";
+import { EASE, SPRING, SECTION_PADDING, STACK } from "@/lib/tokens";
 
 // ---------------------------------------------------------------------------
 // About / Founder — "The Founder." The site's second exception to "no
@@ -91,7 +91,7 @@ function FounderPhoto() {
 
 export function Founder() {
   return (
-    <section id="about" className={cn("relative overflow-hidden", SECTION_PADDING)}>
+    <section id="about" className={cn("relative overflow-hidden", SECTION_PADDING.compact)}>
       <AmbientGlow corner="bottom-left" duration={74} />
       <Container>
         <div className="grid gap-14 lg:grid-cols-[minmax(0,440px)_minmax(0,600px)] lg:items-center lg:justify-center lg:gap-20">
@@ -101,7 +101,7 @@ export function Founder() {
             <RevealItem>
               <Kicker>The Founder</Kicker>
             </RevealItem>
-            <RevealItem className="mt-6">
+            <RevealItem className={STACK.kickerToHeading}>
               <h2 className="font-display text-[1.875rem] font-bold leading-[1.1] tracking-[-0.01em] text-white sm:text-[2.5rem]">
                 Ritik Malhotra
               </h2>

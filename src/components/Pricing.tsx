@@ -8,7 +8,7 @@ import { Kicker } from "@/components/Kicker";
 import { AmbientGlow } from "@/components/AmbientGlow";
 import { MagneticButton } from "@/components/Buttons";
 import { cn } from "@/lib/utils";
-import { EASE, SECTION_PADDING } from "@/lib/tokens";
+import { EASE, SECTION_PADDING, STACK } from "@/lib/tokens";
 
 // ---------------------------------------------------------------------------
 // Pricing — one plan card, three tab-switched states, rather than three
@@ -210,7 +210,7 @@ function SegmentedControl<T extends string>({
 }) {
   const itemRole = role === "tablist" ? "tab" : "radio";
   return (
-    <div role={role} aria-label={ariaLabel} onKeyDown={onKeyDown} className="inline-flex items-center gap-1 rounded-lg border border-white/10 bg-white/3 p-1">
+    <div role={role} aria-label={ariaLabel} onKeyDown={onKeyDown} className="inline-flex items-center gap-1 rounded-lg border border-white/8 bg-white/3 p-1">
       {options.map((option, i) => {
         const isActive = option === value;
         return (
@@ -263,19 +263,19 @@ export function Pricing() {
   }
 
   return (
-    <section id="pricing" className={cn("relative overflow-hidden", SECTION_PADDING)}>
+    <section id="pricing" className={cn("relative overflow-hidden", SECTION_PADDING.compact)}>
       <AmbientGlow corner="top-right" duration={80} />
       <Container>
         <RevealGroup as="div">
           <RevealItem>
             <Kicker>Pricing</Kicker>
           </RevealItem>
-          <RevealItem className="mt-6 max-w-2xl">
+          <RevealItem className={cn(STACK.kickerToHeading, "max-w-2xl")}>
             <h2 className="font-display text-[1.875rem] font-bold leading-[1.1] tracking-[-0.01em] text-white sm:text-[2.5rem]">
               Priced Against What a Patient Is Worth, Not Against Other Agencies
             </h2>
           </RevealItem>
-          <RevealItem className="mt-6 max-w-2xl">
+          <RevealItem className={cn(STACK.headingToSub, "max-w-2xl")}>
             <p className="text-white/70">
               A single hair restoration procedure is worth $6,000 to $15,000. A full-arch implant case is worth
               $20,000 to $40,000. The only question that matters is how many extra patients it takes to cover the
@@ -320,7 +320,7 @@ export function Pricing() {
           </ul>
 
           <div className="mt-14 flex-1 lg:mt-0 lg:max-w-xl">
-            <div className="rounded-2xl border border-white/10 bg-white/2">
+            <div className="rounded-2xl border border-white/8 bg-white/2">
               <SegmentedControl
                 layoutGroupId="plan-tab-highlight"
                 role="tablist"
@@ -342,7 +342,7 @@ export function Pricing() {
                   transition={{ duration: 0.3, ease: EASE.primary }}
                   role="tabpanel"
                 >
-                  <div className="border-t border-white/10 p-6 sm:p-8">
+                  <div className="border-t border-white/8 p-6 sm:p-8">
                     {plan.popular && (
                       <span className="mb-4 block font-mono text-xs uppercase tracking-[0.14em] text-accent">
                         Most practices start here
@@ -379,7 +379,7 @@ export function Pricing() {
                     </p>
                   </div>
 
-                  <ul className="border-t border-white/10 p-6 sm:p-8">
+                  <ul className="border-t border-white/8 p-6 sm:p-8">
                     <li className="pb-4 font-medium text-white">What&apos;s included</li>
                     {plan.features.map((feature, i) => (
                       <li key={i} className="flex items-start gap-3 py-2 text-sm text-white/70">

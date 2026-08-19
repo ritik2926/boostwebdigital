@@ -63,6 +63,27 @@ Check every one against the screenshot, not against the code.
 
 ---
 
+## Spacing system (locked 2026-08-19)
+
+One `Container` (`src/components/Container.tsx`), one set of section-padding
+tiers, one grid gap pair, one card-padding pair — all in `src/lib/tokens.ts`.
+This followed a site-wide audit that found 8 distinct section-padding
+values, 10 distinct grid gaps, and a `Container` variant with no horizontal
+padding at all, across five pages built in separate sessions.
+
+- **No `Container` size variant may ever ship without horizontal padding.**
+  Only `max-width` may differ between variants — every variant carries the
+  same `px-6 md:px-10 lg:px-16` gutters. The `heading` variant shipped
+  without them for months before this was caught; it isn't allowed to
+  happen again.
+- **A section may use a different tier for its top padding vs. its bottom**
+  (e.g. a hero whose bottom edge must not double-stack with the section
+  below it) — but both values must come from `SECTION_PADDING`'s three
+  tiers (`compact`/`default`/`spacious`). Never a one-off number, even when
+  the asymmetry itself is justified.
+
+---
+
 ## Density target
 
 **70–80% of each viewport occupied.**

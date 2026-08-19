@@ -1,6 +1,7 @@
 "use client";
 
 import { Container } from "@/components/Container";
+import { Reveal } from "@/components/Reveal";
 
 const MARQUEE_ITEMS = ["AI Search", "Healthcare SEO", "Get Recommended", "Reputation"];
 
@@ -30,16 +31,18 @@ export function BlogMarquee() {
   return (
     <section className="overflow-hidden pt-10 sm:pt-12 lg:pt-16">
       <Container>
-        <div
-          className="flex w-full overflow-hidden"
-          style={{
-            WebkitMaskImage: "linear-gradient(to right, transparent, black 8%, black 92%, transparent)",
-            maskImage: "linear-gradient(to right, transparent, black 8%, black 92%, transparent)",
-          }}
-        >
-          <MarqueeRow />
-          <MarqueeRow ariaHidden />
-        </div>
+        <Reveal>
+          <div
+            className="flex w-full overflow-hidden"
+            style={{
+              WebkitMaskImage: "linear-gradient(to right, transparent, black 8%, black 92%, transparent)",
+              maskImage: "linear-gradient(to right, transparent, black 8%, black 92%, transparent)",
+            }}
+          >
+            <MarqueeRow />
+            <MarqueeRow ariaHidden />
+          </div>
+        </Reveal>
       </Container>
     </section>
   );

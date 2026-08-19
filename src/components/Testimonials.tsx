@@ -316,7 +316,7 @@ export function Testimonials() {
   const gridRef = useRef<HTMLDivElement>(null);
 
   return (
-    <section className={cn("overflow-hidden", SECTION_PADDING)}>
+    <section className={cn("overflow-hidden", SECTION_PADDING.compact)}>
       <Container>
         <RevealGroup as="div">
           <RevealItem>

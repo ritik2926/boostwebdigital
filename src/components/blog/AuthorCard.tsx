@@ -1,16 +1,18 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { BlogPost } from "@/lib/blog/types";
+import { cn } from "@/lib/utils";
+import { CARD_PADDING, CARD_RADIUS } from "@/lib/tokens";
 
 export function AuthorCard({ author }: { author: BlogPost["author"] }) {
   return (
-    <div className="flex flex-col gap-5 rounded-2xl border border-white/10 bg-white/[0.03] p-8 sm:flex-row sm:items-center">
+    <div className={cn("flex flex-col gap-5 border border-white/8 bg-white/[0.03] sm:flex-row sm:items-center", CARD_RADIUS.standard, CARD_PADDING.standard)}>
       <Image
         src={author.avatar}
         alt={author.name}
         width={64}
         height={64}
-        className="h-16 w-16 shrink-0 rounded-full border border-white/10 object-cover"
+        className="h-16 w-16 shrink-0 rounded-full border border-white/8 object-cover"
       />
       <div>
         <span className="font-mono text-xs font-semibold uppercase tracking-[0.12em] text-white/40">Written by</span>

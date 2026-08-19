@@ -1,6 +1,7 @@
 import { Container } from "@/components/Container";
 import { RevealGroup, RevealItem } from "@/components/Reveal";
 import { cn } from "@/lib/utils";
+import { SECTION_PADDING, STACK, GRID_GAP, CARD_RADIUS } from "@/lib/tokens";
 
 // PLACEHOLDER — replace with real, verifiable review-platform names and
 // review counts before this page goes live. Square-bracket text is
@@ -21,7 +22,7 @@ function StarIcon({ className }: { className?: string }) {
 
 export function ReviewPlatforms() {
   return (
-    <section className="py-17.5 lg:py-35">
+    <section className={SECTION_PADDING.spacious}>
       <Container>
         <RevealGroup as="div" className="flex flex-col items-center text-center">
           <RevealItem>
@@ -34,13 +35,16 @@ export function ReviewPlatforms() {
           </RevealItem>
         </RevealGroup>
 
-        <RevealGroup as="ul" trigger="viewport" className="mx-auto mt-12 grid max-w-4xl grid-cols-1 gap-6 sm:grid-cols-3">
+        <RevealGroup as="ul" trigger="viewport" className={cn(STACK.subToContent, "mx-auto grid max-w-4xl grid-cols-1 sm:grid-cols-3", GRID_GAP.default)}>
           {PLATFORMS.map((item) => (
             <RevealItem as="li" key={item.platform}>
               <div
                 className={cn(
-                  "relative flex h-45 flex-col items-center justify-center gap-3 overflow-hidden rounded-[20px] border px-6 text-center transition-transform duration-300",
-                  item.elevated ? "-translate-y-2 border-accent/40 bg-white/[0.05] shadow-[0_20px_50px_rgba(var(--accent-rgb),0.15)]" : "border-white/10 bg-white/[0.02]"
+                  "relative flex h-45 flex-col items-center justify-center gap-3 overflow-hidden border px-6 text-center transition-transform duration-300",
+                  CARD_RADIUS.standard,
+                  item.elevated
+                    ? "-translate-y-2 border-accent/40 bg-white/[0.05] shadow-[0_20px_50px_rgba(var(--accent-rgb),0.15)]"
+                    : "border-white/8 bg-white/[0.02] hover:-translate-y-1"
                 )}
               >
                 {item.elevated && (

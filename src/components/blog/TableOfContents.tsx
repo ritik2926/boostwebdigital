@@ -51,7 +51,7 @@ function TocLink({ item, active }: { item: TocItem; active: boolean }) {
       className={cn(
         "block border-l-2 py-1.5 pl-4 text-[0.8125rem] leading-[1.4] transition-colors duration-200",
         item.level === 3 && "pl-7",
-        active ? "border-accent text-white" : "border-white/10 text-white/50 hover:border-white/25 hover:text-white/75"
+        active ? "border-accent text-white" : "border-white/8 text-white/50 hover:border-white/25 hover:text-white/75"
       )}
     >
       {item.text}

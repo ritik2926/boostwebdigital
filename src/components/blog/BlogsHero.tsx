@@ -1,5 +1,7 @@
 import { Container } from "@/components/Container";
 import { RevealGroup, RevealItem } from "@/components/Reveal";
+import { STACK } from "@/lib/tokens";
+import { cn } from "@/lib/utils";
 
 /**
  * Purple → blue → transparent radial wash, unique to this hero — recreates
@@ -11,7 +13,7 @@ import { RevealGroup, RevealItem } from "@/components/Reveal";
  */
 export function BlogsHero() {
   return (
-    <section className="relative overflow-hidden pt-20 pb-12 sm:pb-16 lg:pt-36">
+    <section className="relative overflow-hidden pt-24 pb-16 lg:pt-40 lg:pb-24">
       <div
         aria-hidden
         className="pointer-events-none absolute left-1/2 top-0 h-140 w-280 -translate-x-1/2 -translate-y-1/3"
@@ -32,7 +34,7 @@ export function BlogsHero() {
             </span>
           </RevealItem>
 
-          <RevealItem className="mt-6 max-w-225">
+          <RevealItem className={cn(STACK.kickerToHeading, "max-w-225")}>
             <h1 className="font-display text-[2.25rem] font-extrabold leading-[1.05] tracking-[-0.02em] text-white sm:text-5xl lg:text-[3.25rem]">
               Notes on AI search, healthcare SEO,
               <br />
@@ -40,7 +42,7 @@ export function BlogsHero() {
             </h1>
           </RevealItem>
 
-          <RevealItem className="mt-6 max-w-155">
+          <RevealItem className={cn(STACK.headingToSub, "max-w-155")}>
             <p className="text-lg leading-relaxed text-white/65">
               What we&apos;re learning about how patients actually find providers now — and what practices can do
               about it.

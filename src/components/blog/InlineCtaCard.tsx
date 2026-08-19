@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { cn } from "@/lib/utils";
+import { CARD_PADDING } from "@/lib/tokens";
 
 /**
  * Solid accent fill is normally reserved for the one primary CTA per view
@@ -9,7 +11,7 @@ import Link from "next/link";
  */
 export function InlineCtaCard() {
   return (
-    <div className="flex h-full min-h-90 flex-col justify-between rounded-2xl bg-accent p-8">
+    <div className={cn("flex h-full min-h-90 flex-col justify-between rounded-2xl bg-accent", CARD_PADDING.standard)}>
       <div>
         <h3 className="font-display text-xl font-bold leading-snug text-white">See what AI says about your practice</h3>
         <p className="mt-3 text-sm leading-relaxed text-white/85">Fifteen questions, four AI engines, one free report.</p>

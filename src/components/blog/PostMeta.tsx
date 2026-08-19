@@ -11,7 +11,7 @@ export function PostMeta({ post }: { post: BlogPost }) {
           alt={post.author.name}
           width={40}
           height={40}
-          className="h-10 w-10 rounded-full border border-white/10 object-cover"
+          className="h-10 w-10 rounded-full border border-white/8 object-cover"
         />
         <span>
           <span className="block font-medium text-white/85">{post.author.name}</span>

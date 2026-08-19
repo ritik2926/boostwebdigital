@@ -4,7 +4,8 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { Container } from "@/components/Container";
 import { RevealGroup, RevealItem, usePrefersReducedMotion } from "@/components/Reveal";
-import { EASE, REVEAL } from "@/lib/tokens";
+import { EASE, REVEAL, SECTION_PADDING, STACK, GRID_GAP, CARD_PADDING } from "@/lib/tokens";
+import { cn } from "@/lib/utils";
 
 // ---------------------------------------------------------------------------
 // Sections 4+5 — the one light flip on this page, spanning "Who we are" and
@@ -164,13 +165,13 @@ export function LightBand() {
   const reducedMotion = usePrefersReducedMotion();
 
   return (
-    <section className="relative overflow-hidden py-32 lg:py-40">
+    <section className={cn("relative overflow-hidden", SECTION_PADDING.spacious)}>
       <motion.div
         aria-hidden
         className="absolute inset-0"
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
-        viewport={{ once: false, amount: 0.3 }}
+        viewport={{ once: false, margin: "-10% 0px" }}
         transition={{ duration: reducedMotion ? 0.4 : 1.4, ease: EASE.primary }}
       >
         <div className="absolute inset-0 bg-[#f2f2f5]" />
@@ -186,7 +187,7 @@ export function LightBand() {
       <motion.div
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
-        viewport={{ once: false, amount: 0.3 }}
+        viewport={{ once: false, margin: "-10% 0px" }}
         transition={{ duration: reducedMotion ? 0.4 : 1.4, ease: EASE.primary }}
         className="relative text-[#08080a]"
       >
@@ -199,7 +200,7 @@ export function LightBand() {
                 </span>
               </span>
             </RevealItem>
-            <RevealItem className="mt-6">
+            <RevealItem className={STACK.kickerToHeading}>
               <h2 className="font-display text-[1.875rem] font-bold leading-[1.1] tracking-[-0.01em] text-[#08080a] sm:text-[2.5rem]">
                 Small on purpose
               </h2>
@@ -210,7 +211,7 @@ export function LightBand() {
             as="ul"
             trigger="viewport"
             stagger={REVEAL.cardStagger}
-            className="mt-14 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3"
+            className={cn(STACK.subToContent, "grid grid-cols-1", GRID_GAP.default, "sm:grid-cols-2 lg:grid-cols-3")}
           >
             {WHO_WE_ARE.map((item) => (
               <RevealItem as="li" key={item.id} className="h-full">
@@ -229,7 +230,7 @@ export function LightBand() {
                 </span>
               </span>
             </RevealItem>
-            <RevealItem className="mt-6">
+            <RevealItem className={STACK.kickerToHeading}>
               <h2 className="font-display text-[1.875rem] font-bold leading-[1.1] tracking-[-0.01em] text-[#08080a] sm:text-[2.5rem]">
                 Four commitments
               </h2>
@@ -240,11 +241,11 @@ export function LightBand() {
             as="ul"
             trigger="viewport"
             stagger={REVEAL.cardStagger}
-            className="mt-14 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4"
+            className={cn(STACK.subToContent, "grid grid-cols-1", GRID_GAP.default, "sm:grid-cols-2 lg:grid-cols-4")}
           >
             {HOW_I_WORK.map((item, i) => (
               <RevealItem as="li" key={item.id}>
-                <div className="flex min-h-[220px] flex-col rounded-2xl border border-[#08080a]/12 bg-[#08080a]/4 p-8 transition-all duration-300 hover:-translate-y-1.5 hover:border-[#08080a]/25 hover:bg-[#08080a]/6 hover:shadow-[0_16px_40px_rgba(0,0,0,0.12)]">
+                <div className={cn("flex min-h-55 flex-col rounded-2xl border border-[#08080a]/12 bg-[#08080a]/4 transition-all duration-300 hover:-translate-y-1.5 hover:border-[#08080a]/25 hover:bg-[#08080a]/6 hover:shadow-[0_16px_40px_rgba(0,0,0,0.12)]", CARD_PADDING.standard)}>
                   <HowIWorkIcon id={item.id} delay={i * 0.3} />
                   <h3 className="mt-5 font-display text-lg font-semibold text-[#08080a]">{item.heading}</h3>
                   <p className="mt-2 text-sm leading-relaxed text-[#08080a]/70">{item.body}</p>

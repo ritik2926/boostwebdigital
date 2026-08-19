@@ -46,7 +46,7 @@ export function FinalCTA() {
         </RevealGroup>
 
         <RevealItem className="mx-auto mt-12 max-w-2xl">
-          <div className="group relative rounded-2xl border border-white/10 bg-white/3 p-8 transition-all duration-300 hover:border-white/20 hover:bg-white/5 sm:p-10">
+          <div className="group relative rounded-2xl border border-white/8 bg-white/3 p-8 transition-all duration-300 hover:border-white/20 hover:bg-white/5 sm:p-10">
             <div
               aria-hidden
               className="absolute right-6 top-6 flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/5 text-white/70 transition-all duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:border-accent/40 group-hover:text-accent"

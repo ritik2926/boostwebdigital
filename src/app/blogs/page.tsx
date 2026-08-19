@@ -76,7 +76,7 @@ export default async function BlogsArchivePage() {
       <main>
         <BlogsHero />
 
-        <section className="pb-12 lg:pb-16">
+        <section className="pb-16 lg:pb-24">
           <Container>
             {posts.length >= 3 ? (
               <CategoryStrip categories={categories}>

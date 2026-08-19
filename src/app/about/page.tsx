@@ -10,7 +10,7 @@ import { LightBand } from "./LightBand";
 import JsonLd from "@/components/JsonLd";
 import { ORGANIZATION, PERSON, WEBSITE, breadcrumb } from "@/lib/schema";
 import { cn } from "@/lib/utils";
-import { REVEAL } from "@/lib/tokens";
+import { REVEAL, SECTION_PADDING, STACK, GRID_GAP, CARD_PADDING, CARD_RADIUS } from "@/lib/tokens";
 
 // ---------------------------------------------------------------------------
 // About — rebuilt against docs/refs/eterna-about.webp's composition/density
@@ -232,7 +232,7 @@ export default function AboutPage() {
 
         {/* 2. What changed — centred badge/heading, 3 tall cards, middle
             raised slightly */}
-        <section className="relative overflow-hidden py-32 lg:py-40">
+        <section className={cn("relative overflow-hidden", SECTION_PADDING.spacious)}>
           <Container>
             <RevealGroup as="div" className="flex flex-col items-center text-center">
               <RevealItem>
@@ -242,7 +242,7 @@ export default function AboutPage() {
                   </span>
                 </span>
               </RevealItem>
-              <RevealItem className="mt-6">
+              <RevealItem className={STACK.kickerToHeading}>
                 <h2 className="font-display text-[1.875rem] font-bold leading-[1.1] tracking-[-0.01em] text-white sm:text-[2.5rem]">
                   One shift, three numbers
                 </h2>
@@ -253,7 +253,7 @@ export default function AboutPage() {
               as="ul"
               trigger="viewport"
               stagger={REVEAL.cardStagger}
-              className="mt-14 grid grid-cols-1 gap-8 lg:grid-cols-3"
+              className={cn(STACK.subToContent, "grid grid-cols-1", GRID_GAP.default, "lg:grid-cols-3")}
             >
               {WHAT_CHANGED.map((stat, i) => {
                 const Graphic = WHAT_CHANGED_GRAPHICS[stat.id];
@@ -261,14 +261,15 @@ export default function AboutPage() {
                   <RevealItem as="li" key={stat.id} className={cn(i === 1 && "lg:-mt-6 lg:mb-6")}>
                     <div
                       className={cn(
-                        "group flex min-h-95 flex-col overflow-hidden rounded-2xl border transition-all duration-300 hover:-translate-y-1.5 hover:border-white/20 hover:bg-white/4 hover:shadow-[0_20px_60px_rgba(0,0,0,0.45)]",
-                        i === 1 ? "border-white/15 bg-white/3 shadow-[0_20px_60px_rgba(0,0,0,0.35)]" : "border-white/10 bg-white/2"
+                        "group flex min-h-95 flex-col overflow-hidden border transition-all duration-300 hover:-translate-y-1.5 hover:border-white/20 hover:bg-white/4 hover:shadow-[0_20px_60px_rgba(0,0,0,0.45)]",
+                        CARD_RADIUS.standard,
+                        i === 1 ? "border-white/15 bg-white/3 shadow-[0_20px_60px_rgba(0,0,0,0.35)]" : "border-white/8 bg-white/2"
                       )}
                     >
                       <div className="h-38 shrink-0 border-b border-white/8 transition-transform duration-300 group-hover:scale-105">
                         <Graphic />
                       </div>
-                      <div className="flex flex-1 flex-col p-8">
+                      <div className={cn("flex flex-1 flex-col", CARD_PADDING.standard)}>
                         <div className="font-display text-4xl font-extrabold tracking-[-0.02em] text-accent tabular-nums">
                           {stat.value}
                         </div>
@@ -284,7 +285,7 @@ export default function AboutPage() {
         </section>
 
         {/* 3. The statement — full-bleed, centred, scroll-linked fade */}
-        <section className="relative overflow-hidden py-32 lg:py-40">
+        <section className={cn("relative overflow-hidden", SECTION_PADDING.spacious)}>
           <Container size="heading" className="mx-auto text-center">
             <StatementFade>
               A practice can hold position one on Google and never once be mentioned when a patient actually asks
@@ -298,7 +299,7 @@ export default function AboutPage() {
         <LightBand />
 
         {/* 6. Work with us — flips back to dark */}
-        <section className="relative overflow-hidden py-32 lg:py-40">
+        <section className={cn("relative overflow-hidden", SECTION_PADDING.spacious)}>
           <AmbientGlow corner="top-right" duration={70} />
           <AmbientGlow corner="bottom-left" duration={85} />
           <Container>
@@ -310,7 +311,7 @@ export default function AboutPage() {
                   </span>
                 </span>
               </RevealItem>
-              <RevealItem className="mt-6">
+              <RevealItem className={STACK.kickerToHeading}>
                 <h2 className="font-display text-[1.875rem] font-bold leading-[1.1] tracking-[-0.01em] sm:text-[2.5rem]">
                   <span className="text-white">Find out what AI says</span>
                   <br />
@@ -322,7 +323,7 @@ export default function AboutPage() {
                   </span>
                 </h2>
               </RevealItem>
-              <RevealItem className="mt-6">
+              <RevealItem className={STACK.headingToSub}>
                 <p className="text-white/70">
                   We run fifteen patient questions across four AI engines, count how many times your practice gets
                   named, and send you the report. No call required.
@@ -330,8 +331,8 @@ export default function AboutPage() {
               </RevealItem>
             </RevealGroup>
 
-            <RevealItem className="mx-auto mt-12 max-w-2xl">
-              <div className="group relative rounded-2xl border border-white/10 bg-white/3 p-8 transition-all duration-300 hover:border-white/20 hover:bg-white/5 sm:p-10">
+            <RevealItem className={cn("mx-auto max-w-2xl", STACK.subToContent)}>
+              <div className={cn("group relative border border-white/8 bg-white/3 transition-all duration-300 hover:border-white/20 hover:bg-white/5", CARD_RADIUS.feature, CARD_PADDING.feature)}>
                 <div
                   aria-hidden
                   className="absolute right-6 top-6 flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/5 text-white/70 transition-all duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:border-accent/40 group-hover:text-accent"
@@ -363,7 +364,7 @@ export default function AboutPage() {
               </div>
             </RevealItem>
 
-            <RevealItem className="mt-10 flex justify-center">
+            <RevealItem className={cn("flex justify-center", STACK.contentToCta)}>
               <MagneticButton>Get My Free AI Visibility Report</MagneticButton>
             </RevealItem>
           </Container>

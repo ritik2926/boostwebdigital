@@ -9,6 +9,7 @@ import { useRef, useState } from "react";
 import { Container } from "@/components/Container";
 import { Reveal, RevealGroup, RevealItem } from "@/components/Reveal";
 import { cn } from "@/lib/utils";
+import { SECTION_PADDING, STACK, CARD_PADDING, CARD_RADIUS } from "@/lib/tokens";
 
 const TESTIMONIALS = [
   { id: "A", name: "[CLIENT NAME]", role: "[ROLE], [PRACTICE NAME]" },
@@ -36,7 +37,7 @@ function StarRow() {
 
 function MonogramAvatar({ letter }: { letter: string }) {
   return (
-    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 font-display text-lg font-semibold text-white/70">
+    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-white/8 bg-white/5 font-display text-lg font-semibold text-white/70">
       {letter}
     </div>
   );
@@ -46,7 +47,7 @@ function TestimonialCard({ testimonial }: { testimonial: (typeof TESTIMONIALS)[n
   return (
     <div
       data-testimonial-card
-      className="w-full shrink-0 snap-start rounded-[20px] border border-white/10 bg-white/[0.03] p-8 sm:w-[calc(50%-12px)]"
+      className={cn("w-full shrink-0 snap-start border border-white/8 bg-white/[0.03] sm:w-[calc(50%-12px)]", CARD_RADIUS.standard, CARD_PADDING.standard)}
     >
       <div className="flex items-center gap-4">
         <MonogramAvatar letter={testimonial.id} />
@@ -83,7 +84,7 @@ export function TestimonialCarousel() {
   }
 
   return (
-    <section className="py-17.5 lg:py-35">
+    <section className={SECTION_PADDING.spacious}>
       <Container>
         <RevealGroup as="div" className="flex flex-col items-center text-center">
           <RevealItem>
@@ -93,7 +94,7 @@ export function TestimonialCarousel() {
           </RevealItem>
         </RevealGroup>
 
-        <Reveal className="mt-12">
+        <Reveal className={STACK.subToContent}>
           <div
             ref={trackRef}
             onScroll={updateProgress}
@@ -110,7 +111,7 @@ export function TestimonialCarousel() {
               type="button"
               onClick={() => scrollByCard(-1)}
               aria-label="Previous testimonial"
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 text-white/60 transition-colors hover:border-white/25 hover:text-white"
+              className="flex h-11 w-11 items-center justify-center rounded-full border border-white/8 text-white/60 transition-colors hover:border-white/25 hover:text-white"
             >
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
                 <path d="M10 3L5 8l5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -120,7 +121,7 @@ export function TestimonialCarousel() {
               type="button"
               onClick={() => scrollByCard(1)}
               aria-label="Next testimonial"
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 text-white/60 transition-colors hover:border-white/25 hover:text-white"
+              className="flex h-11 w-11 items-center justify-center rounded-full border border-white/8 text-white/60 transition-colors hover:border-white/25 hover:text-white"
             >
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
                 <path d="M6 3l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />

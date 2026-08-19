@@ -27,9 +27,9 @@ function isValidEmail(value: string) {
 }
 
 const CHIP_BASE =
-  "flex min-h-9 items-center rounded-full border px-4 text-sm transition-colors duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
+  "chip border text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
 const CHIP_SELECTED = "border-accent bg-accent/12 text-accent";
-const CHIP_UNSELECTED = "border-white/10 text-white/60 hover:border-white/20 hover:text-white";
+const CHIP_UNSELECTED = "border-white/8 text-white/60 hover:border-white/20 hover:text-white";
 
 const UNDERLINE_INPUT =
   "w-full border-0 border-b border-white/15 bg-transparent pb-2.5 text-[15px] text-white outline-none transition-[border-color,border-width] duration-200 placeholder:text-white/40 focus:border-b-2 focus:border-accent";

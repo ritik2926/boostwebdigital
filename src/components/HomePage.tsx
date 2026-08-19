@@ -27,7 +27,7 @@ import { GrainOverlay } from "@/components/GrainOverlay";
 import { SPECIALTIES } from "@/lib/specialties";
 import { useSpotlight } from "@/lib/useSpotlight";
 import { cn, seeded } from "@/lib/utils";
-import { EASE, SPRING, REVEAL, Z_INDEX, CURSOR_GLOW, OPACITY, DURATION, SECTION_PADDING, blurPx } from "@/lib/tokens";
+import { EASE, SPRING, REVEAL, Z_INDEX, CURSOR_GLOW, OPACITY, DURATION, SECTION_PADDING, STACK, blurPx } from "@/lib/tokens";
 
 /** Registered once, guarded for SSR (ScrollTrigger needs the DOM) — the
  * Process section is the one reserved scroll-pin slot sitewide
@@ -717,14 +717,14 @@ function MarketShift() {
   const active = MARKET_STATS[activeIndex];
 
   return (
-    <section className={cn("relative overflow-hidden", SECTION_PADDING)}>
+    <section className={cn("relative overflow-hidden", SECTION_PADDING.compact)}>
       <AmbientGlow corner="top-right" duration={65} />
       <Container>
         <RevealGroup as="div">
           <RevealItem>
             <Kicker>The Shift</Kicker>
           </RevealItem>
-          <RevealItem className="mt-6 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+          <RevealItem className={cn(STACK.kickerToHeading, "flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between")}>
             <h2 className="max-w-2xl font-display text-[1.875rem] font-bold leading-[1.1] tracking-[-0.01em] text-white sm:text-[2.5rem]">
               Why Healthcare Marketing Changed in 2026
             </h2>
@@ -735,7 +735,7 @@ function MarketShift() {
           </RevealItem>
         </RevealGroup>
 
-        <Reveal className="mt-14">
+        <Reveal className={STACK.subToContent}>
           <div className="grid gap-10 lg:grid-cols-[7fr_3fr] lg:gap-16">
             <div>
               {MARKET_STATS.map((stat, i) => (
@@ -806,7 +806,7 @@ function AiAnswerQuote() {
 
 function AiVisibilityExplainer() {
   return (
-    <section className={cn("relative overflow-hidden", SECTION_PADDING)}>
+    <section className={cn("relative overflow-hidden", SECTION_PADDING.compact)}>
       <AmbientGlow corner="bottom-left" duration={78} />
       <Container>
         <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
@@ -814,12 +814,12 @@ function AiVisibilityExplainer() {
             <RevealItem>
               <Kicker>The New Metric</Kicker>
             </RevealItem>
-            <RevealItem className="mt-6">
+            <RevealItem className={STACK.kickerToHeading}>
               <h2 className="font-display text-[1.875rem] font-bold leading-[1.1] tracking-[-0.01em] text-white sm:text-[2.5rem]">
                 What Is AI Visibility, and Why Does It Matter for Medical Practices?
               </h2>
             </RevealItem>
-            <RevealItem className="mt-6 max-w-xl space-y-4 text-white/70">
+            <RevealItem className={cn(STACK.subToContent, "max-w-xl space-y-4 text-white/70")}>
               <p>
                 AI visibility is how often AI systems — ChatGPT, Google AI Overviews, Perplexity and Gemini — name
                 your practice when a patient asks them for a recommendation. It is measured in citations, not
@@ -949,19 +949,19 @@ function WhoWeServe() {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   return (
-    <section id="specialties" className={cn("relative overflow-hidden", SECTION_PADDING)}>
+    <section id="specialties" className={cn("relative overflow-hidden", SECTION_PADDING.compact)}>
       <AmbientGlow corner="top-left" duration={84} />
       <Container>
         <RevealGroup as="div">
           <RevealItem>
             <Kicker>Who We Serve</Kicker>
           </RevealItem>
-          <RevealItem className="mt-5">
+          <RevealItem className={STACK.kickerToHeading}>
             <h2 className="max-w-3xl font-display text-[1.875rem] font-bold leading-[1.1] tracking-[-0.01em] text-white sm:text-[2.5rem]">
               Healthcare Specialties We Serve
             </h2>
           </RevealItem>
-          <RevealItem className="mt-6 max-w-2xl space-y-4">
+          <RevealItem className={cn(STACK.subToContent, "max-w-2xl space-y-4")}>
             <p className="text-white/70">
               Each specialty gets its own strategy, because a hair restoration patient and an orthodontic patient
               don&apos;t search, compare or decide anything alike.
@@ -1265,7 +1265,7 @@ function FloatingServiceImage({
     >
       <div
         ref={cardRef}
-        className="flex h-52 w-70 items-center justify-center overflow-hidden rounded-3xl border border-white/10 bg-white/4 shadow-[0_20px_60px_rgba(0,0,0,0.45)] backdrop-blur-xl"
+        className="flex h-52 w-70 items-center justify-center overflow-hidden rounded-3xl border border-white/8 bg-white/4 shadow-[0_20px_60px_rgba(0,0,0,0.45)] backdrop-blur-xl"
       >
         <AnimatePresence mode="wait">
           {activeId && (
@@ -1364,14 +1364,14 @@ function Services() {
   const { springX, springY, rotate } = useServiceCursorTrail(listRef);
 
   return (
-    <section id="services" className={cn("relative overflow-hidden", SECTION_PADDING)}>
+    <section id="services" className={cn("relative overflow-hidden", SECTION_PADDING.compact)}>
       <AmbientGlow corner="bottom-right" duration={70} />
       <Container>
         <RevealGroup as="div">
           <RevealItem>
             <Kicker>Our Services</Kicker>
           </RevealItem>
-          <RevealItem className="mt-6 flex items-end justify-between gap-6">
+          <RevealItem className={cn(STACK.kickerToHeading, "flex items-end justify-between gap-6")}>
             <h2 className="font-display text-[1.875rem] font-bold leading-[1.1] tracking-[-0.01em] text-white sm:text-[2.5rem]">
               Our Healthcare Marketing Services
             </h2>
@@ -1382,7 +1382,7 @@ function Services() {
           </RevealItem>
         </RevealGroup>
 
-        <div ref={listRef} className="relative mt-14">
+        <div ref={listRef} className={cn("relative", STACK.subToContent)}>
           <FloatingServiceImage activeId={hoveredId} springX={springX} springY={springY} rotate={rotate} />
           <RevealGroup as="ul" trigger="viewport" stagger={REVEAL.cardStagger} className="relative z-30">
             {SERVICES.map((service) => (
@@ -1589,7 +1589,7 @@ function WhyChooseUs() {
   const reducedMotion = usePrefersReducedMotion();
 
   return (
-    <section className={cn("relative overflow-hidden", SECTION_PADDING)}>
+    <section className={cn("relative overflow-hidden", SECTION_PADDING.compact)}>
       <WhyChooseWhiteFade />
       <WhyChooseAmbientDrift />
       <Container className="relative">
@@ -1608,7 +1608,7 @@ function WhyChooseUs() {
                   Why Boost Web Digital
                 </span>
               </span>
-              <h2 className="mt-6 max-w-lg font-display text-[1.875rem] font-extrabold leading-[1.1] tracking-[-0.01em] sm:text-[2.5rem]">
+              <h2 className={cn(STACK.kickerToHeading, "max-w-lg font-display text-[1.875rem] font-extrabold leading-[1.1] tracking-[-0.01em] sm:text-[2.5rem]")}>
                 Why Practices Choose Boost Web Digital Over a Traditional Agency
               </h2>
             </div>
@@ -1914,7 +1914,7 @@ function Process() {
       ref={sectionRef}
       className={cn(
         "relative overflow-hidden",
-        SECTION_PADDING,
+        SECTION_PADDING.compact,
         !reducedMotion && "lg:flex lg:min-h-screen lg:flex-col"
       )}
     >
@@ -1924,12 +1924,12 @@ function Process() {
           <RevealItem>
             <Kicker>The Process</Kicker>
           </RevealItem>
-          <RevealItem className="mt-6 max-w-2xl">
+          <RevealItem className={cn(STACK.kickerToHeading, "max-w-2xl")}>
             <h2 className="font-display text-[1.875rem] font-bold leading-[1.1] tracking-[-0.01em] text-white sm:text-[2.5rem]">
               How We Work
             </h2>
           </RevealItem>
-          <RevealItem className="mt-6 max-w-2xl">
+          <RevealItem className={cn(STACK.headingToSub, "max-w-2xl")}>
             <p className="text-white/70">
               A transparent, measurable process built around real patient questions. We identify where your practice
               is invisible, uncover why competitors are being recommended, fix the underlying gaps, and continuously
@@ -2125,7 +2125,7 @@ function FaqAccordionItem({
 }) {
   const reducedMotion = usePrefersReducedMotion();
   return (
-    <div className="border-t border-white/10 first:border-t-0">
+    <div className="border-t border-white/8 first:border-t-0">
       <h3 className="leading-none">
         <button
           type="button"
@@ -2172,7 +2172,7 @@ function Faq() {
   };
 
   return (
-    <section id="faq" className={cn("relative overflow-hidden", SECTION_PADDING)}>
+    <section id="faq" className={cn("relative overflow-hidden", SECTION_PADDING.compact)}>
       <AmbientGlow corner="bottom-left" duration={72} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
       <Container>
@@ -2182,12 +2182,12 @@ function Faq() {
               <RevealItem>
                 <Kicker>FAQ</Kicker>
               </RevealItem>
-              <RevealItem className="mt-6">
+              <RevealItem className={STACK.kickerToHeading}>
                 <h2 className="font-display text-[1.875rem] font-bold leading-[1.1] tracking-[-0.01em] text-white sm:text-[2.5rem]">
                   Frequently Asked Questions About Healthcare Marketing
                 </h2>
               </RevealItem>
-              <RevealItem className="mt-6 max-w-sm">
+              <RevealItem className={cn(STACK.headingToSub, "max-w-sm")}>
                 <p className="text-white/60">
                   Can&apos;t find your answer here? Every engagement starts with the same free scan — fifteen
                   patient-intent questions, four AI engines, no call required.

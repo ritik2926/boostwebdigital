@@ -33,7 +33,7 @@ function FacebookIcon() {
 // h-11/w-11 (44px) rather than the spec's literal 40px — 12-DESIGN-STANDARDS.md
 // §9's 44×44px touch-target floor is a locked, no-exceptions rule; the icon
 // itself stays 18px so the visual weight barely changes.
-const ICON_BUTTON = "flex h-11 w-11 items-center justify-center rounded-full border border-white/10 text-white/60 transition-colors hover:border-white/25 hover:bg-white/5 hover:text-white";
+const ICON_BUTTON = "flex h-11 w-11 items-center justify-center rounded-full border border-white/8 text-white/60 transition-colors hover:border-white/25 hover:bg-white/5 hover:text-white";
 
 export function ShareRail({ url, title, className }: { url: string; title: string; className?: string }) {
   const [copied, setCopied] = useState(false);
@@ -79,7 +79,7 @@ export function ShareRail({ url, title, className }: { url: string; title: strin
       <button onClick={handleCopy} aria-label={copied ? "Link copied" : "Copy link"} className={cn(ICON_BUTTON, "relative")}>
         {copied ? <Check className="h-[18px] w-[18px] text-accent" aria-hidden /> : <Link2 className="h-[18px] w-[18px]" aria-hidden />}
         {copied && (
-          <span className="absolute left-1/2 top-full mt-2 -translate-x-1/2 whitespace-nowrap rounded-md border border-white/10 bg-[#0b0b0f] px-2 py-1 text-xs text-white/80 xl:left-full xl:top-1/2 xl:mt-0 xl:ml-2 xl:-translate-x-0 xl:-translate-y-1/2">
+          <span className="absolute left-1/2 top-full mt-2 -translate-x-1/2 whitespace-nowrap rounded-md border border-white/8 bg-[#0b0b0f] px-2 py-1 text-xs text-white/80 xl:left-full xl:top-1/2 xl:mt-0 xl:ml-2 xl:-translate-x-0 xl:-translate-y-1/2">
             Copied
           </span>
         )}

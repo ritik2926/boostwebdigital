@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { gradientForCategory } from "@/components/blog/PostThumbnail";
+import { STACK, GRID_GAP, CARD_PADDING } from "@/lib/tokens";
 
 /**
  * The archive's only client-side interaction: clicking a category toggles
@@ -37,11 +38,11 @@ export function CategoryStrip({
     <div>
       <span className="font-mono text-xs font-semibold uppercase tracking-[0.14em] text-white/40">Browse by category</span>
 
-      <div className="mt-5 flex flex-wrap gap-3">
+      <div className={cn(STACK.kickerToHeading, "flex flex-wrap gap-3")}>
         <button
           onClick={() => setActive(null)}
           className={cn(
-            "flex min-h-11 items-center rounded-full border px-5 font-mono text-xs font-semibold uppercase tracking-[0.12em] transition-colors",
+            "chip border font-mono text-xs font-semibold uppercase tracking-[0.12em] transition-colors",
             active === null ? "border-accent/40 bg-accent/10 text-white" : "border-white/15 bg-white/5 text-white/70 hover:border-white/25"
           )}
         >
@@ -49,7 +50,7 @@ export function CategoryStrip({
         </button>
       </div>
 
-      <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+      <div className={cn("mt-4 grid grid-cols-2", GRID_GAP.default, "sm:grid-cols-3 lg:grid-cols-4")}>
         {categories.map((category) => {
           const { from, to } = gradientForCategory(category.slug, categoryOrder);
           const isActive = active === category.slug;
@@ -58,8 +59,9 @@ export function CategoryStrip({
               key={category.slug}
               onClick={() => setActive((current) => (current === category.slug ? null : category.slug))}
               className={cn(
-                "group relative flex h-45 flex-col justify-end overflow-hidden rounded-[20px] border p-6 text-left transition-all duration-300",
-                isActive ? "border-white/50 ring-2 ring-white/40" : "border-white/10 hover:border-white/30"
+                "group relative flex h-45 flex-col justify-end overflow-hidden rounded-2xl border text-left transition-all duration-300",
+                CARD_PADDING.standard,
+                isActive ? "border-white/50 ring-2 ring-white/40" : "border-white/8 hover:border-white/30"
               )}
               style={{ backgroundImage: `linear-gradient(135deg, ${from}, ${to})` }}
             >
@@ -73,7 +75,7 @@ export function CategoryStrip({
         })}
       </div>
 
-      <div ref={gridRef} className="mt-12">
+      <div ref={gridRef} className={STACK.subToContent}>
         {children}
       </div>
     </div>

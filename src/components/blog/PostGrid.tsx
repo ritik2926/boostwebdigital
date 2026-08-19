@@ -1,14 +1,21 @@
 import { FeatureCard } from "@/components/blog/FeatureCard";
 import { BlogCard } from "@/components/blog/BlogCard";
 import { InlineCtaCard } from "@/components/blog/InlineCtaCard";
+import { RevealGroup, RevealItem } from "@/components/Reveal";
+import { GRID_GAP, REVEAL } from "@/lib/tokens";
+import { cn } from "@/lib/utils";
 import type { BlogPost } from "@/lib/blog/types";
+
+const GRID_CLASS = cn("grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3", GRID_GAP.default);
 
 /**
  * Graceful-degradation grid — three explicit, count-keyed branches rather
  * than one generalized formula, per the brief ("simple conditional
  * rendering on posts.length, no abstraction layer"). `data-category` on
  * every real-post cell is what CategoryStrip's client-side filter toggles;
- * CTA cells carry no category and always stay visible.
+ * CTA cells carry no category and always stay visible. `data-category`
+ * lives on a plain inner div rather than directly on RevealItem, since
+ * RevealItem doesn't forward arbitrary props through to its motion element.
  */
 export function PostGrid({ posts, categoryOrder }: { posts: BlogPost[]; categoryOrder: string[] }) {
   if (posts.length === 0) return null;
@@ -17,13 +24,15 @@ export function PostGrid({ posts, categoryOrder }: { posts: BlogPost[]; category
   // — a grid rhythm needs more than one or two items to read as a rhythm.
   if (posts.length <= 2) {
     return (
-      <div className="flex flex-col gap-8">
+      <RevealGroup as="div" trigger="viewport" stagger={REVEAL.cardStagger} className="flex flex-col gap-8">
         {posts.map((post, i) => (
-          <div key={post.slug} data-category={post.category.slug}>
-            <FeatureCard post={post} categoryOrder={categoryOrder} priority={i === 0} />
-          </div>
+          <RevealItem key={post.slug}>
+            <div data-category={post.category.slug}>
+              <FeatureCard post={post} categoryOrder={categoryOrder} priority={i === 0} />
+            </div>
+          </RevealItem>
         ))}
-      </div>
+      </RevealGroup>
     );
   }
 
@@ -37,22 +46,31 @@ export function PostGrid({ posts, categoryOrder }: { posts: BlogPost[]; category
 
     return (
       <div className="flex flex-col gap-8">
-        <div data-category={newest.category.slug}>
-          <FeatureCard post={newest} categoryOrder={categoryOrder} priority />
-        </div>
-        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+        <RevealItem>
+          <div data-category={newest.category.slug}>
+            <FeatureCard post={newest} categoryOrder={categoryOrder} priority />
+          </div>
+        </RevealItem>
+        <RevealGroup
+          as="div"
+          trigger="viewport"
+          stagger={REVEAL.cardStagger}
+          className={GRID_CLASS}
+        >
           {cells.map((cell, i) =>
             cell.type === "cta" ? (
-              <div key={`cta-${i}`}>
+              <RevealItem key={`cta-${i}`}>
                 <InlineCtaCard />
-              </div>
+              </RevealItem>
             ) : (
-              <div key={cell.post!.slug} data-category={cell.post!.category.slug}>
-                <BlogCard post={cell.post!} showDate categoryOrder={categoryOrder} />
-              </div>
+              <RevealItem key={cell.post!.slug}>
+                <div data-category={cell.post!.category.slug}>
+                  <BlogCard post={cell.post!} showDate categoryOrder={categoryOrder} />
+                </div>
+              </RevealItem>
             )
           )}
-        </div>
+        </RevealGroup>
       </div>
     );
   }
@@ -87,32 +105,38 @@ export function PostGrid({ posts, categoryOrder }: { posts: BlogPost[]; category
 
   return (
     <div className="flex flex-col gap-8">
-      <div data-category={newest.category.slug}>
-        <FeatureCard post={newest} categoryOrder={categoryOrder} priority />
-      </div>
-      <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+      <RevealItem>
+        <div data-category={newest.category.slug}>
+          <FeatureCard post={newest} categoryOrder={categoryOrder} priority />
+        </div>
+      </RevealItem>
+      <RevealGroup as="div" trigger="viewport" stagger={REVEAL.cardStagger} className={GRID_CLASS}>
         {cells.map((cell, i) => {
           if (cell.type === "cta") {
             return (
-              <div key={`cta-${i}`}>
+              <RevealItem key={`cta-${i}`}>
                 <InlineCtaCard />
-              </div>
+              </RevealItem>
             );
           }
           if (cell.type === "feature") {
             return (
-              <div key={cell.post!.slug} className="sm:col-span-2 lg:col-span-3" data-category={cell.post!.category.slug}>
-                <FeatureCard post={cell.post!} categoryOrder={categoryOrder} />
-              </div>
+              <RevealItem key={cell.post!.slug} className="sm:col-span-2 lg:col-span-3">
+                <div data-category={cell.post!.category.slug}>
+                  <FeatureCard post={cell.post!} categoryOrder={categoryOrder} />
+                </div>
+              </RevealItem>
             );
           }
           return (
-            <div key={cell.post!.slug} data-category={cell.post!.category.slug}>
-              <BlogCard post={cell.post!} showDate categoryOrder={categoryOrder} />
-            </div>
+            <RevealItem key={cell.post!.slug}>
+              <div data-category={cell.post!.category.slug}>
+                <BlogCard post={cell.post!} showDate categoryOrder={categoryOrder} />
+              </div>
+            </RevealItem>
           );
         })}
-      </div>
+      </RevealGroup>
     </div>
   );
 }

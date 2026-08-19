@@ -5,8 +5,10 @@ import rehypeSlug from "rehype-slug";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Container } from "@/components/Container";
-import { RevealGroup, RevealItem } from "@/components/Reveal";
+import { Reveal, RevealGroup, RevealItem } from "@/components/Reveal";
 import { MagneticButton } from "@/components/Buttons";
+import { SECTION_PADDING, STACK } from "@/lib/tokens";
+import { cn } from "@/lib/utils";
 import JsonLd from "@/components/JsonLd";
 import { ORGANIZATION, PERSON, breadcrumb } from "@/lib/schema";
 import { getAllSlugs, getPostBySlug, getRelatedPosts } from "@/lib/blog/source";
@@ -97,37 +99,39 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
         <section className="pb-8 pt-4 sm:pt-8">
           <Container>
-            <div className="mx-auto grid max-w-(--container-page) grid-cols-1 gap-10 xl:grid-cols-[160px_minmax(0,720px)_240px] xl:justify-center xl:gap-14">
-              <div className="hidden xl:block">
-                <div className="sticky top-32">
-                  <ShareRail url={postUrl} title={post.title} />
+            <Reveal>
+              <div className="mx-auto grid max-w-(--container-page) grid-cols-1 gap-10 xl:grid-cols-[160px_minmax(0,720px)_240px] xl:justify-center xl:gap-14">
+                <div className="hidden xl:block">
+                  <div className="sticky top-32">
+                    <ShareRail url={postUrl} title={post.title} />
+                  </div>
+                </div>
+
+                <article className="min-w-0">
+                  <div className="mb-8 flex items-center gap-3 xl:hidden">
+                    <ShareRail url={postUrl} title={post.title} />
+                  </div>
+
+                  <MDXRemote
+                    source={post.content}
+                    components={mdxComponents}
+                    options={{ mdxOptions: { rehypePlugins: [rehypeSlug] } }}
+                  />
+
+                  <Reveal className="mt-16">
+                    <AuthorCard author={post.author} />
+                  </Reveal>
+                </article>
+
+                <div className="hidden xl:block">
+                  <TableOfContents items={post.toc} />
                 </div>
               </div>
-
-              <article className="min-w-0">
-                <div className="mb-8 flex items-center gap-3 xl:hidden">
-                  <ShareRail url={postUrl} title={post.title} />
-                </div>
-
-                <MDXRemote
-                  source={post.content}
-                  components={mdxComponents}
-                  options={{ mdxOptions: { rehypePlugins: [rehypeSlug] } }}
-                />
-
-                <div className="mt-16">
-                  <AuthorCard author={post.author} />
-                </div>
-              </article>
-
-              <div className="hidden xl:block">
-                <TableOfContents items={post.toc} />
-              </div>
-            </div>
+            </Reveal>
           </Container>
         </section>
 
-        <section className="py-20">
+        <section className={cn("relative overflow-hidden", SECTION_PADDING.default)}>
           <Container size="heading" className="mx-auto text-center">
             <RevealGroup as="div" className="flex flex-col items-center">
               <RevealItem>
@@ -135,13 +139,13 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                   {post.cta?.heading ?? "Find out what AI says about your practice"}
                 </h2>
               </RevealItem>
-              <RevealItem className="mt-5 max-w-xl">
+              <RevealItem className={cn(STACK.headingToSub, "max-w-xl")}>
                 <p className="text-white/65">
                   {post.cta?.body ??
                     "We run fifteen patient questions across four AI engines, count how many times your practice gets named, and send you the report."}
                 </p>
               </RevealItem>
-              <RevealItem className="mt-8">
+              <RevealItem className={STACK.contentToCta}>
                 <MagneticButton>{post.cta?.label ?? "Get My Free AI Visibility Report"}</MagneticButton>
               </RevealItem>
             </RevealGroup>

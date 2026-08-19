@@ -104,11 +104,65 @@ export const REVEAL = {
 } as const;
 
 /**
- * §2.5 Composition Rules — flat section padding, same value at every
- * breakpoint and on every section below the Hero (Logo Marquee excluded —
- * it's part of the Hero's own viewport composition, not a regular section).
- * Deliberately not responsive-scaled: scaling up per breakpoint made the
- * combined gap between two padded sections balloon well past what reads as
- * "even" spacing. See docs/12-DESIGN-STANDARDS.md §2.5.
+ * §2.2 Composition — three section-padding tiers, nothing else. Replaces
+ * eight ad-hoc values that had accumulated independently across five pages
+ * built in separate sessions (2026-08-19 spacing/alignment/motion pass).
+ * Mobile and desktop are both set explicitly — never derive one by halving
+ * the other, which is what produced the drift in the first place.
+ *
+ * A section MAY use a different tier for its top vs. its bottom padding
+ * (e.g. a hero whose bottom edge must not double-stack with the section
+ * below it) — but both values must come from this set. Never a one-off
+ * number. See docs/DESIGN-CRAFT.md.
  */
-export const SECTION_PADDING = "py-20";
+export const SECTION_PADDING = {
+  compact: "py-16 lg:py-24", // 64px mobile / 96px desktop — dense utility sections
+  default: "py-20 lg:py-32", // 80px mobile / 128px desktop — most sections
+  spacious: "py-24 lg:py-40", // 96px mobile / 160px desktop — hero, major CTA
+} as const;
+
+/** §2.5 — grid gap, two values only. */
+export const GRID_GAP = {
+  default: "gap-6 lg:gap-8", // 24px mobile / 32px desktop
+  tight: "gap-4", // 16px flat — chips, pills, inline groups only
+} as const;
+
+/** §2.5 — card padding, two values only. */
+export const CARD_PADDING = {
+  standard: "p-6 lg:p-8", // 24px mobile / 32px desktop
+  feature: "p-8 lg:p-10", // 32px mobile / 40px desktop
+} as const;
+
+/**
+ * §2.4 — card radius, two values only. Matches the scale already locked in
+ * docs/12-DESIGN-STANDARDS.md §2.4 ("standard cards rounded-2xl, large
+ * panels rounded-3xl") — this just makes it an importable constant instead
+ * of a value every component re-typed by hand.
+ */
+export const CARD_RADIUS = {
+  standard: "rounded-2xl", // 16px
+  feature: "rounded-3xl", // 24px
+} as const;
+
+/**
+ * §2.1 — the one resting/default border opacity, site-wide (2026-08-19
+ * audit found white/8 and white/10 both in use for the same resting-state
+ * role; white/8 was already the locked value in 12-DESIGN-STANDARDS.md
+ * §2.1, so /10 instances were the drift, not the standard). This is
+ * deliberately NOT the same value as the emphasized/hover border tier
+ * (white/[0.12–0.14]) — collapsing resting and hover into one opacity would
+ * remove the hover feedback entirely, which nobody asked for.
+ */
+export const BORDER = "border-white/8";
+
+/**
+ * §2.5 — the rhythm INSIDE a section (kicker → heading → subheading →
+ * content → CTA), as opposed to SECTION_PADDING which is the rhythm
+ * BETWEEN sections. Equally visible, previously unenforced.
+ */
+export const STACK = {
+  kickerToHeading: "mt-4", // 16px
+  headingToSub: "mt-5", // 20px
+  subToContent: "mt-12 lg:mt-16", // 48px mobile / 64px desktop
+  contentToCta: "mt-12", // 48px
+} as const;

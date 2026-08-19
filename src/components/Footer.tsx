@@ -51,54 +51,92 @@ const FOOTER_NAV = {
 };
 
 /** Deterministic — seeded(), not Math.random(); see the section comment
- * above. Six gentle horizontal waves spread down the footer, each its own
- * seeded vertical position/amplitude/duration so they don't look tiled. */
-const FOOTER_PATHS = Array.from({ length: 6 }, (_, i) => {
-  const seed = i * 5.7;
-  const baseY = 40 + i * 70;
-  const amplitude = Math.round((26 + seeded(seed + 0.1) * 30) * 100) / 100;
+ * above. 32 gentle horizontal waves spread down the footer, each its own
+ * seeded vertical position/amplitude/duration so they don't look tiled.
+ * A subset also carries a traveling light pulse (stroke-dash segment
+ * animated along the path) so the field reads as fiber-optic strands
+ * rather than a flat wave pattern. */
+const PATH_COUNT = 32;
+const PULSE_INDICES = new Set([2, 6, 10, 13, 17, 21, 25, 29]);
+
+const FOOTER_PATHS = Array.from({ length: PATH_COUNT }, (_, i) => {
+  const seed = i * 3.7;
+  const baseY = 10 + (i * 480) / (PATH_COUNT - 1);
+  const amplitude = Math.round((18 + seeded(seed + 0.1) * 26) * 100) / 100;
   const phase = Math.round(seeded(seed + 0.2) * Math.PI * 200) / 100;
   const y1 = Math.round((baseY + Math.sin(phase) * amplitude) * 100) / 100;
   const y2 = Math.round((baseY + Math.sin(phase + Math.PI) * amplitude) * 100) / 100;
+  const hasPulse = PULSE_INDICES.has(i);
   return {
     id: i,
     d: `M-100 ${baseY} C 300 ${y1}, 600 ${y2}, 900 ${baseY} C 1200 ${y1}, 1500 ${y2}, 1900 ${baseY}`,
     duration: Math.round((26 + seeded(seed + 0.3) * 18) * 100) / 100,
     delay: Math.round(seeded(seed + 0.4) * 4 * 100) / 100,
-    peakOpacity: Math.round((0.06 + seeded(seed + 0.5) * 0.06) * 1000) / 1000,
+    peakOpacity: Math.round((0.03 + seeded(seed + 0.5) * 0.05) * 1000) / 1000,
+    hasPulse,
+    pulseDuration: Math.round((12 + seeded(seed + 0.6) * 12) * 100) / 100,
+    pulseDelay: -Math.round(seeded(seed + 0.7) * 2400) / 100,
   };
 });
 
 function FooterPaths() {
   const reducedMotion = usePrefersReducedMotion();
   return (
-    <svg
+    <div
       aria-hidden
-      viewBox="0 0 900 500"
-      preserveAspectRatio="none"
-      className="pointer-events-none absolute inset-0 h-full w-full"
+      className="pointer-events-none absolute inset-0"
+      style={{
+        maskImage: "linear-gradient(to bottom, transparent, black 12%, black 88%, transparent)",
+        WebkitMaskImage: "linear-gradient(to bottom, transparent, black 12%, black 88%, transparent)",
+      }}
     >
-      {FOOTER_PATHS.map((path) => (
-        <motion.path
-          key={path.id}
-          d={path.d}
-          stroke="rgb(var(--accent-rgb))"
-          strokeWidth={1}
-          fill="none"
-          initial={{ pathLength: reducedMotion ? 1 : 0, opacity: 0 }}
-          animate={{
-            pathLength: 1,
-            opacity: reducedMotion ? path.peakOpacity : [0, path.peakOpacity, path.peakOpacity * 1.5, path.peakOpacity],
-          }}
-          transition={{
-            pathLength: { duration: reducedMotion ? 0 : 2.5, delay: path.delay, ease: EASE.primary },
-            opacity: reducedMotion
-              ? { duration: 0 }
-              : { duration: path.duration, delay: path.delay, repeat: Infinity, ease: "easeInOut" },
-          }}
-        />
-      ))}
-    </svg>
+      <svg viewBox="0 0 900 500" preserveAspectRatio="none" className="h-full w-full">
+        <defs>
+          <linearGradient id="footerPathGradient" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor="rgb(var(--accent-rgb))" stopOpacity="0" />
+            <stop offset="50%" stopColor="rgb(var(--accent-rgb))" stopOpacity="1" />
+            <stop offset="100%" stopColor="rgb(var(--accent-rgb))" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+
+        {FOOTER_PATHS.map((path) => (
+          <motion.path
+            key={path.id}
+            d={path.d}
+            stroke="url(#footerPathGradient)"
+            strokeWidth={1}
+            fill="none"
+            initial={{ pathLength: reducedMotion ? 1 : 0, opacity: 0 }}
+            animate={{
+              pathLength: 1,
+              opacity: reducedMotion ? path.peakOpacity : [0, path.peakOpacity, path.peakOpacity * 1.5, path.peakOpacity],
+            }}
+            transition={{
+              pathLength: { duration: reducedMotion ? 0 : 2.5, delay: path.delay, ease: EASE.primary },
+              opacity: reducedMotion
+                ? { duration: 0 }
+                : { duration: path.duration, delay: path.delay, repeat: Infinity, ease: "easeInOut" },
+            }}
+          />
+        ))}
+
+        {!reducedMotion &&
+          FOOTER_PATHS.filter((path) => path.hasPulse).map((path) => (
+            <motion.path
+              key={`pulse-${path.id}`}
+              d={path.d}
+              stroke="rgb(var(--accent-rgb))"
+              strokeWidth={1.5}
+              strokeLinecap="round"
+              strokeDasharray="50 3000"
+              fill="none"
+              opacity={0.55}
+              animate={{ strokeDashoffset: [0, -3000] }}
+              transition={{ duration: path.pulseDuration, delay: path.pulseDelay, repeat: Infinity, ease: "linear" }}
+            />
+          ))}
+      </svg>
+    </div>
   );
 }
 
@@ -206,7 +244,7 @@ export function Footer() {
     <footer className="relative overflow-hidden border-t border-white/8">
       <FooterPaths />
       <Container className="relative">
-        <div className={cn("flex flex-col gap-8 py-16 sm:flex-row sm:items-end sm:justify-between")}>
+        <RevealGroup as="div" className={cn("flex flex-col gap-8 py-16 sm:flex-row sm:items-end sm:justify-between")}>
           <RevealItem>
             <h2 className="font-display text-[1.875rem] font-bold leading-[1.1] tracking-[-0.01em] text-white sm:text-[2.5rem]">
               Let&apos;s Grow Your Practice.
@@ -217,7 +255,7 @@ export function Footer() {
               Start a Conversation
             </GhostButton>
           </RevealItem>
-        </div>
+        </RevealGroup>
 
         <RevealGroup as="div" className="grid gap-10 border-t border-white/8 py-14 sm:grid-cols-2 md:grid-cols-3">
           <RevealItem>

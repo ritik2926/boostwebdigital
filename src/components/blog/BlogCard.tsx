@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { PostThumbnail } from "@/components/blog/PostThumbnail";
 import type { BlogPost } from "@/lib/blog/types";
-import { formatDate } from "@/lib/utils";
+import { formatDate, cn } from "@/lib/utils";
+import { CARD_PADDING } from "@/lib/tokens";
 
 /**
  * `showDate`/`categoryOrder` are optional so existing call sites (Related
@@ -12,7 +13,7 @@ export function BlogCard({ post, showDate = false, categoryOrder = [] }: { post:
   return (
     <Link
       href={`/blog/${post.slug}/`}
-      className="group flex h-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/[0.02] transition-all duration-300 hover:-translate-y-1.5 hover:border-white/20 hover:bg-white/4 hover:shadow-[0_20px_60px_rgba(0,0,0,0.45)]"
+      className="group flex h-full flex-col overflow-hidden rounded-2xl border border-white/8 bg-white/[0.02] transition-all duration-300 hover:-translate-y-1.5 hover:border-white/20 hover:bg-white/4 hover:shadow-[0_20px_60px_rgba(0,0,0,0.45)]"
     >
       <div className="overflow-hidden">
         <PostThumbnail
@@ -22,7 +23,7 @@ export function BlogCard({ post, showDate = false, categoryOrder = [] }: { post:
           className="aspect-16/9 h-auto w-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
       </div>
-      <div className="flex flex-1 flex-col p-8">
+      <div className={cn("flex flex-1 flex-col", CARD_PADDING.standard)}>
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
           <span className="inline-flex w-fit items-center rounded-full border border-white/15 bg-white/5 px-3 py-1">
             <span className="font-mono text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-white/70">
