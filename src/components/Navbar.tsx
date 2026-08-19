@@ -187,6 +187,7 @@ function DesktopNavLinks({ className }: { className?: string }) {
 
 function MobileNav() {
   const [open, setOpen] = useState(false);
+  const [otherOpen, setOtherOpen] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -195,6 +196,12 @@ function MobileNav() {
     return () => {
       document.body.style.overflow = prev;
     };
+  }, [open]);
+
+  // Collapse the "Other" panel every time the menu itself closes, so it
+  // doesn't reopen already-expanded next time.
+  useEffect(() => {
+    if (!open) setOtherOpen(false);
   }, [open]);
 
   return (
@@ -260,55 +267,72 @@ function MobileNav() {
                 </MotionLink>
               ))}
 
-              <motion.span
+              <motion.button
+                type="button"
+                onClick={() => setOtherOpen((v) => !v)}
+                aria-expanded={otherOpen}
                 initial={{ opacity: 0, y: 22 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 14 }}
                 transition={{ duration: 0.4, delay: 0.16 + 0.06 * NAV_LINKS.length, ease: EASE.primary }}
-                className="mt-5 font-mono text-xs font-semibold uppercase tracking-[0.16em] text-white/35"
+                className="font-display flex items-center gap-2 py-3 text-3xl text-white/80 transition-colors hover:text-white sm:text-4xl"
               >
                 Other
-              </motion.span>
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 10 10"
+                  fill="none"
+                  aria-hidden
+                  className={cn("text-white/40 transition-transform duration-200", otherOpen && "rotate-180")}
+                >
+                  <path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </motion.button>
 
-              {OTHER_LINKS.map((item, i) =>
-                item.href ? (
-                  <MotionLink
-                    key={item.label}
-                    href={item.href}
-                    onClick={() => setOpen(false)}
-                    initial={{ opacity: 0, y: 22 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 14 }}
-                    transition={{ duration: 0.4, delay: 0.16 + 0.06 * (NAV_LINKS.length + 1 + i), ease: EASE.primary }}
-                    className="font-display py-2.5 text-2xl text-white/70 transition-colors hover:text-white sm:text-3xl"
+              <AnimatePresence initial={false}>
+                {otherOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.3, ease: EASE.primary }}
+                    className="flex w-full flex-col items-center overflow-hidden"
                   >
-                    {item.label}
-                  </MotionLink>
-                ) : (
-                  <motion.span
-                    key={item.label}
-                    initial={{ opacity: 0, y: 22 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 14 }}
-                    transition={{ duration: 0.4, delay: 0.16 + 0.06 * (NAV_LINKS.length + 1 + i), ease: EASE.primary }}
-                    className="font-display flex items-center gap-2.5 py-2.5 text-2xl text-white/30 sm:text-3xl"
-                  >
-                    {item.label}
-                    <span className="rounded-full border border-white/10 px-2 py-0.5 font-mono text-[0.6rem] font-semibold uppercase tracking-wide text-white/30">
-                      Soon
-                    </span>
-                  </motion.span>
-                )
-              )}
+                    {OTHER_LINKS.map((item) =>
+                      item.href ? (
+                        <Link
+                          key={item.label}
+                          href={item.href}
+                          onClick={() => setOpen(false)}
+                          className="font-display py-2 text-xl text-white/60 transition-colors hover:text-white sm:text-2xl"
+                        >
+                          {item.label}
+                        </Link>
+                      ) : (
+                        <span
+                          key={item.label}
+                          className="font-display flex items-center gap-2.5 py-2 text-xl text-white/25 sm:text-2xl"
+                        >
+                          {item.label}
+                          <span className="rounded-full border border-white/10 px-2 py-0.5 font-mono text-[0.55rem] font-semibold uppercase tracking-wide text-white/30">
+                            Soon
+                          </span>
+                        </span>
+                      )
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               <motion.div
                 initial={{ opacity: 0, y: 22 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 14 }}
-                transition={{ duration: 0.4, delay: 0.16 + 0.06 * (NAV_LINKS.length + 1 + OTHER_LINKS.length), ease: EASE.primary }}
-                className="mt-8 w-full max-w-xs px-2"
+                transition={{ duration: 0.4, delay: 0.16 + 0.06 * (NAV_LINKS.length + 1), ease: EASE.primary }}
+                className="mx-auto mt-8 w-full max-w-xs px-2"
               >
-                <MagneticButton href="/contact/" className="w-full">Book a consultation</MagneticButton>
+                <MagneticButton href="/contact/" className="flex w-full items-center justify-center">Book a consultation</MagneticButton>
               </motion.div>
             </nav>
           </motion.div>
