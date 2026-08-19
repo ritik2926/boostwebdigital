@@ -26,6 +26,7 @@ const NAV_LINKS = [
   { label: "Blog", href: "/blogs/" },
   { label: "Pricing", href: "/#pricing" },
   { label: "FAQ", href: "/#faq" },
+  { label: "Contact", href: "/contact/" },
 ];
 
 const MotionLink = motion.create(Link);
