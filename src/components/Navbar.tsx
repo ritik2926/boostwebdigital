@@ -15,26 +15,34 @@ import { EASE } from "@/lib/tokens";
 // docs/12-DESIGN-STANDARDS.md §8 (Navigation).
 // ---------------------------------------------------------------------------
 
-// Services/Pricing/FAQ are same-page anchors on the homepage, not routes —
-// root-relative ("/#services") so they still resolve correctly when clicked
+// Services is a same-page anchor on the homepage, not a route —
+// root-relative ("/#services") so it still resolves correctly when clicked
 // from a real route like /about/ or /blogs/ instead of just appending an
 // inert hash to the current URL.
 const NAV_LINKS = [
   { label: "Home", href: "/" },
-  { label: "About", href: "/about/" },
+  { label: "About Us", href: "/about/" },
   { label: "Services", href: "/#services" },
-  { label: "Blog", href: "/blogs/" },
-  { label: "Pricing", href: "/#pricing" },
-  { label: "FAQ", href: "/#faq" },
   { label: "Contact", href: "/contact/" },
+];
+
+// Grouped under the "Other" dropdown. `href: null` means the page doesn't
+// exist yet — rendered disabled with a "Soon" tag rather than a dead link
+// (no fake functional UI, per CLAUDE.md's honesty rule).
+const OTHER_LINKS: Array<{ label: string; href: string | null }> = [
+  { label: "Blogs", href: "/blogs/" },
+  { label: "AI News", href: null },
+  { label: "FAQs", href: "/#faq" },
+  { label: "Pricing", href: "/#pricing" },
 ];
 
 const MotionLink = motion.create(Link);
 
 // Real routes (no "#") are matched against the current pathname so the
-// underline follows the page you're actually on; homepage anchor links
-// (Services/Pricing/FAQ) only ever activate on hover since there's no
-// scroll-spy tracking which section is in view.
+// underline follows the page you're actually on; anchor links only ever
+// activate on hover since there's no scroll-spy tracking which section is
+// in view. A real route living inside the "Other" dropdown (e.g. Blogs)
+// activates the "Other" trigger itself rather than nothing at all.
 function getActiveLabel(pathname: string) {
   if (pathname === "/") return "Home";
   for (const item of NAV_LINKS) {
@@ -44,7 +52,104 @@ function getActiveLabel(pathname: string) {
       return item.label;
     }
   }
+  for (const item of OTHER_LINKS) {
+    if (!item.href || item.href.includes("#")) continue;
+    const hrefPath = item.href.replace(/\/$/, "");
+    if (pathname === hrefPath || pathname.startsWith(`${hrefPath}/`)) {
+      return "Other";
+    }
+  }
   return "";
+}
+
+function NavHighlight() {
+  return (
+    <motion.span
+      layoutId="nav-highlight"
+      className="absolute inset-x-3 bottom-1 h-px rounded-full bg-white/60"
+      style={{ boxShadow: "0 0 6px rgba(255,255,255,0.55), 0 -8px 10px -4px rgba(255,255,255,0.35)" }}
+      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+    />
+  );
+}
+
+function OtherDropdown({ active, onHover }: { active: boolean; onHover: (label: string | null) => void }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div
+      className="relative"
+      onMouseEnter={() => {
+        onHover("Other");
+        setOpen(true);
+      }}
+      onMouseLeave={() => setOpen(false)}
+      onFocus={() => {
+        onHover("Other");
+        setOpen(true);
+      }}
+      onBlur={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget as Node)) setOpen(false);
+      }}
+    >
+      <button
+        type="button"
+        aria-haspopup="true"
+        aria-expanded={open}
+        className="relative flex items-center gap-1 px-4 py-2 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+      >
+        {active && <NavHighlight />}
+        <span className={cn("relative transition-colors", active ? "text-white" : "text-white/60")}>Other</span>
+        <svg
+          width="10"
+          height="10"
+          viewBox="0 0 10 10"
+          fill="none"
+          aria-hidden
+          className={cn("relative mt-px text-white/50 transition-transform duration-200", open && "rotate-180")}
+        >
+          <path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 6 }}
+            transition={{ duration: 0.2, ease: EASE.primary }}
+            // pt-3 (padding, not margin) keeps the gap to the trigger inside
+            // this element's own hoverable box — a margin-based gap here is
+            // a dead zone the mouse falls out of before reaching the panel.
+            className="absolute left-1/2 top-full z-(--z-raised) w-48 -translate-x-1/2 pt-3"
+          >
+            <div className="overflow-hidden rounded-2xl border border-white/8 bg-[#0b0b0f]/95 py-2 shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-xl">
+              {OTHER_LINKS.map((item) =>
+                item.href ? (
+                  <Link
+                    key={item.label}
+                    href={item.href}
+                    onClick={() => setOpen(false)}
+                    className="block px-4 py-2.5 text-sm text-white/70 transition-colors hover:bg-white/5 hover:text-white"
+                  >
+                    {item.label}
+                  </Link>
+                ) : (
+                  <span key={item.label} className="flex items-center justify-between px-4 py-2.5 text-sm text-white/30">
+                    {item.label}
+                    <span className="rounded-full border border-white/10 px-1.5 py-0.5 font-mono text-[0.6rem] font-semibold uppercase tracking-wide text-white/30">
+                      Soon
+                    </span>
+                  </span>
+                )
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
 }
 
 function DesktopNavLinks({ className }: { className?: string }) {
@@ -67,20 +172,15 @@ function DesktopNavLinks({ className }: { className?: string }) {
             onMouseEnter={() => setHovered(item.label)}
             className="relative px-4 py-2 text-sm"
           >
-            {isActive && (
-              <motion.span
-                layoutId="nav-highlight"
-                className="absolute inset-x-3 bottom-1 h-px rounded-full bg-white/60"
-                style={{ boxShadow: "0 0 6px rgba(255,255,255,0.55), 0 -8px 10px -4px rgba(255,255,255,0.35)" }}
-                transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              />
-            )}
+            {isActive && <NavHighlight />}
             <span className={cn("relative transition-colors", isActive ? "text-white" : "text-white/60")}>
               {item.label}
             </span>
           </Link>
         );
       })}
+
+      <OtherDropdown active={active === "Other"} onHover={setHovered} />
     </div>
   );
 }
@@ -144,7 +244,7 @@ function MobileNav() {
               style={{ filter: "blur(80px)" }}
             />
 
-            <nav className="relative flex flex-1 flex-col items-center justify-center gap-1 px-6">
+            <nav className="relative flex flex-1 flex-col items-center justify-center gap-1 overflow-y-auto px-6 py-8">
               {NAV_LINKS.map((item, i) => (
                 <MotionLink
                   key={item.label}
@@ -160,11 +260,52 @@ function MobileNav() {
                 </MotionLink>
               ))}
 
-              <motion.div
+              <motion.span
                 initial={{ opacity: 0, y: 22 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 14 }}
                 transition={{ duration: 0.4, delay: 0.16 + 0.06 * NAV_LINKS.length, ease: EASE.primary }}
+                className="mt-5 font-mono text-xs font-semibold uppercase tracking-[0.16em] text-white/35"
+              >
+                Other
+              </motion.span>
+
+              {OTHER_LINKS.map((item, i) =>
+                item.href ? (
+                  <MotionLink
+                    key={item.label}
+                    href={item.href}
+                    onClick={() => setOpen(false)}
+                    initial={{ opacity: 0, y: 22 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 14 }}
+                    transition={{ duration: 0.4, delay: 0.16 + 0.06 * (NAV_LINKS.length + 1 + i), ease: EASE.primary }}
+                    className="font-display py-2.5 text-2xl text-white/70 transition-colors hover:text-white sm:text-3xl"
+                  >
+                    {item.label}
+                  </MotionLink>
+                ) : (
+                  <motion.span
+                    key={item.label}
+                    initial={{ opacity: 0, y: 22 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 14 }}
+                    transition={{ duration: 0.4, delay: 0.16 + 0.06 * (NAV_LINKS.length + 1 + i), ease: EASE.primary }}
+                    className="font-display flex items-center gap-2.5 py-2.5 text-2xl text-white/30 sm:text-3xl"
+                  >
+                    {item.label}
+                    <span className="rounded-full border border-white/10 px-2 py-0.5 font-mono text-[0.6rem] font-semibold uppercase tracking-wide text-white/30">
+                      Soon
+                    </span>
+                  </motion.span>
+                )
+              )}
+
+              <motion.div
+                initial={{ opacity: 0, y: 22 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 14 }}
+                transition={{ duration: 0.4, delay: 0.16 + 0.06 * (NAV_LINKS.length + 1 + OTHER_LINKS.length), ease: EASE.primary }}
                 className="mt-8 w-full max-w-xs px-2"
               >
                 <MagneticButton href="/contact/" className="w-full">Book a consultation</MagneticButton>
