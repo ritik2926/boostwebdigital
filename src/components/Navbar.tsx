@@ -30,7 +30,6 @@ const NAV_LINKS = [
 
 const MotionLink = motion.create(Link);
 
-<<<<<<< HEAD
 // Real routes (no "#") are matched against the current pathname so the
 // underline follows the page you're actually on; homepage anchor links
 // (Services/Pricing/FAQ) only ever activate on hover since there's no
@@ -45,27 +44,13 @@ function getActiveLabel(pathname: string) {
     }
   }
   return "";
-=======
-/** The href a page actually is, ignoring same-page anchors — "/#services"
- * only ever matches while sitting on "/" itself, so it never wins the
- * active state over a real route like "/about/". */
-function getActivePage(pathname: string) {
-  const currentPage = NAV_LINKS.find((link) => !link.href.includes("#") && link.href === pathname);
-  return currentPage?.label ?? null;
->>>>>>> 3ec5c97 (polish pass: spacing system, motion, fiber footer)
 }
 
 function DesktopNavLinks({ className }: { className?: string }) {
   const pathname = usePathname();
-<<<<<<< HEAD
   const currentLabel = getActiveLabel(pathname);
   const [hovered, setHovered] = useState<string | null>(null);
   const active = hovered ?? currentLabel;
-=======
-  const activePage = getActivePage(pathname);
-  const [hovered, setHovered] = useState<string | null>(null);
-  const active = hovered ?? activePage;
->>>>>>> 3ec5c97 (polish pass: spacing system, motion, fiber footer)
 
   return (
     <div
