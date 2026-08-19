@@ -41,6 +41,32 @@ export function usePrefersReducedMotion() {
   return useSyncExternalStore(subscribeToReducedMotion, getReducedMotionSnapshot, getReducedMotionServerSnapshot);
 }
 
+function subscribeToCoarsePointer(callback: () => void) {
+  const query = window.matchMedia("(pointer: coarse)");
+  query.addEventListener("change", callback);
+  return () => query.removeEventListener("change", callback);
+}
+
+function getCoarsePointerSnapshot() {
+  return window.matchMedia("(pointer: coarse)").matches;
+}
+
+function getCoarsePointerServerSnapshot() {
+  return false;
+}
+
+/**
+ * Animating `filter: blur()` is the one part of the reveal that forces a
+ * repaint every frame instead of a cheap compositor-only update — fine on
+ * desktop GPUs, but on mid/low-end phones it drops enough frames that the
+ * whole reveal reads as "blank, then instantly popped in" rather than a
+ * smooth fade. Touch devices get the same y/scale/opacity motion, just
+ * without the blur term, which is the one actually causing the jank.
+ */
+function usePrefersCoarsePointer() {
+  return useSyncExternalStore(subscribeToCoarsePointer, getCoarsePointerSnapshot, getCoarsePointerServerSnapshot);
+}
+
 /**
  * docs/12-DESIGN-STANDARDS.md §9: reduced-motion resolves to opacity-only —
  * no y-translate, no blur transition, not a full disable. Framer's own
@@ -49,6 +75,7 @@ export function usePrefersReducedMotion() {
  */
 function useReveal(delay = 0) {
   const reduced = usePrefersReducedMotion();
+  const coarsePointer = usePrefersCoarsePointer();
 
   // Reduced variants explicitly zero y/scale/filter rather than omitting
   // them — `getServerSnapshot` assumes not-reduced, so the very first
@@ -57,10 +84,12 @@ function useReveal(delay = 0) {
   // whatever value that first render left it at instead of resetting it.
   const variants: Variants = reduced
     ? { hidden: { opacity: 0, y: 0, scale: 1, filter: "blur(0px)" }, visible: { opacity: 1, y: 0, scale: 1, filter: "blur(0px)" } }
-    : {
-        hidden: { opacity: 0, y: REVEAL.y, scale: REVEAL.scale, filter: `blur(${REVEAL.blur}px)` },
-        visible: { opacity: 1, y: 0, scale: 1, filter: "blur(0px)" },
-      };
+    : coarsePointer
+      ? { hidden: { opacity: 0, y: REVEAL.y, scale: REVEAL.scale, filter: "blur(0px)" }, visible: { opacity: 1, y: 0, scale: 1, filter: "blur(0px)" } }
+      : {
+          hidden: { opacity: 0, y: REVEAL.y, scale: REVEAL.scale, filter: `blur(${REVEAL.blur}px)` },
+          visible: { opacity: 1, y: 0, scale: 1, filter: "blur(0px)" },
+        };
 
   const transition = reduced
     ? { duration: 0.5, ease: EASE.primary, delay }
