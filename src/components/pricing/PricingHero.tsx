@@ -12,7 +12,7 @@ import { STACK } from "@/lib/tokens";
  */
 export function PricingHero() {
   return (
-    <section className="relative overflow-hidden pt-28 pb-8 text-center sm:pt-32 lg:pt-40 lg:pb-12">
+    <section className="relative overflow-hidden pt-[12vh] pb-8 text-center sm:pt-32 lg:pt-40 lg:pb-12">
       <Container className="mx-auto">
         <RevealGroup as="div" trigger="mount" stagger={0.1} className="flex flex-col items-center">
           <RevealItem>
