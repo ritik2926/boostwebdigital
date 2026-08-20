@@ -690,9 +690,9 @@ function MarketStatAccordionItem({
             {isOpen && (
               <motion.p
                 key={stat.id}
-                initial={{ opacity: 0, filter: blurPx(REVEAL.blur) }}
-                animate={{ opacity: 1, filter: "blur(0px)" }}
-                exit={{ opacity: 0, filter: blurPx(REVEAL.blur) }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
                 transition={{ duration: DURATION.reveal, ease: EASE.primary }}
                 className="max-w-xl text-white/70"
               >
