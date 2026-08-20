@@ -9,8 +9,8 @@ const SITE_URL = "https://boostwebdigital.com";
 const LAST_UPDATED = new Date("2026-08-17");
 
 /**
- * Homepage, /about/, /contact/, and /blogs/ (+ every post at /blog/<slug>/)
- * are live today. `/blog/` itself is a 301 redirect to /blogs/
+ * Homepage, /about/, /contact/, /blogs/ (+ every post at /blog/<slug>/), and
+ * /pricing/ are live today. `/blog/` itself is a 301 redirect to /blogs/
  * (next.config.ts) and is deliberately NOT listed here — a redirecting URL
  * in a sitemap is a Search Console warning. `/design-lab` is a `noindex` dev
  * playground and `/api/contact/` is a route handler, not a page — both are
@@ -22,7 +22,7 @@ const LAST_UPDATED = new Date("2026-08-17");
  * Planned routes (not yet built — do not add until the page exists), per
  * docs/13-URL-ARCHITECTURE.md:
  *
- * Core & trust: /team/ /pricing/ /case-studies/
+ * Core & trust: /team/ /case-studies/
  *   /privacy-policy/ /terms/
  * Healthcare vertical pillar: /healthcare-marketing/ and its
  *   /healthcare-marketing/{healthcare-seo,healthcare-web-design,
@@ -71,6 +71,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       url: `${SITE_URL}/blogs/`,
       lastModified: LAST_UPDATED,
       changeFrequency: "weekly",
+      priority: 0.7,
+    },
+    {
+      url: `${SITE_URL}/pricing/`,
+      lastModified: LAST_UPDATED,
+      changeFrequency: "monthly",
       priority: 0.7,
     },
     ...posts.map((post) => ({

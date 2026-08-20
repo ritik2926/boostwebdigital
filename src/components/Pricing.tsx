@@ -2,6 +2,7 @@
 
 import { useRef, useState, type KeyboardEvent, type MutableRefObject, type ReactNode } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import Link from "next/link";
 import { Container } from "@/components/Container";
 import { RevealGroup, RevealItem, usePrefersReducedMotion } from "@/components/Reveal";
 import { Kicker } from "@/components/Kicker";
@@ -400,9 +401,12 @@ export function Pricing() {
           <p className="text-sm text-white/40">
             Ad spend is paid directly to Google or Meta — we never mark up media. One practice per specialty per
             metro. See{" "}
-            <span className="text-white/70 underline decoration-white/30 underline-offset-2 hover:decoration-white/60">
+            <Link
+              href="/pricing/"
+              className="text-white/70 underline decoration-white/30 underline-offset-2 transition-colors hover:text-white hover:decoration-white/60"
+            >
               full pricing details
-            </span>{" "}
+            </Link>{" "}
             for what&apos;s not included.
           </p>
         </RevealItem>

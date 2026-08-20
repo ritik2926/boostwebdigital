@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Container } from "@/components/Container";
 import { RevealGroup, RevealItem } from "@/components/Reveal";
 import { MagneticButton } from "@/components/Buttons";
@@ -6,12 +7,28 @@ import { AmbientGlow } from "@/components/AmbientGlow";
 /**
  * The site's one "Work with us" CTA band — extracted verbatim from
  * src/app/about/page.tsx's Section 6 so every page that wants this exact
- * band (About, now the /blogs/ archive) shares one implementation instead
+ * band (About, /blogs/, now /pricing/) shares one implementation instead
  * of drifting copies. About's own inline section was left as-is rather than
- * refactored to import this, per minimal-diff scope discipline — this
- * component exists for new call sites only.
+ * refactored to import this, per minimal-diff scope discipline.
+ *
+ * Every prop is optional with a default matching the original hardcoded
+ * copy exactly, so existing call sites (About, Blogs) render byte-for-byte
+ * identical to before — only a call site that explicitly wants different
+ * copy (e.g. /pricing/'s "Not sure which plan?" framing) passes anything.
  */
-export function FinalCTA() {
+export function FinalCTA({
+  kicker = "Work with us",
+  body = "We run fifteen patient questions across four AI engines, count how many times your practice gets named, and send you the report. No call required.",
+  cardHeading = "What you get",
+  cardBody = "Your citation count across ChatGPT, Perplexity, Google AI Overviews and Gemini. The competitors being recommended instead of you. The three specific reasons why. You keep the report whether or not you ever hire us.",
+  ctaLabel = "Get My Free AI Visibility Report",
+}: {
+  kicker?: string;
+  body?: ReactNode;
+  cardHeading?: string;
+  cardBody?: ReactNode;
+  ctaLabel?: string;
+} = {}) {
   return (
     <section className="relative overflow-hidden py-32 lg:py-40">
       <AmbientGlow corner="top-right" duration={70} />
@@ -21,7 +38,7 @@ export function FinalCTA() {
           <RevealItem>
             <span className="inline-flex items-center rounded-full border border-white/15 bg-white/5 px-4 py-1.5">
               <span className="font-mono text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-white/85">
-                Work with us
+                {kicker}
               </span>
             </span>
           </RevealItem>
@@ -38,10 +55,7 @@ export function FinalCTA() {
             </h2>
           </RevealItem>
           <RevealItem className="mt-6">
-            <p className="text-white/70">
-              We run fifteen patient questions across four AI engines, count how many times your practice gets
-              named, and send you the report. No call required.
-            </p>
+            <p className="text-white/70">{body}</p>
           </RevealItem>
         </RevealGroup>
 
@@ -67,19 +81,15 @@ export function FinalCTA() {
                 <path d="M10 10h8M10 14h8M10 18h5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
               </svg>
               <div>
-                <h3 className="font-display text-xl font-semibold text-white">What you get</h3>
-                <p className="mt-3 text-white/70">
-                  Your citation count across ChatGPT, Perplexity, Google AI Overviews and Gemini. The
-                  competitors being recommended instead of you. The three specific reasons why. You keep the
-                  report whether or not you ever hire us.
-                </p>
+                <h3 className="font-display text-xl font-semibold text-white">{cardHeading}</h3>
+                <p className="mt-3 text-white/70">{cardBody}</p>
               </div>
             </div>
           </div>
         </RevealItem>
 
         <RevealItem className="mt-10 flex justify-center">
-          <MagneticButton>Get My Free AI Visibility Report</MagneticButton>
+          <MagneticButton>{ctaLabel}</MagneticButton>
         </RevealItem>
       </Container>
     </section>

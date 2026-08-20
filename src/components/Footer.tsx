@@ -46,7 +46,7 @@ const FOOTER_NAV = {
     { label: "Blog", href: "/blogs/" },
     { label: "About", href: "/about/" },
     { label: "Services", href: "/#services" },
-    { label: "Pricing", href: "/#pricing" },
+    { label: "Pricing", href: "/pricing/" },
   ],
 };
 

@@ -33,7 +33,7 @@ const OTHER_LINKS: Array<{ label: string; href: string | null }> = [
   { label: "Blogs", href: "/blogs/" },
   { label: "AI News", href: null },
   { label: "FAQs", href: "/#faq" },
-  { label: "Pricing", href: "/#pricing" },
+  { label: "Pricing", href: "/pricing/" },
 ];
 
 const MotionLink = motion.create(Link);
