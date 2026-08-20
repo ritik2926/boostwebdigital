@@ -27,7 +27,7 @@ export function ContactHero() {
     <section className="relative overflow-hidden pt-28 pb-16 sm:pt-32 lg:pt-40 lg:pb-24">
       <HeroBackground />
       <Container>
-        <Reveal>
+        <Reveal trigger="mount">
           <div
             className={cn(
               "relative overflow-hidden border border-white/8 bg-white/[0.03] shadow-[0_24px_70px_rgba(0,0,0,0.6)]",
@@ -47,7 +47,7 @@ export function ContactHero() {
 
             <div className="relative grid grid-cols-1 gap-12 lg:grid-cols-[42fr_58fr]">
               {/* LEFT COLUMN */}
-              <RevealGroup as="div" className="flex flex-col" stagger={0.08}>
+              <RevealGroup as="div" trigger="mount" className="flex flex-col" stagger={0.08}>
                 <RevealItem>
                   <h1 className="max-w-full font-display text-[2rem] font-extrabold leading-[1.05] tracking-[-0.02em] text-white sm:text-[2.75rem]">
                     Tell us about your practice

@@ -56,6 +56,12 @@ const switzer = localFont({
   ],
   variable: "--font-switzer",
   display: "swap",
+  // Only the weights an individual page actually renders need to load —
+  // `preload: true` (the default) force-preloads all 18 declared weight/
+  // style files as render-blocking-priority requests on every single page,
+  // competing with the page's own content for bandwidth. `swap` already
+  // guarantees text is never invisible while a weight loads.
+  preload: false,
 });
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
