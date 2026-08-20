@@ -6,19 +6,19 @@ import { cn } from "@/lib/utils";
 
 const EXCLUSIONS = [
   {
-    name: "Ad spend",
+    name: "Ad Spend",
     body: "Paid budgets are paid directly to Google or Meta, never through us. We don't mark up media.",
   },
   {
-    name: "Website rebuilds",
+    name: "Website Rebuilds",
     body: "We optimise what you have. A full rebuild is quoted separately.",
   },
   {
-    name: "Photography and video",
+    name: "Photography and Video",
     body: "We'll tell you what you need and can recommend someone.",
   },
   {
-    name: "Patient data",
+    name: "Patient Data",
     body: "We work exclusively with public data — your site, listings and reviews. We never touch patient records, intake forms, call recordings or CRM data.",
   },
 ];

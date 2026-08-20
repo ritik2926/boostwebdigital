@@ -6,19 +6,19 @@ import { cn } from "@/lib/utils";
 
 const REASONS = [
   {
-    name: "Fewer than 20 reviews",
+    name: "Fewer Than 20 Reviews",
     body: "You aren't ready unless you're willing to fix reputation first.",
   },
   {
-    name: "Need results in 30 days",
+    name: "Need Results in 30 Days",
     body: "AI citations can move in 30–60 days, but meaningful patient-volume change takes a quarter.",
   },
   {
-    name: "Won't change the website",
+    name: "Won't Change the Website",
     body: "Some of this work requires changing your pages.",
   },
   {
-    name: "Looking for the cheapest option",
+    name: "Looking for the Cheapest Option",
     body: "There are agencies at $500 a month. They aren't doing this work.",
   },
 ];

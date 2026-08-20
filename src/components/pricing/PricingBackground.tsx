@@ -1,10 +1,13 @@
 /**
  * Layered dark atmosphere for /pricing/ — three large, soft, off-center
  * light washes plus a hairline grid texture, all pure CSS (no image/canvas/
- * video, no client JS). `fixed` so it reads as one continuous atmosphere
- * behind every section rather than a per-section repeat, and because
- * nothing here ever moves, there's nothing for `prefers-reduced-motion` to
- * need to disable.
+ * video, no client JS), anchored to the top of the page behind the Hero and
+ * Plans (where the design calls for the strongest glow) and scrolling away
+ * normally after that — same `absolute`, section-scoped approach every
+ * other background on the site uses (AmbientGlow, HeroBackground). This was
+ * originally `fixed`, which combined with three `filter: blur()` layers is
+ * a well-known mobile scroll/repaint cost; `absolute` composites once and
+ * scrolls with the page like everything else.
  *
  * Uses the site's one locked accent hue (`--accent-rgb`) throughout, not a
  * separate cyan/teal — see CLAUDE.md/12-DESIGN-STANDARDS.md §2.1, "never a
@@ -14,7 +17,7 @@
  */
 export function PricingBackground() {
   return (
-    <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 overflow-hidden bg-[#08080a]">
+    <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[1600px] overflow-hidden bg-[#08080a]">
       {/* Centre/top — strongest wash, sits behind the Hero and bleeds down
           toward the pricing cards below it. */}
       <div
