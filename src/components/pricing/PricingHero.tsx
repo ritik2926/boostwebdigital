@@ -1,20 +1,18 @@
 import { Container } from "@/components/Container";
 import { Kicker } from "@/components/Kicker";
 import { RevealGroup, RevealItem } from "@/components/Reveal";
-import { PricingHeroToggle } from "@/components/pricing/PricingHeroToggle";
 import { STACK } from "@/lib/tokens";
 
 /**
  * Centred composition — the one deliberate exception to the site's default
  * left-aligned editorial rule (DESIGN-STANDARDS §3), same allowance every
- * other Hero already gets. Ends in the toggle + compact 3-plan price row
- * rather than a single CTA, matching the reference's hero-flows-into-
- * pricing composition — the full detailed cards live further down in
- * PricingPlans.
+ * other Hero already gets. Tight bottom padding so it flows straight into
+ * PricingPlans' toggle + cards directly below — no visual section break,
+ * matching the reference's continuous hero-into-pricing composition.
  */
 export function PricingHero() {
   return (
-    <section className="relative overflow-hidden pt-28 pb-16 text-center sm:pt-32 lg:pt-40 lg:pb-24">
+    <section className="relative overflow-hidden pt-28 pb-8 text-center sm:pt-32 lg:pt-40 lg:pb-12">
       <Container className="mx-auto">
         <RevealGroup as="div" trigger="mount" stagger={0.1} className="flex flex-col items-center">
           <RevealItem>
@@ -33,9 +31,6 @@ export function PricingHero() {
                 numbers don&apos;t move, you leave.
               </p>
             </div>
-          </RevealItem>
-          <RevealItem className={STACK.subToContent}>
-            <PricingHeroToggle />
           </RevealItem>
         </RevealGroup>
       </Container>

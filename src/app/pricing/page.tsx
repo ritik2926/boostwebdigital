@@ -60,8 +60,8 @@ export default function PricingPage() {
       <Navbar />
       <main>
         <PricingHero />
-        <PricingMath />
         <PricingPlans />
+        <PricingMath />
         <PricingComparison />
         <PricingGuarantee />
         <PricingExclusions />
