@@ -82,10 +82,16 @@ function useReveal(delay = 0) {
   // client render can briefly use the full variants before this hook
   // corrects itself; omitting a property leaves it "uncontrolled" at
   // whatever value that first render left it at instead of resetting it.
+  // The coarse-pointer variant omits `filter` entirely rather than pinning
+  // it to "blur(0px)" at both ends: Framer still lists a property in the
+  // animated CSS properties even when its value never changes, which is
+  // enough for Chrome to mark the whole transition non-composited (flagged
+  // directly by Lighthouse) — dropping the key keeps this animation to
+  // transform + opacity only, both compositor-eligible.
   const variants: Variants = reduced
     ? { hidden: { opacity: 0, y: 0, scale: 1, filter: "blur(0px)" }, visible: { opacity: 1, y: 0, scale: 1, filter: "blur(0px)" } }
     : coarsePointer
-      ? { hidden: { opacity: 0, y: REVEAL.y, scale: REVEAL.scale, filter: "blur(0px)" }, visible: { opacity: 1, y: 0, scale: 1, filter: "blur(0px)" } }
+      ? { hidden: { opacity: 0, y: REVEAL.y, scale: REVEAL.scale }, visible: { opacity: 1, y: 0, scale: 1 } }
       : {
           hidden: { opacity: 0, y: REVEAL.y, scale: REVEAL.scale, filter: `blur(${REVEAL.blur}px)` },
           visible: { opacity: 1, y: 0, scale: 1, filter: "blur(0px)" },

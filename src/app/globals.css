@@ -395,6 +395,27 @@ body {
   opacity: 1;
 }
 
+/* All three (.shiny-cta, ::before, ::after) share `animation-composition:
+   add` (line above) to layer the base + reverse-paused hover pulse —
+   Lighthouse flags every animation using a composite mode other than the
+   default "replace" as non-composited (main-thread paint every frame),
+   plus .shiny-cta/::before separately animate a custom property consumed
+   inside `background`/`mask-image`, which forces a repaint regardless of
+   the @property registration above (that only smooths interpolation, not
+   paint cost). Real, continuous main-thread cost on every page with a
+   shiny-cta visible (nav CTA, every primary button) — freezing all three
+   on touch devices removes it exactly where CPU headroom is scarcest; the
+   hover-gated breathing glow is untouched (opaque only on hover, which
+   barely sustains on touch anyway), so the button still reads as "shiny,"
+   just without the perpetual animation on phones. */
+@media (pointer: coarse) {
+  .shiny-cta,
+  .shiny-cta::before,
+  .shiny-cta::after {
+    animation: none;
+  }
+}
+
 @keyframes shiny-cta-angle {
   to {
     --gradient-angle: 360deg;

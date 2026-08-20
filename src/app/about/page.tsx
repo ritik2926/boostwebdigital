@@ -177,7 +177,7 @@ export default function AboutPage() {
         <section className="relative flex min-h-[calc(100vh-20rem)] flex-col items-center justify-center overflow-hidden text-center sm:min-h-[calc(100vh-8rem)]">
           <div
             aria-hidden
-            className="pointer-events-none absolute left-1/2 top-1/2 hidden h-125 w-125 -translate-x-1/2 -translate-y-1/2 sm:block lg:h-155 lg:w-155"
+            className="pointer-events-none absolute left-1/2 top-1/2 h-95 w-95 -translate-x-1/2 -translate-y-1/2 sm:h-125 sm:w-125 lg:h-155 lg:w-155"
           >
             {/* ambient glow */}
             <div
