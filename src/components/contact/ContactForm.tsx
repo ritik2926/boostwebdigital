@@ -73,8 +73,14 @@ export function ContactForm() {
   function autoGrow() {
     const el = textareaRef.current;
     if (!el) return;
-    el.style.height = "auto";
-    el.style.height = `${el.scrollHeight}px`;
+    // Batched via rAF rather than reading `scrollHeight` synchronously right
+    // after the `height:auto` write on every keystroke (a forced-reflow
+    // pattern PageSpeed flags) — this runs right before the next paint
+    // instead of blocking the input handler.
+    requestAnimationFrame(() => {
+      el.style.height = "auto";
+      el.style.height = `${el.scrollHeight}px`;
+    });
   }
 
   function validateFile(candidate: File): string | null {

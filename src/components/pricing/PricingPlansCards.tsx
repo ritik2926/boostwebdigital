@@ -1,11 +1,33 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { motion } from "framer-motion";
 import { RevealGroup, RevealItem } from "@/components/Reveal";
 import { MagneticButton, GhostButton } from "@/components/Buttons";
 import { REVEAL, GRID_GAP, CARD_PADDING, CARD_RADIUS } from "@/lib/tokens";
 import { cn } from "@/lib/utils";
+
+// Matches the `lg:` breakpoint the mobile tab-select already switches on.
+// getServerSnapshot defaults to "desktop" so SSR/hydration keeps emitting all
+// three full cards (unchanged, crawlable, no mismatch); a real client-side
+// nav (no prior SSR to reconcile against) reads the true viewport on its very
+// first render — which is exactly the case that was mounting three ~40-node
+// cards (with a MagneticButton's springs on the featured one) to show one.
+const DESKTOP_QUERY = "(min-width: 1024px)";
+function subscribeDesktop(callback: () => void) {
+  const mql = window.matchMedia(DESKTOP_QUERY);
+  mql.addEventListener("change", callback);
+  return () => mql.removeEventListener("change", callback);
+}
+function getDesktopSnapshot() {
+  return window.matchMedia(DESKTOP_QUERY).matches;
+}
+function getDesktopServerSnapshot() {
+  return true;
+}
+function useIsDesktopViewport() {
+  return useSyncExternalStore(subscribeDesktop, getDesktopSnapshot, getDesktopServerSnapshot);
+}
 
 type PlanId = "visibility" | "growth" | "market-leader";
 type BillingCycle = "monthly" | "annual";
@@ -147,6 +169,7 @@ function SegmentedControl({
 export function PricingPlansCards() {
   const [cycle, setCycle] = useState<BillingCycle>("monthly");
   const [mobilePlan, setMobilePlan] = useState<PlanId>("growth");
+  const isDesktop = useIsDesktopViewport();
 
   return (
     <>
@@ -159,15 +182,17 @@ export function PricingPlansCards() {
           getLabel={(v) => (v === "monthly" ? "Monthly" : "Annually")}
         />
 
-        <div className="lg:hidden">
-          <SegmentedControl
-            layoutGroupId="pricing-plans-mobile-tab-highlight"
-            options={PLANS.map((p) => p.id)}
-            value={mobilePlan}
-            onChange={(v) => setMobilePlan(v as PlanId)}
-            getLabel={(v) => PLANS.find((p) => p.id === v)?.name ?? v}
-          />
-        </div>
+        {!isDesktop && (
+          <div className="lg:hidden">
+            <SegmentedControl
+              layoutGroupId="pricing-plans-mobile-tab-highlight"
+              options={PLANS.map((p) => p.id)}
+              value={mobilePlan}
+              onChange={(v) => setMobilePlan(v as PlanId)}
+              getLabel={(v) => PLANS.find((p) => p.id === v)?.name ?? v}
+            />
+          </div>
+        )}
       </RevealItem>
 
       <RevealGroup
@@ -176,12 +201,15 @@ export function PricingPlansCards() {
         stagger={REVEAL.cardStagger}
         className={cn("mt-10 grid w-full grid-cols-1 items-start lg:mt-14 lg:grid-cols-3", GRID_GAP.default)}
       >
-        {PLANS.map((plan) => (
+        {PLANS.map((plan) => {
+          const showContent = isDesktop || mobilePlan === plan.id;
+          return (
           <RevealItem
             as="li"
             key={plan.id}
             className={cn(plan.mobileOrder, mobilePlan === plan.id ? "block" : "hidden", "lg:block")}
           >
+            {showContent && (
             <div className="relative h-full">
               {plan.featured && (
                 <div
@@ -248,8 +276,10 @@ export function PricingPlansCards() {
                 </div>
               </div>
             </div>
+            )}
           </RevealItem>
-        ))}
+          );
+        })}
       </RevealGroup>
     </>
   );

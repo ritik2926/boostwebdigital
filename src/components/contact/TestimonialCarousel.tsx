@@ -67,12 +67,27 @@ function TestimonialCard({ testimonial }: { testimonial: (typeof TESTIMONIALS)[n
 export function TestimonialCarousel() {
   const trackRef = useRef<HTMLDivElement>(null);
   const [progress, setProgress] = useState(0);
+  const tickingRef = useRef(false);
 
   function updateProgress() {
     const el = trackRef.current;
     if (!el) return;
     const max = el.scrollWidth - el.clientWidth;
     setProgress(max <= 0 ? 0 : el.scrollLeft / max);
+  }
+
+  // Native `scroll` events can fire far more often than the display can
+  // paint; reading scrollWidth/clientWidth/scrollLeft on every single one
+  // is the forced-reflow pattern PageSpeed flags. Coalescing to one read
+  // per animation frame keeps the same progress-bar feel at a fraction of
+  // the reads.
+  function handleScroll() {
+    if (tickingRef.current) return;
+    tickingRef.current = true;
+    requestAnimationFrame(() => {
+      updateProgress();
+      tickingRef.current = false;
+    });
   }
 
   function scrollByCard(direction: 1 | -1) {
@@ -97,7 +112,7 @@ export function TestimonialCarousel() {
         <Reveal className={STACK.subToContent}>
           <div
             ref={trackRef}
-            onScroll={updateProgress}
+            onScroll={handleScroll}
             className="flex gap-6 overflow-x-auto scroll-smooth [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
             style={{ scrollSnapType: "x mandatory" }}
           >

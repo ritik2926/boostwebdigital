@@ -64,6 +64,25 @@ const switzer = localFont({
   preload: false,
 });
 
+/**
+ * Preloads only the two weights every page actually needs above the fold —
+ * Regular 400 (default body/paragraph text) and Medium 500 (the sticky
+ * Navbar's CTA button, `.shiny-cta`/`.ghost-cta` in globals.css) — instead of
+ * the ~230ms/70KB critical-chain cost of the browser discovering all of them
+ * itself. Deliberately unused below: `localFont()`'s preload behavior is a
+ * build-time side effect of the call itself, not of consuming its return
+ * value, so this never touches `--font-switzer` or risks colliding with the
+ * `switzer` object above — every other weight still loads exactly as before.
+ */
+const switzerCriticalPreload = localFont({
+  src: [
+    { path: "../fonts/switzer/Switzer-Regular.woff2", weight: "400", style: "normal" },
+    { path: "../fonts/switzer/Switzer-Medium.woff2", weight: "500", style: "normal" },
+  ],
+  preload: true,
+});
+void switzerCriticalPreload;
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className="dark">

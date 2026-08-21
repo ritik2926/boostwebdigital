@@ -6,16 +6,24 @@
 // Check with: grep -rn "\[" src/app/contact/
 
 import type { Metadata } from "next";
+import dynamic from "next/dynamic";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import JsonLd from "@/components/JsonLd";
 import { ORGANIZATION, breadcrumb, faqPage } from "@/lib/schema";
 import { FAQ_ITEMS } from "@/lib/contact-faq";
 import { ContactHero } from "@/components/contact/ContactHero";
-import { ContactLogoMarquee } from "@/components/contact/ContactLogoMarquee";
-import { ReviewPlatforms } from "@/components/contact/ReviewPlatforms";
-import { TestimonialCarousel } from "@/components/contact/TestimonialCarousel";
-import { ContactFaq } from "@/components/contact/ContactFaq";
+
+// Below-the-fold — code-split so mounting them (each pulls in its own
+// Reveal/motion instances, and TestimonialCarousel/ContactFaq are full
+// client components) isn't part of the same synchronous commit as the
+// above-the-fold Hero on a route change. Still server-rendered (no
+// `ssr: false`), so markup/SEO/appearance are unchanged — only the mount
+// timing on the client is deferred.
+const ContactLogoMarquee = dynamic(() => import("@/components/contact/ContactLogoMarquee").then((m) => m.ContactLogoMarquee));
+const ReviewPlatforms = dynamic(() => import("@/components/contact/ReviewPlatforms").then((m) => m.ReviewPlatforms));
+const TestimonialCarousel = dynamic(() => import("@/components/contact/TestimonialCarousel").then((m) => m.TestimonialCarousel));
+const ContactFaq = dynamic(() => import("@/components/contact/ContactFaq").then((m) => m.ContactFaq));
 
 const SITE_URL = "https://boostwebdigital.com";
 const CONTACT_URL = `${SITE_URL}/contact/`;
