@@ -15,6 +15,9 @@ export const metadata: Metadata = {
   description: DESCRIPTION,
   alternates: { canonical: "/disclaimer/" },
   openGraph: { title: TITLE, description: DESCRIPTION, url: "/disclaimer/", type: "website" },
+  // Boilerplate legal text has no organic-search value of its own — noindex,
+  // but still follow so outbound links keep passing link equity normally.
+  robots: { index: false, follow: true },
 };
 
 const SECTIONS: LegalSection[] = [

@@ -7,22 +7,21 @@ const SITE_URL = "https://boostwebdigital.com";
 // content actually changes. A live timestamp would tell Google the page
 // changed on every single build even when nothing did.
 const LAST_UPDATED = new Date("2026-08-17");
-// The five legal pages shipped later, on their own date — kept separate so
-// bumping homepage content doesn't silently misreport their real last-edit.
-const LEGAL_LAST_UPDATED = new Date("2026-08-21");
 
 /**
  * Homepage, /about/, /contact/, /blogs/ (+ every post at /blog/<slug>/),
  * /pricing/, /services/ (the generic services hub — its child pillar
- * pages below are still unbuilt), /faq/, and the five legal pages
- * (/terms/, /privacy/, /refund-policy/, /disclaimer/, /cookie-policy/) are
- * live today. `/blog/` itself is a 301 redirect to /blogs/ (next.config.ts)
- * and is deliberately NOT listed here — a redirecting URL in a sitemap is a
- * Search Console warning. `/design-lab` is a `noindex` dev playground and
- * `/api/contact/` is a route handler, not a page — both are intentionally
- * excluded, they should never appear here. Blog post entries are generated
- * from getAllSlugs() via getAllPosts(), so a new post appears here
- * automatically the day it's added to content/blog/ — nothing to
+ * pages below are still unbuilt), and /faq/ are live today. `/blog/` itself
+ * is a 301 redirect to /blogs/ (next.config.ts) and is deliberately NOT
+ * listed here — a redirecting URL in a sitemap is a Search Console warning.
+ * `/design-lab` is a `noindex` dev playground, `/api/contact/` is a route
+ * handler not a page, and the five legal pages (/terms/, /privacy/,
+ * /refund-policy/, /disclaimer/, /cookie-policy/) carry `robots: { index:
+ * false }` in their own metadata — all three are intentionally excluded
+ * here, since submitting a noindex URL in a sitemap is itself a Search
+ * Console warning ("Submitted URL marked noindex"). Blog post entries are
+ * generated from getAllSlugs() via getAllPosts(), so a new post appears
+ * here automatically the day it's added to content/blog/ — nothing to
  * hand-maintain for those.
  *
  * Planned routes (not yet built — do not add until the page exists), per
@@ -95,36 +94,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: LAST_UPDATED,
       changeFrequency: "monthly",
       priority: 0.7,
-    },
-    {
-      url: `${SITE_URL}/terms/`,
-      lastModified: LEGAL_LAST_UPDATED,
-      changeFrequency: "yearly",
-      priority: 0.3,
-    },
-    {
-      url: `${SITE_URL}/privacy/`,
-      lastModified: LEGAL_LAST_UPDATED,
-      changeFrequency: "yearly",
-      priority: 0.3,
-    },
-    {
-      url: `${SITE_URL}/refund-policy/`,
-      lastModified: LEGAL_LAST_UPDATED,
-      changeFrequency: "yearly",
-      priority: 0.3,
-    },
-    {
-      url: `${SITE_URL}/disclaimer/`,
-      lastModified: LEGAL_LAST_UPDATED,
-      changeFrequency: "yearly",
-      priority: 0.3,
-    },
-    {
-      url: `${SITE_URL}/cookie-policy/`,
-      lastModified: LEGAL_LAST_UPDATED,
-      changeFrequency: "yearly",
-      priority: 0.3,
     },
     ...posts.map((post) => ({
       url: `${SITE_URL}/blog/${post.slug}/`,
