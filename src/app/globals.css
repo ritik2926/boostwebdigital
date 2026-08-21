@@ -126,6 +126,118 @@ body {
     animation: none;
   }
 }
+/* /services/ hero — rising ring's conic-gradient stroke, rotating. Uses
+   `mask-image` (not `filter: blur()`) to carve the ring shape, so this
+   doesn't hit the blur+rotate rendering bug documented on `.orbit-ring`'s
+   sibling class above (a previous version of this file) — mask-image and
+   transform don't share that interaction. Verified by screenshot before
+   relying on it, same discipline that surfaced the earlier bug. */
+.services-hero-ring {
+  animation: orbit-spin 24s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .services-hero-ring {
+    animation: none;
+  }
+}
+
+/* /services/ card spotlight — a 0.2-opacity accent light that tracks the
+   cursor inside a card, position set via `--mx`/`--my` (plain custom
+   properties, written directly by a single rAF-throttled, event-delegated
+   JS handler — see SpotlightField.tsx — never through React state/re-
+   render). `mix-blend-mode: screen` so it reads as light landing on the
+   surface rather than a flat tinted patch. Desktop-only by design: gated
+   here AND in the JS that sets the variables, so touch never even attaches
+   the listener. Opacity-only transition — GPU compositing, no layout cost. */
+@media (hover: hover) and (pointer: fine) {
+  .spotlight-card {
+    position: relative;
+  }
+  .spotlight-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    border-radius: inherit;
+    background: radial-gradient(
+      600px circle at var(--mx, 50%) var(--my, 50%),
+      color-mix(in srgb, var(--accent) 20%, transparent),
+      transparent 40%
+    );
+    mix-blend-mode: screen;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+  }
+  .spotlight-card:hover::before {
+    opacity: 1;
+  }
+}
+
+/* /services/ card + callout-card treatment — a faint accent wash (~5%,
+   layered under the card's own surface token) plus a 1px gradient hairline
+   border via the standard dual-layer mask-composite trick (padding-box vs.
+   border-box). Static — no continuous animation cost. */
+.card-hairline {
+  position: relative;
+  background-image: linear-gradient(135deg, color-mix(in srgb, var(--accent) 6%, transparent), transparent 60%);
+}
+.card-hairline::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 45%, transparent), transparent 65%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* /services/ heading shimmer — the accent word in a heading, background-
+   clip:text with a slow sweeping gradient (background-position only, no
+   layout-affecting property). Reduced motion resolves to a static gradient
+   instead of freezing mid-sweep, since the shimmer's whole point is the
+   gradient's own color, not its motion. */
+@keyframes text-shimmer {
+  to {
+    background-position: 200% 50%;
+  }
+}
+.text-shimmer {
+  background-image: linear-gradient(90deg, var(--accent) 20%, #fff 50%, var(--accent) 80%);
+  background-size: 220% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  animation: text-shimmer 7s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .text-shimmer {
+    animation: none;
+    background-position: 50% 50%;
+  }
+}
+
+/* /services/ Three Pillars — each circle breathes independently (own
+   animation-delay set inline per instance, same staggering convention as
+   `.icon-pulse` above) so the overlap pulses rather than three circles
+   scaling in perfect unison. Transform only. */
+@keyframes pillar-breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.03); }
+}
+.pillar-circle {
+  animation: pillar-breathe 10s ease-in-out infinite;
+  animation-delay: var(--pillar-delay, 0s);
+}
+@media (prefers-reduced-motion: reduce) {
+  .pillar-circle {
+    animation: none;
+  }
+}
 /* Idle icon loop — a gentle scale breathe, each icon staggered via its own
    animation-delay (set inline per instance) so a row doesn't pulse in
    perfect unison. */

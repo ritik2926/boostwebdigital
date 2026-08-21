@@ -15,14 +15,10 @@ import { EASE } from "@/lib/tokens";
 // docs/12-DESIGN-STANDARDS.md §8 (Navigation).
 // ---------------------------------------------------------------------------
 
-// Services is a same-page anchor on the homepage, not a route —
-// root-relative ("/#services") so it still resolves correctly when clicked
-// from a real route like /about/ or /blogs/ instead of just appending an
-// inert hash to the current URL.
 const NAV_LINKS = [
   { label: "Home", href: "/" },
   { label: "About Us", href: "/about/" },
-  { label: "Services", href: "/#services" },
+  { label: "Services", href: "/services/" },
   { label: "Contact", href: "/contact/" },
 ];
 

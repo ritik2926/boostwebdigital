@@ -9,15 +9,16 @@ const SITE_URL = "https://boostwebdigital.com";
 const LAST_UPDATED = new Date("2026-08-17");
 
 /**
- * Homepage, /about/, /contact/, /blogs/ (+ every post at /blog/<slug>/), and
- * /pricing/ are live today. `/blog/` itself is a 301 redirect to /blogs/
- * (next.config.ts) and is deliberately NOT listed here — a redirecting URL
- * in a sitemap is a Search Console warning. `/design-lab` is a `noindex` dev
- * playground and `/api/contact/` is a route handler, not a page — both are
- * intentionally excluded, they should never appear here. Blog post entries
- * are generated from getAllSlugs() via getAllPosts(), so a new post appears
- * here automatically the day it's added to content/blog/ — nothing to
- * hand-maintain for those.
+ * Homepage, /about/, /contact/, /blogs/ (+ every post at /blog/<slug>/),
+ * /pricing/, and /services/ (the generic services hub — its child pillar
+ * pages below are still unbuilt) are live today. `/blog/` itself is a 301
+ * redirect to /blogs/ (next.config.ts) and is deliberately NOT listed here —
+ * a redirecting URL in a sitemap is a Search Console warning. `/design-lab`
+ * is a `noindex` dev playground and `/api/contact/` is a route handler, not
+ * a page — both are intentionally excluded, they should never appear here.
+ * Blog post entries are generated from getAllSlugs() via getAllPosts(), so a
+ * new post appears here automatically the day it's added to content/blog/ —
+ * nothing to hand-maintain for those.
  *
  * Planned routes (not yet built — do not add until the page exists), per
  * docs/13-URL-ARCHITECTURE.md:
@@ -35,10 +36,10 @@ const LAST_UPDATED = new Date("2026-08-17");
  *   /chiropractic-marketing/, /mental-health-marketing/ — each with its own
  *   -seo/, google-ads-for-.../, -website-design/ spokes per the slug
  *   formulas table
- * Generic services layer: /services/ and its seo/, ai-search-optimization/,
- *   web-design/, google-ads/, meta-ads/, social-media-marketing/,
- *   content-marketing/, ai-automation/, ai-chatbots/,
- *   conversion-rate-optimization/, reputation-management/ children
+ * Generic services layer children (hub itself is live — see above): seo/,
+ *   ai-search-optimization/, web-design/, google-ads/, meta-ads/,
+ *   social-media-marketing/, content-marketing/, ai-automation/,
+ *   ai-chatbots/, conversion-rate-optimization/, reputation-management/
  * Content/proof: /resources/, /resources/what-is-{term}/,
  *   /case-studies/{specialty}-{service}-{result}/
  * Comparison: /vs/{competitor}/ — reserved pattern, no pages yet
@@ -78,6 +79,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: LAST_UPDATED,
       changeFrequency: "monthly",
       priority: 0.7,
+    },
+    {
+      url: `${SITE_URL}/services/`,
+      lastModified: LAST_UPDATED,
+      changeFrequency: "monthly",
+      priority: 0.8,
     },
     ...posts.map((post) => ({
       url: `${SITE_URL}/blog/${post.slug}/`,

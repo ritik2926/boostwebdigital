@@ -24,6 +24,7 @@ import { MagneticButton } from "@/components/Buttons";
 import { Kicker } from "@/components/Kicker";
 import { AmbientGlow } from "@/components/AmbientGlow";
 import { GrainOverlay } from "@/components/GrainOverlay";
+import { Sparkles } from "@/components/services/Sparkles";
 import { SPECIALTIES } from "@/lib/specialties";
 import { useSpotlight } from "@/lib/useSpotlight";
 import { cn, seeded } from "@/lib/utils";
@@ -338,7 +339,7 @@ function Hero() {
         <Container className="flex flex-col items-center text-center">
           <RevealGroup as="div" trigger="mount" stagger={HERO_REVEAL_STAGGER} delay={HERO_REVEAL_STAGGER} className="contents">
             <RevealItem>
-              <Kicker>Healthcare Marketing Agency</Kicker>
+              <Kicker>Services</Kicker>
             </RevealItem>
             <RevealItem className="mt-7">
               <h1 className="max-w-6xl font-display text-[2.25rem] font-extrabold leading-[0.98] tracking-[-0.02em] text-white sm:text-[3.5rem] lg:text-[4.25rem]">
@@ -1305,18 +1306,38 @@ function ServiceRow({
       onBlur={onHoverEnd}
       className="group relative block border-t border-white/8 py-8 last:border-b md:py-10"
     >
-      {/* Flat tonal wash, not a card/pill — extra hierarchy on the active row
-          without reintroducing bordered-box decoration. */}
+      {/* Gradient hairline overlaying the plain border — same accent-fade
+          language as /services/'s card treatment, adapted for a full-width
+          row (a boxed border would fight the "list, not cards" shape this
+          section deliberately kept). */}
+      <div
+        aria-hidden
+        className="absolute inset-x-0 top-0 h-px"
+        style={{ background: "linear-gradient(90deg, transparent, rgba(var(--accent-rgb),0.4) 30%, transparent 75%)" }}
+      />
+
+      {/* Tonal wash, not a card/pill — extra hierarchy on the active row
+          without reintroducing bordered-box decoration. Accent-tinted now
+          instead of flat white, so hover reads as light landing on the row
+          rather than a plain highlight. */}
       <motion.div
         aria-hidden
-        className="absolute inset-0 z-0 bg-white/[0.02]"
+        className="absolute inset-0 z-0"
+        style={{ background: "linear-gradient(120deg, rgba(var(--accent-rgb),0.06), transparent 70%)" }}
         animate={{ opacity: isActive ? 1 : 0 }}
         transition={{ duration: 0.3, ease: EASE.primary }}
       />
 
       <div className="relative z-10 grid items-center gap-4 md:grid-cols-[minmax(0,400px)_1fr_auto] md:gap-8">
         <div className="flex items-baseline gap-4">
-          <span className="font-mono text-xs text-white/40">{service.mark}</span>
+          <span
+            className={cn(
+              "font-mono text-xs transition-colors duration-300",
+              isActive ? "text-accent" : "text-white/40"
+            )}
+          >
+            {service.mark}
+          </span>
           <span
             className={cn(
               "font-display text-3xl font-semibold leading-[1.1] transition-colors duration-300 sm:text-4xl",
@@ -1327,8 +1348,11 @@ function ServiceRow({
           </span>
         </div>
 
+        {/* Hook is always at least dimly readable — hidden entirely until
+            hover made this section read as near-empty at rest (heading +
+            a bare list of names, no supporting copy visible anywhere). */}
         <motion.div
-          animate={{ opacity: isActive ? 1 : 0, x: isActive ? 0 : 16 }}
+          animate={{ opacity: isActive ? 1 : 0.45 }}
           transition={{ duration: 0.35, ease: EASE.primary }}
           className="hidden min-h-16 max-w-lg flex-col justify-center md:flex"
         >
@@ -1348,7 +1372,7 @@ function ServiceRow({
           aria-hidden
           className={cn(
             "hidden h-9 w-9 shrink-0 items-center justify-center justify-self-end rounded-full border text-sm transition-all duration-300 md:flex",
-            isActive ? "translate-x-1 border-white/25 text-white" : "border-white/15 text-white/40"
+            isActive ? "translate-x-1 border-accent/40 text-white shadow-[0_0_16px_rgba(var(--accent-rgb),0.35)]" : "border-white/15 text-white/40"
           )}
         >
           →
@@ -1366,6 +1390,7 @@ function Services() {
   return (
     <section id="services" className={cn("relative overflow-hidden", SECTION_PADDING.compact)}>
       <AmbientGlow corner="bottom-right" duration={70} />
+      <Sparkles seedOffset={83} />
       <Container>
         <RevealGroup as="div">
           <RevealItem>
@@ -1373,7 +1398,7 @@ function Services() {
           </RevealItem>
           <RevealItem className={cn(STACK.kickerToHeading, "flex items-end justify-between gap-6")}>
             <h2 className="font-display text-[1.875rem] font-bold leading-[1.1] tracking-[-0.01em] text-white sm:text-[2.5rem]">
-              Our Healthcare Marketing Services
+              Our Healthcare Marketing <span className="text-shimmer">Services</span>
             </h2>
             <div className="group hidden shrink-0 items-center gap-2 text-sm font-semibold text-white/85 sm:inline-flex">
               View All Services

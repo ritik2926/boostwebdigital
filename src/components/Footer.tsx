@@ -40,12 +40,10 @@ import { EASE } from "@/lib/tokens";
 // ---------------------------------------------------------------------------
 
 const FOOTER_NAV = {
-  // Root-relative hrefs, not bare hashes — same cross-page anchor fix as
-  // Navbar.tsx's NAV_LINKS, since this footer renders on every route too.
   company: [
     { label: "Blog", href: "/blogs/" },
     { label: "About", href: "/about/" },
-    { label: "Services", href: "/#services" },
+    { label: "Services", href: "/services/" },
     { label: "Pricing", href: "/pricing/" },
   ],
 };
