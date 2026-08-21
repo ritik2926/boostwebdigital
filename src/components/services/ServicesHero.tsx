@@ -4,6 +4,7 @@ import { RevealGroup, RevealItem } from "@/components/Reveal";
 import { ServicesCtaButton } from "@/components/services/ServicesCtaButton";
 import { Sparkles } from "@/components/services/Sparkles";
 import { HeroKeywordPills } from "@/components/services/HeroKeywordPills";
+import { HeroCursorGlow } from "@/components/services/HeroCursorGlow";
 import { STACK } from "@/lib/tokens";
 
 /**
@@ -45,10 +46,14 @@ function HeroRing() {
 
 export function ServicesHero() {
   return (
-    <section className="relative flex min-h-[calc(100vh-8rem)] flex-col items-center justify-center overflow-hidden pt-28 pb-16 text-center sm:pt-32 lg:pb-24">
+    <section
+      id="services-hero"
+      className="relative flex min-h-[calc(100vh-8rem)] flex-col items-center justify-center overflow-hidden pt-28 pb-16 text-center sm:pt-32 lg:pb-24"
+    >
       <HeroRing />
       <Sparkles seedOffset={0} />
       <HeroKeywordPills />
+      <HeroCursorGlow />
       <Container className="mx-auto">
         <RevealGroup as="div" trigger="mount" stagger={0.1} className="flex flex-col items-center">
           <RevealItem>
