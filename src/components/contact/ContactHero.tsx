@@ -65,19 +65,25 @@ export function ContactHero() {
                   </ul>
                 </RevealItem>
 
-                <RevealItem className="mt-10">
+                <RevealItem className="mt-10 flex flex-col gap-2">
                   <a
-                    href="mailto:hello@boostwebdigital.com"
+                    href="mailto:contact@boostwebdigital.com"
                     className="text-base text-white underline decoration-white/30 underline-offset-4 transition-colors hover:text-accent hover:decoration-accent/50"
                   >
-                    hello@boostwebdigital.com
+                    contact@boostwebdigital.com
+                  </a>
+                  <a
+                    href="mailto:ritik@boostwebdigital.com"
+                    className="text-sm text-white/60 underline decoration-white/20 underline-offset-4 transition-colors hover:text-accent hover:decoration-accent/50"
+                  >
+                    ritik@boostwebdigital.com <span className="text-white/40">— Founder</span>
                   </a>
                 </RevealItem>
 
                 <RevealItem>
                   <p className="mt-6 max-w-65 text-sm text-white/50">Prefer to pick a time instead?</p>
 
-                  <GhostButton href="mailto:hello@boostwebdigital.com" className="mt-4 inline-flex h-10 w-fit">
+                  <GhostButton href="mailto:contact@boostwebdigital.com" className="mt-4 inline-flex h-10 w-fit">
                     Book a free call
                   </GhostButton>
                 </RevealItem>

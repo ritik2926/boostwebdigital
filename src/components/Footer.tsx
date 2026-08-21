@@ -46,6 +46,13 @@ const FOOTER_NAV = {
     { label: "Services", href: "/services/" },
     { label: "Pricing", href: "/pricing/" },
   ],
+  legal: [
+    { label: "Terms & Conditions", href: "/terms/" },
+    { label: "Privacy Policy", href: "/privacy/" },
+    { label: "Refund & Cancellation", href: "/refund-policy/" },
+    { label: "Disclaimer", href: "/disclaimer/" },
+    { label: "Cookie Policy", href: "/cookie-policy/" },
+  ],
 };
 
 /** Deterministic — seeded(), not Math.random(); see the section comment
@@ -249,13 +256,13 @@ export function Footer() {
             </h2>
           </RevealItem>
           <RevealItem>
-            <GhostButton href="mailto:hello@boostwebdigital.com" className="inline-flex">
+            <GhostButton href="mailto:contact@boostwebdigital.com" className="inline-flex">
               Start a Conversation
             </GhostButton>
           </RevealItem>
         </RevealGroup>
 
-        <RevealGroup as="div" className="grid gap-10 border-t border-white/8 py-14 sm:grid-cols-2 md:grid-cols-3">
+        <RevealGroup as="div" className="grid gap-10 border-t border-white/8 py-14 sm:grid-cols-2 md:grid-cols-4">
           <RevealItem>
             <span className="font-display text-lg font-semibold text-white">Boost Web Digital</span>
             <p className="mt-3 max-w-xs text-sm text-white/50">
@@ -286,8 +293,13 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <a href="mailto:hello@boostwebdigital.com" className="text-sm text-white/70 transition-colors hover:text-white">
-                  hello@boostwebdigital.com
+                <a href="mailto:contact@boostwebdigital.com" className="text-sm text-white/70 transition-colors hover:text-white">
+                  contact@boostwebdigital.com
+                </a>
+              </li>
+              <li>
+                <a href="mailto:ritik@boostwebdigital.com" className="text-sm text-white/70 transition-colors hover:text-white">
+                  ritik@boostwebdigital.com <span className="text-white/40">— Founder</span>
                 </a>
               </li>
               <li>
@@ -295,6 +307,19 @@ export function Footer() {
                   Book a Call
                 </Link>
               </li>
+            </ul>
+          </RevealItem>
+
+          <RevealItem>
+            <span className="font-mono text-xs uppercase tracking-[0.14em] text-white/40">Legal</span>
+            <ul className="mt-4 flex flex-col gap-3">
+              {FOOTER_NAV.legal.map((link) => (
+                <li key={link.href}>
+                  <Link href={link.href} className="text-sm text-white/70 transition-colors hover:text-white">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </RevealItem>
         </RevealGroup>
@@ -307,7 +332,6 @@ export function Footer() {
 
         <div className="flex flex-col gap-4 border-t border-white/8 py-8 text-xs text-white/40 sm:flex-row sm:items-center sm:justify-between">
           <span>© {new Date().getFullYear()} Boost Web Digital. All rights reserved.</span>
-          {/* TODO: add /privacy-policy/ and /terms/ links back once those pages exist */}
         </div>
       </Container>
     </footer>

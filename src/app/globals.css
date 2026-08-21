@@ -238,6 +238,62 @@ body {
     animation: none;
   }
 }
+
+/* /faq/ — a slow-drifting gradient hairline around the FAQ container, same
+   dual-layer mask-composite technique as `.card-hairline` above but with an
+   oversized, animated gradient (background-position only) instead of a
+   static one. */
+@keyframes gradient-border-drift {
+  to {
+    background-position: 200% 50%;
+  }
+}
+.gradient-border-drift {
+  position: relative;
+}
+.gradient-border-drift::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(var(--accent-rgb), 0.55),
+    transparent,
+    rgba(var(--accent-rgb), 0.3),
+    transparent
+  );
+  background-size: 220% 100%;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: gradient-border-drift 20s linear infinite;
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .gradient-border-drift::before {
+    animation: none;
+    background-position: 50% 50%;
+  }
+}
+
+/* /faq/ accordion — native <details>/<summary>, zero JS. The chevron
+   rotates purely off the browser-managed `[open]` attribute. */
+.faq-row > summary {
+  list-style: none;
+}
+.faq-row > summary::-webkit-details-marker {
+  display: none;
+}
+.faq-chevron {
+  transition: transform 0.25s ease;
+}
+.faq-row[open] > summary .faq-chevron {
+  transform: rotate(180deg);
+}
 /* Idle icon loop — a gentle scale breathe, each icon staggered via its own
    animation-delay (set inline per instance) so a row doesn't pulse in
    perfect unison. */
@@ -627,5 +683,45 @@ body {
 @media (pointer: coarse), (max-width: 1023px) {
   .chip {
     min-height: 44px;
+  }
+}
+
+/*
+  Legal pages (/terms/, /privacy/, /refund-policy/, /disclaimer/,
+  /cookie-policy/) — print override. Scoped to .legal-print-doc
+  (src/components/legal/LegalLayout.tsx) so the permanent dark theme is
+  untouched everywhere else; these five are the only pages meant to be
+  printed/saved as a document. Chrome (Navbar/Footer/hero glow/ToC) is
+  dropped via Tailwind's `print:hidden` at the call site instead of here.
+
+  `!important` + a `*` reset is deliberate, not sloppy: every paragraph/list
+  item in the legal body already carries its own explicit Tailwind color
+  utility (`text-white/70` etc. — see LegalP/LegalUL in LegalLayout.tsx).
+  Inheritance never overrides a rule that targets the element itself, so
+  setting color only on `.legal-print-doc` left every one of those
+  same-element utility classes winning and rendering near-white text on the
+  new white print background — confirmed invisible by a print-emulated
+  screenshot before landing this version.
+*/
+@media print {
+  .legal-print-doc {
+    background: #ffffff !important;
+    color: #111111 !important;
+  }
+  .legal-print-doc * {
+    color: #111111 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+  .legal-print-doc h1,
+  .legal-print-doc h2,
+  .legal-print-doc h3,
+  .legal-print-doc strong {
+    color: #000000 !important;
+  }
+  .legal-print-doc a {
+    color: #1627c6 !important;
+    text-decoration: underline !important;
   }
 }

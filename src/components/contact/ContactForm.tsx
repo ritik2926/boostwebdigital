@@ -178,10 +178,10 @@ export function ContactForm() {
           Want to skip the wait? We also run a free AI visibility report while you wait to hear back.
         </p>
         <a
-          href="mailto:hello@boostwebdigital.com"
+          href="mailto:contact@boostwebdigital.com"
           className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-accent underline-offset-4 hover:underline"
         >
-          hello@boostwebdigital.com
+          contact@boostwebdigital.com
         </a>
       </div>
     );

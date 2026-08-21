@@ -84,7 +84,7 @@ export async function POST(request: Request) {
       hasAttachment: Boolean(attachment),
     });
     return NextResponse.json(
-      { message: "Email sending isn't configured yet. Please email hello@boostwebdigital.com directly." },
+      { message: "Email sending isn't configured yet. Please email contact@boostwebdigital.com directly." },
       { status: 503 }
     );
   }
