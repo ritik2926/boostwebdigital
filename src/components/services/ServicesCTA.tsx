@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
  */
 export function ServicesCTA() {
   return (
-    <section className="relative overflow-hidden py-20 lg:py-32">
+    <section className={cn("relative overflow-hidden", SECTION_PADDING.default)}>
       <AmbientGlow corner="top-right" duration={72} />
       <AmbientGlow corner="bottom-left" duration={85} />
       <Sparkles seedOffset={41} />

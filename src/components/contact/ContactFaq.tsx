@@ -57,7 +57,7 @@ export function ContactFaq() {
   const visibleItems = FAQ_ITEMS.filter((item) => item.category === activeCategory);
 
   return (
-    <section className={SECTION_PADDING.spacious}>
+    <section className={SECTION_PADDING.compact}>
       <Container size="heading" className="mx-auto text-center">
         <RevealGroup as="div">
           <RevealItem>

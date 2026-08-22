@@ -1,21 +1,21 @@
 import { Container } from "@/components/Container";
 import { Kicker } from "@/components/Kicker";
 import { RevealGroup, RevealItem } from "@/components/Reveal";
-import { STACK, CARD_PADDING, CARD_RADIUS } from "@/lib/tokens";
+import { SECTION_PADDING, STACK, CARD_PADDING, CARD_RADIUS } from "@/lib/tokens";
 import { cn } from "@/lib/utils";
 
 /**
  * Asymmetric split — a large anchor numeral on the left, copy on the right —
  * a different pattern again from the centred/full-width sections around it.
- * Bottom padding drops to the compact tier (top stays spacious): this
- * section's own content is short relative to its neighbours, and stacking
- * two full spacious paddings against Exclusions' own compact-top measured
- * out to a 300px+ dead zone at 1440px — DESIGN-CRAFT.md's own asymmetric-
- * tier allowance exists for exactly this case.
+ * Uses the compact tier on both edges (2026-08-23 spacing correction): the
+ * previous spacious-top/compact-bottom asymmetry existed only to avoid a
+ * dead zone against neighbours that were themselves spacious at the time.
+ * Now that every section on this page uses compact, matching the Home
+ * page's own rhythm, that asymmetry is no longer needed.
  */
 export function PricingGuarantee() {
   return (
-    <section className={cn("relative overflow-hidden pt-24 pb-16 lg:pt-40 lg:pb-24")}>
+    <section className={cn("relative overflow-hidden", SECTION_PADDING.compact)}>
       <Container>
         <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-[minmax(0,280px)_1fr] lg:gap-16">
           <RevealItem>

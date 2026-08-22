@@ -232,7 +232,7 @@ export default function AboutPage() {
 
         {/* 2. What changed — centred badge/heading, 3 tall cards, middle
             raised slightly */}
-        <section className={cn("relative overflow-hidden", SECTION_PADDING.spacious)}>
+        <section className={cn("relative overflow-hidden", SECTION_PADDING.compact)}>
           <Container>
             <RevealGroup as="div" className="flex flex-col items-center text-center">
               <RevealItem>
@@ -285,7 +285,7 @@ export default function AboutPage() {
         </section>
 
         {/* 3. The statement — full-bleed, centred, scroll-linked fade */}
-        <section className={cn("relative overflow-hidden", SECTION_PADDING.spacious)}>
+        <section className={cn("relative overflow-hidden", SECTION_PADDING.compact)}>
           <Container size="heading" className="mx-auto text-center">
             <StatementFade>
               A practice can hold position one on Google and never once be mentioned when a patient actually asks
@@ -299,7 +299,7 @@ export default function AboutPage() {
         <LightBand />
 
         {/* 6. Work with us — flips back to dark */}
-        <section className={cn("relative overflow-hidden", SECTION_PADDING.spacious)}>
+        <section className={cn("relative overflow-hidden", SECTION_PADDING.compact)}>
           <AmbientGlow corner="top-right" duration={70} />
           <AmbientGlow corner="bottom-left" duration={85} />
           <Container>

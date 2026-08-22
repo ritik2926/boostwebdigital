@@ -67,7 +67,7 @@ export function BlogFilterBar({ posts, categoryOrder }: { posts: BlogPost[]; cat
 
   if (!showBar) {
     return (
-      <section className={SECTION_PADDING.default}>
+      <section className={SECTION_PADDING.compact}>
         <Container>
           <PostGrid posts={posts} categoryOrder={categoryOrder} />
         </Container>
@@ -149,7 +149,7 @@ export function BlogFilterBar({ posts, categoryOrder }: { posts: BlogPost[]; cat
         {filtered.length} {filtered.length === 1 ? "post" : "posts"}
       </p>
 
-      <div className={SECTION_PADDING.default}>
+      <div className={SECTION_PADDING.compact}>
         <Container>
           {filtered.length === 0 ? (
             <div className="flex flex-col items-center gap-5 py-16 text-center">

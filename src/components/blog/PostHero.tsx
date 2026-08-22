@@ -16,7 +16,7 @@ const ARTICLE_GRID = "mx-auto grid max-w-(--container-page) grid-cols-1 xl:grid-
 
 export function PostHero({ post }: { post: BlogPost }) {
   return (
-    <section className="relative pt-20 pb-16 lg:pt-32 lg:pb-24">
+    <section className="relative pt-24 pb-16 lg:pt-40 lg:pb-24">
       <Container>
         <div className={ARTICLE_GRID}>
           <div className="xl:col-start-2">

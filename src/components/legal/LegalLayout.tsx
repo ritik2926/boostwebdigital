@@ -81,7 +81,7 @@ function LegalHero({
   lastUpdated: string;
 }) {
   return (
-    <section className="relative overflow-hidden pt-40 pb-16 text-center lg:pt-48 lg:pb-20">
+    <section className="relative overflow-hidden pt-24 pb-16 text-center lg:pt-40 lg:pb-24">
       <div
         aria-hidden
         className="print:hidden pointer-events-none absolute left-1/2 top-0 h-140 w-140 -translate-x-1/2 -translate-y-1/3 rounded-full"

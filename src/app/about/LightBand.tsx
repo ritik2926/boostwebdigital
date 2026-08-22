@@ -165,7 +165,7 @@ export function LightBand() {
   const reducedMotion = usePrefersReducedMotion();
 
   return (
-    <section className={cn("relative overflow-hidden", SECTION_PADDING.spacious)}>
+    <section className={cn("relative overflow-hidden", SECTION_PADDING.compact)}>
       <motion.div
         aria-hidden
         className="absolute inset-0"

@@ -99,7 +99,7 @@ export function TestimonialCarousel() {
   }
 
   return (
-    <section className={SECTION_PADDING.spacious}>
+    <section className={SECTION_PADDING.compact}>
       <Container>
         <RevealGroup as="div" className="flex flex-col items-center text-center">
           <RevealItem>

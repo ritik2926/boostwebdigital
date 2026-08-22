@@ -26,7 +26,7 @@ const ROWS: Array<{ label: string; visibility: string; growth: string; marketLea
  */
 export function PricingComparison() {
   return (
-    <section className={cn("relative", SECTION_PADDING.spacious)}>
+    <section className={cn("relative", SECTION_PADDING.compact)}>
       <Container>
         <RevealGroup as="div" className="mx-auto flex max-w-2xl flex-col items-center text-center">
           <RevealItem>

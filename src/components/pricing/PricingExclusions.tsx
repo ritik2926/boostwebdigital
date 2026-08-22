@@ -1,7 +1,7 @@
 import { Container } from "@/components/Container";
 import { Kicker } from "@/components/Kicker";
 import { RevealGroup, RevealItem } from "@/components/Reveal";
-import { REVEAL, STACK, GRID_GAP, CARD_PADDING, CARD_RADIUS } from "@/lib/tokens";
+import { REVEAL, SECTION_PADDING, STACK, GRID_GAP, CARD_PADDING, CARD_RADIUS } from "@/lib/tokens";
 import { cn } from "@/lib/utils";
 
 const EXCLUSIONS = [
@@ -25,7 +25,7 @@ const EXCLUSIONS = [
 
 export function PricingExclusions() {
   return (
-    <section className="relative pt-16 pb-24 lg:pt-24 lg:pb-40">
+    <section className={cn("relative", SECTION_PADDING.compact)}>
       <Container>
         <RevealGroup as="div" className="mx-auto flex max-w-2xl flex-col items-center text-center">
           <RevealItem>

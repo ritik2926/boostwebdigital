@@ -48,7 +48,7 @@ export function ServicesHero() {
   return (
     <section
       id="services-hero"
-      className="relative flex min-h-[calc(100vh-8rem)] flex-col items-center justify-center overflow-hidden pt-28 pb-16 text-center sm:pt-32 lg:pb-24"
+      className="relative flex min-h-[calc(100vh-8rem)] flex-col items-center justify-center overflow-hidden pt-24 pb-16 text-center lg:pt-40 lg:pb-24"
     >
       <HeroRing />
       <Sparkles seedOffset={0} />

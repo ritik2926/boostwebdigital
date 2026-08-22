@@ -57,7 +57,7 @@ export function PricingFaq() {
   const [openQuestion, setOpenQuestion] = useState<string | null>(PRICING_FAQ_ITEMS[0].question);
 
   return (
-    <section className={cn("relative", SECTION_PADDING.spacious)}>
+    <section className={cn("relative", SECTION_PADDING.compact)}>
       <Container size="heading" className="mx-auto text-center">
         <RevealGroup as="div">
           <RevealItem>

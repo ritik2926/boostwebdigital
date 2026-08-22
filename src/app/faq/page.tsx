@@ -179,7 +179,7 @@ export default function FaqPage() {
             cluster is its own bordered box, pre-split into two independent
             columns (see splitIntoBalancedColumns above) so column height is
             never locked to a same-row partner's height — no dead gaps. */}
-        <section className={cn("relative overflow-hidden", SECTION_PADDING.spacious)}>
+        <section className={cn("relative overflow-hidden", SECTION_PADDING.compact)}>
           <Sparkles seedOffset={62} />
           <Container className="relative mx-auto">
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-8">

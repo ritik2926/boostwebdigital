@@ -17,7 +17,7 @@ const VALUE_CARDS = [
  */
 export function PricingMath() {
   return (
-    <section className={cn("relative", SECTION_PADDING.spacious)}>
+    <section className={cn("relative", SECTION_PADDING.compact)}>
       <Container>
         <RevealGroup as="div" className="max-w-2xl">
           <RevealItem>

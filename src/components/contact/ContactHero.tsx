@@ -24,7 +24,7 @@ function CheckBadge() {
 
 export function ContactHero() {
   return (
-    <section className="relative overflow-hidden pt-28 pb-16 sm:pt-32 lg:pt-40 lg:pb-24">
+    <section className="relative overflow-hidden pt-24 pb-16 lg:pt-40 lg:pb-24">
       <HeroBackground />
       <Container>
         <Reveal trigger="mount">

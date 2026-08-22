@@ -2,20 +2,19 @@ import { Container } from "@/components/Container";
 import { Kicker } from "@/components/Kicker";
 import { RevealGroup, RevealItem } from "@/components/Reveal";
 import { PricingPlansCards } from "@/components/pricing/PricingPlansCards";
-import { STACK } from "@/lib/tokens";
+import { SECTION_PADDING, STACK } from "@/lib/tokens";
 import { cn } from "@/lib/utils";
 
 /**
- * Sits directly under the Hero — top padding uses the compact tier (the
- * Hero itself keeps its own bespoke, non-tier bottom padding, same
- * exception every Hero sitewide already gets), bottom uses the spacious
- * tier matching every other section boundary on this page. Both values
- * still come from SECTION_PADDING's three tiers, just asymmetrically —
- * the locked allowance for exactly this case.
+ * Sits directly under the Hero (which keeps its own bespoke, tight bottom
+ * padding so the two flow together with no visual break) — uses the
+ * compact tier on both edges, matching the Home page's own between-section
+ * rhythm and every other section boundary on this page (2026-08-23 spacing
+ * correction; previously an untokenized pt-16/pb-24/lg:pt-24/lg:pb-40 mix).
  */
 export function PricingPlans() {
   return (
-    <section id="plans" className="relative pt-16 pb-24 lg:pt-24 lg:pb-40">
+    <section id="plans" className={cn("relative", SECTION_PADDING.compact)}>
       <Container>
         <RevealGroup as="div" className="flex flex-col items-center text-center">
           <RevealItem>
