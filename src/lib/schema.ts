@@ -16,7 +16,10 @@ export const ORGANIZATION = {
   description:
     "Boost Web Digital is a healthcare-only marketing agency that gets medical practices named by AI search engines like ChatGPT, Google AI Overviews, Perplexity and Gemini, alongside traditional healthcare SEO.",
   founder: { "@id": `${SITE_URL}/#ritik` },
-  sameAs: [], // TODO: add real social profile URLs once they exist
+  // sameAs: populate with LinkedIn / Google Business Profile / Clutch
+  // once those profiles are live. Do not emit an empty array — that
+  // asserts "this entity exists nowhere else online," which is worse
+  // than omitting the claim entirely.
   knowsAbout: [
     "healthcare marketing",
     "generative engine optimization",

@@ -13,7 +13,6 @@ import {
 } from "framer-motion";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import Link from "next/link";
 import { Container } from "@/components/Container";
 import { Reveal, RevealGroup, RevealItem, usePrefersReducedMotion } from "@/components/Reveal";
 import { Navbar } from "@/components/Navbar";
@@ -323,7 +322,7 @@ function Hero() {
     <section id="hero" className="relative flex min-h-[calc(100vh-8rem)] flex-col overflow-hidden">
       <HeroMist />
       <motion.div
-        aria-hidden={false}
+        aria-hidden="true"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: REVEAL.duration, ease: EASE.primary, delay: HERO_REVEAL_STAGGER * 5 }}
@@ -687,20 +686,19 @@ function MarketStatAccordionItem({
       </h3>
       <motion.div initial={false} animate={{ height: isOpen ? "auto" : 0 }} transition={{ duration: 0.4, ease: EASE.primary }} className="overflow-hidden">
         <div className="pt-5 pl-[calc(3.5rem+1.25rem)] sm:pl-[calc(4.25rem+1.75rem)]">
-          <AnimatePresence mode="wait">
-            {isOpen && (
-              <motion.p
-                key={stat.id}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: DURATION.reveal, ease: EASE.primary }}
-                className="max-w-xl text-white/70"
-              >
-                {stat.body}
-              </motion.p>
-            )}
-          </AnimatePresence>
+          {/* Always rendered — collapsed visually via the outer motion.div's
+              height:0 + overflow-hidden above, not via unmounting. A
+              non-JS crawler never fires onSelect, so conditionally
+              rendering this per-panel (as the other two stats' bodies
+              previously were) left their explanatory text out of the
+              server HTML entirely. */}
+          <motion.p
+            animate={{ opacity: isOpen ? 1 : 0 }}
+            transition={{ duration: DURATION.reveal, ease: EASE.primary }}
+            className="max-w-xl text-white/70"
+          >
+            {stat.body}
+          </motion.p>
           {/* Mobile/tablet — no separate side panel (no cursor, and it would
               just add scroll length), so the graphic renders small and inline
               here instead, directly on the page background, no card. */}
@@ -883,8 +881,15 @@ function useInView<T extends HTMLElement>(margin = "200px") {
   return { ref, inView };
 }
 
-const MotionLink = motion.create(Link);
-
+/**
+ * A plain motion.div, not a link — these six specialty pages
+ * (/hair-restoration-marketing/ etc.) don't exist yet, and a card that
+ * looks clickable and 404s is worse than a card that's plainly not
+ * clickable. Was `motion.create(Link)` wrapping `specialty.href`; keep the
+ * class name "group" for the hover-driven video/label states, they don't
+ * depend on the element being a link. Do not re-add navigation here without
+ * building the destination page first.
+ */
 function SpecialtyCard({
   specialty,
   index,
@@ -903,8 +908,7 @@ function SpecialtyCard({
   const { ref, inView } = useInView<HTMLDivElement>();
 
   return (
-    <MotionLink
-      href={specialty.href}
+    <motion.div
       onHoverStart={onHover}
       onHoverEnd={onLeave}
       animate={{
@@ -914,7 +918,6 @@ function SpecialtyCard({
       transition={{ duration: DURATION.reveal, ease: EASE.primary }}
       className={cn(
         "group block overflow-hidden rounded-2xl border border-white/8 bg-white/3 shadow-[0_8px_30px_rgba(0,0,0,0.35)] backdrop-blur-xl transition-shadow duration-300",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[#08080a]",
         isHovered && "border-white/20 shadow-[0_0_20px_rgba(255,255,255,0.15)]"
       )}
     >
@@ -935,14 +938,8 @@ function SpecialtyCard({
       <div className="px-6 pb-6">
         <h3 className="font-display text-xl font-semibold text-white">{specialty.name}</h3>
         <p className="mt-2 text-sm leading-relaxed text-white/60">{specialty.desc}</p>
-        <span className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-white/70 transition-colors duration-300 group-hover:text-white">
-          View More
-          <span aria-hidden className="transition-transform duration-300 group-hover:translate-x-1">
-            →
-          </span>
-        </span>
       </div>
-    </MotionLink>
+    </motion.div>
   );
 }
 
@@ -1006,7 +1003,14 @@ function WhoWeServe() {
 // hidden until that row is hovered or focused), divided by a hairline. On
 // hover a floating image also trails the cursor across the whole list — a
 // distinct abstract graphic per service, reused verbatim from the prior
-// build. Whole row is a real <a>, not a button, for real link/SEO value.
+// build. Each row is a plain <div>, not a link (2026-08-22, correcting
+// this comment to match — it previously said "a real <a>", which stopped
+// being true once these four individual service pages were decided
+// against; SERVICES' own `href` field is unused dead data, kept only as a
+// forward reference for whoever eventually builds
+// /ai-visibility-geo/, /healthcare-seo/, etc. Do not wire it back into a
+// link without building the destination page first — see /services/ for
+// the current real linking destination for "Services" generally.
 // ---------------------------------------------------------------------------
 
 type ServiceId = "ai-visibility-geo" | "seo" | "reputation" | "paid-search";

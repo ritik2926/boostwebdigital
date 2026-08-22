@@ -108,42 +108,46 @@ function OtherDropdown({ active, onHover }: { active: boolean; onHover: (label: 
         </svg>
       </button>
 
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 6 }}
-            transition={{ duration: 0.2, ease: EASE.primary }}
-            // pt-3 (padding, not margin) keeps the gap to the trigger inside
-            // this element's own hoverable box — a margin-based gap here is
-            // a dead zone the mouse falls out of before reaching the panel.
-            className="absolute left-1/2 top-full z-(--z-raised) w-48 -translate-x-1/2 pt-3"
-          >
-            <div className="overflow-hidden rounded-2xl border border-white/8 bg-[#0b0b0f]/95 py-2 shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-xl">
-              {OTHER_LINKS.map((item) =>
-                item.href ? (
-                  <Link
-                    key={item.label}
-                    href={item.href}
-                    onClick={() => setOpen(false)}
-                    className="block px-4 py-2.5 text-sm text-white/70 transition-colors hover:bg-white/5 hover:text-white"
-                  >
-                    {item.label}
-                  </Link>
-                ) : (
-                  <span key={item.label} className="flex items-center justify-between px-4 py-2.5 text-sm text-white/30">
-                    {item.label}
-                    <span className="rounded-full border border-white/10 px-1.5 py-0.5 font-mono text-[0.6rem] font-semibold uppercase tracking-wide text-white/30">
-                      Soon
-                    </span>
-                  </span>
-                )
-              )}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Always rendered (not `{open && ...}`) — a non-JS crawler (GPTBot,
+          ClaudeBot, etc.) never fires the hover/focus handlers above, so
+          conditionally mounting this menu left Blogs/FAQs/Pricing entirely
+          out of the server HTML. Hidden via opacity/pointer-events/
+          aria-hidden instead, which is invisible to sighted mouse users but
+          not to a crawler reading the raw HTML. */}
+      <motion.div
+        initial={false}
+        animate={{ opacity: open ? 1 : 0, y: open ? 0 : 6 }}
+        transition={{ duration: 0.2, ease: EASE.primary }}
+        style={{ pointerEvents: open ? "auto" : "none" }}
+        aria-hidden={!open}
+        // pt-3 (padding, not margin) keeps the gap to the trigger inside
+        // this element's own hoverable box — a margin-based gap here is
+        // a dead zone the mouse falls out of before reaching the panel.
+        className="absolute left-1/2 top-full z-(--z-raised) w-48 -translate-x-1/2 pt-3"
+      >
+        <div className="overflow-hidden rounded-2xl border border-white/8 bg-[#0b0b0f]/95 py-2 shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-xl">
+          {OTHER_LINKS.map((item) =>
+            item.href ? (
+              <Link
+                key={item.label}
+                href={item.href}
+                tabIndex={open ? 0 : -1}
+                onClick={() => setOpen(false)}
+                className="block px-4 py-2.5 text-sm text-white/70 transition-colors hover:bg-white/5 hover:text-white"
+              >
+                {item.label}
+              </Link>
+            ) : (
+              <span key={item.label} className="flex items-center justify-between px-4 py-2.5 text-sm text-white/30">
+                {item.label}
+                <span className="rounded-full border border-white/10 px-1.5 py-0.5 font-mono text-[0.6rem] font-semibold uppercase tracking-wide text-white/30">
+                  Soon
+                </span>
+              </span>
+            )
+          )}
+        </div>
+      </motion.div>
     </div>
   );
 }

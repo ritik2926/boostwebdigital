@@ -24,27 +24,28 @@ export const metadata: Metadata = {
 // Word-for-word copies of data defined in src/components/HomePage.tsx
 // (SERVICES, FAQ_ITEMS) — not imported, so HomePage.tsx stays untouched.
 // Keep these in sync with that file if the visible copy ever changes.
+//
+// No `href` field: these four services don't have real pages yet (the
+// URL-architecture slugs below are reserved, not built), so the schema
+// below omits `url` on each Offer/Service entirely — asserting a URL
+// that 404s is worse than describing the service without one.
 const SERVICES_FOR_SCHEMA = [
   {
     name: "AI Visibility (GEO) for Healthcare Practices",
     description: "We get your practice named by ChatGPT, Google AI Overviews, Perplexity and Gemini.",
-    href: "/ai-visibility-geo/",
   },
   {
     name: "Healthcare SEO",
     description: "Technical foundations, specialty-specific content, local visibility and Google Business Profile optimisation.",
-    href: "/healthcare-seo/",
   },
   {
     name: "Reputation Management for Medical Practices",
     description: "75% of patients won't book below 4.0 stars, and 66% say your replies to reviews affect their trust.",
-    href: "/healthcare-reputation-management/",
   },
   {
     name: "Paid Search & Social for Healthcare",
     description:
       "Google Ads and Meta campaigns for specialties where the unit economics work, run inside healthcare ad policy so your account doesn't get suspended.",
-    href: "/healthcare-paid-search/",
   },
 ];
 
@@ -101,7 +102,6 @@ const service = {
         "@type": "Service",
         name: s.name,
         description: s.description,
-        url: `${SITE_URL}${s.href}`,
       },
     })),
   },

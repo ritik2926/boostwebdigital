@@ -3,11 +3,19 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   trailingSlash: true,
   async redirects() {
-    // Destination has the trailing slash explicitly ("/blogs/", not "/blogs")
-    // — with trailingSlash:true, a slash-less destination triggers a SECOND
-    // redirect hop (/blog/ → /blogs → /blogs/), which fails the single-hop
-    // requirement this exact redirect is verified against.
-    return [{ source: "/blog", destination: "/blogs/", permanent: true }];
+    // Source and destination both carry the trailing slash explicitly.
+    // A request for the already-slashed "/blog/" matches this rule directly
+    // and reaches "/blogs/" in one hop. A request for the bare "/blog" does
+    // NOT — with trailingSlash:true, Next's own slash-normalization redirect
+    // fires first (on any path missing the slash) before custom redirects()
+    // are evaluated at all, so "/blog" always hops to "/blog/" first and
+    // only then matches this rule — two hops, for that one entry point
+    // specifically. That's a trailingSlash/redirects() interaction in the
+    // framework itself, not something this rule's source/destination
+    // strings can avoid; the only way to actually collapse it to one hop
+    // would be disabling trailingSlash sitewide or adding middleware —
+    // both bigger changes than a redirect-rule fix.
+    return [{ source: "/blog/", destination: "/blogs/", permanent: true }];
   },
   async headers() {
     return [

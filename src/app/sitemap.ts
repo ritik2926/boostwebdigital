@@ -3,10 +3,26 @@ import { getAllPosts } from "@/lib/blog/source";
 
 const SITE_URL = "https://boostwebdigital.com";
 
-// Fixed date, not new Date() — update this by hand whenever homepage
-// content actually changes. A live timestamp would tell Google the page
-// changed on every single build even when nothing did.
-const LAST_UPDATED = new Date("2026-08-17");
+/**
+ * Update the date when you meaningfully change a page. A stale date here is
+ * better than a wrong one.
+ *
+ * Previously a single frozen constant shared by every URL — Google only
+ * trusts lastmod when it's demonstrably accurate, and one identical
+ * never-moving date across eight unrelated pages teaches it to discard the
+ * field. Deliberately not derived from git or file mtime: mtime is wrong
+ * after a fresh clone, and a git call at build time is complexity this
+ * doesn't need.
+ */
+const PAGE_DATES: Record<string, string> = {
+  "/": "2026-08-22",
+  "/about/": "2026-08-22",
+  "/contact/": "2026-08-22",
+  "/blogs/": "2026-08-22",
+  "/pricing/": "2026-08-22",
+  "/services/": "2026-08-22",
+  "/faq/": "2026-08-22",
+};
 
 /**
  * Homepage, /about/, /contact/, /blogs/ (+ every post at /blog/<slug>/),
@@ -14,15 +30,15 @@ const LAST_UPDATED = new Date("2026-08-17");
  * pages below are still unbuilt), and /faq/ are live today. `/blog/` itself
  * is a 301 redirect to /blogs/ (next.config.ts) and is deliberately NOT
  * listed here — a redirecting URL in a sitemap is a Search Console warning.
- * `/design-lab` is a `noindex` dev playground, `/api/contact/` is a route
- * handler not a page, and the five legal pages (/terms/, /privacy/,
- * /refund-policy/, /disclaimer/, /cookie-policy/) carry `robots: { index:
- * false }` in their own metadata — all three are intentionally excluded
- * here, since submitting a noindex URL in a sitemap is itself a Search
- * Console warning ("Submitted URL marked noindex"). Blog post entries are
- * generated from getAllSlugs() via getAllPosts(), so a new post appears
- * here automatically the day it's added to content/blog/ — nothing to
- * hand-maintain for those.
+ * `/design-lab` is excluded from production entirely (see its page.tsx),
+ * `/api/contact/` is a route handler not a page, and the five legal pages
+ * (/terms/, /privacy/, /refund-policy/, /disclaimer/, /cookie-policy/)
+ * carry `robots: { index: false }` in their own metadata — all deliberately
+ * excluded here, since submitting a noindex URL in a sitemap is itself a
+ * Search Console warning ("Submitted URL marked noindex"). Blog post
+ * entries are generated from getAllSlugs() via getAllPosts(), so a new post
+ * appears here automatically the day it's added to content/blog/ — nothing
+ * to hand-maintain for those.
  *
  * Planned routes (not yet built — do not add until the page exists), per
  * docs/13-URL-ARCHITECTURE.md:
@@ -48,58 +64,25 @@ const LAST_UPDATED = new Date("2026-08-17");
  * Comparison: /vs/{competitor}/ — reserved pattern, no pages yet
  *
  * Add each route to this file the same day its page ships, not before.
+ *
+ * changeFrequency/priority were removed sitewide (2026-08-22) — Google has
+ * stated publicly it ignores both, so they were noise in a file whose only
+ * job is to declare the indexable URL set.
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const posts = await getAllPosts();
 
   return [
-    {
-      url: SITE_URL,
-      lastModified: LAST_UPDATED,
-      changeFrequency: "weekly",
-      priority: 1.0,
-    },
-    {
-      url: `${SITE_URL}/about/`,
-      lastModified: LAST_UPDATED,
-      changeFrequency: "monthly",
-      priority: 0.6,
-    },
-    {
-      url: `${SITE_URL}/contact/`,
-      lastModified: LAST_UPDATED,
-      changeFrequency: "monthly",
-      priority: 0.8,
-    },
-    {
-      url: `${SITE_URL}/blogs/`,
-      lastModified: LAST_UPDATED,
-      changeFrequency: "weekly",
-      priority: 0.7,
-    },
-    {
-      url: `${SITE_URL}/pricing/`,
-      lastModified: LAST_UPDATED,
-      changeFrequency: "monthly",
-      priority: 0.7,
-    },
-    {
-      url: `${SITE_URL}/services/`,
-      lastModified: LAST_UPDATED,
-      changeFrequency: "monthly",
-      priority: 0.8,
-    },
-    {
-      url: `${SITE_URL}/faq/`,
-      lastModified: LAST_UPDATED,
-      changeFrequency: "monthly",
-      priority: 0.7,
-    },
+    { url: SITE_URL, lastModified: PAGE_DATES["/"] },
+    { url: `${SITE_URL}/about/`, lastModified: PAGE_DATES["/about/"] },
+    { url: `${SITE_URL}/contact/`, lastModified: PAGE_DATES["/contact/"] },
+    { url: `${SITE_URL}/blogs/`, lastModified: PAGE_DATES["/blogs/"] },
+    { url: `${SITE_URL}/pricing/`, lastModified: PAGE_DATES["/pricing/"] },
+    { url: `${SITE_URL}/services/`, lastModified: PAGE_DATES["/services/"] },
+    { url: `${SITE_URL}/faq/`, lastModified: PAGE_DATES["/faq/"] },
     ...posts.map((post) => ({
       url: `${SITE_URL}/blog/${post.slug}/`,
-      lastModified: new Date(post.updatedAt ?? post.publishedAt),
-      changeFrequency: "monthly" as const,
-      priority: 0.6,
+      lastModified: post.updatedAt ?? post.publishedAt,
     })),
   ];
 }
