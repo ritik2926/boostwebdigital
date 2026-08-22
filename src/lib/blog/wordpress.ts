@@ -194,7 +194,12 @@ async function fetchJson<T>(path: string): Promise<{ data: T; headers: Headers }
     return null;
   }
   try {
-    const res = await fetch(`${WP_API_URL}${path}`, { next: { tags: ["posts"] } });
+    // `revalidate` is a time-based fallback alongside the tag, not a
+    // replacement for it: /api/revalidate's revalidateTag("posts", "max")
+    // call is unverified against Next 16's new second-argument signature
+    // (see that route's comment) — if tag invalidation silently no-ops,
+    // this still self-heals within an hour instead of caching forever.
+    const res = await fetch(`${WP_API_URL}${path}`, { next: { tags: ["posts"], revalidate: 3600 } });
     if (!res.ok) {
       console.error(`[blog/wordpress] GET ${path} -> ${res.status}`);
       return null;
