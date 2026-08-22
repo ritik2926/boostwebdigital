@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { MDXRemote } from "next-mdx-remote/rsc";
-import rehypeSlug from "rehype-slug";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Container } from "@/components/Container";
@@ -18,7 +16,6 @@ import { TableOfContents, TableOfContentsMobile } from "@/components/blog/TableO
 import { ShareRail } from "@/components/blog/ShareRail";
 import { AuthorCard } from "@/components/blog/AuthorCard";
 import { RelatedPosts } from "@/components/blog/RelatedPosts";
-import { mdxComponents } from "@/components/blog/MdxComponents";
 
 const SITE_URL = "https://boostwebdigital.com";
 
@@ -35,6 +32,15 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const title = post.seo?.title ?? post.title;
   const description = post.seo?.description ?? post.excerpt;
   const url = `/blog/${post.slug}/`;
+  // A post with no featured image (never possible under the old local-file
+  // system, where the field was required frontmatter) needs an explicit
+  // fallback — an empty src silently drops the og:image tag entirely rather
+  // than falling back to the site's own opengraph-image route, since Next
+  // only applies that file-based default when a page sets no openGraph.images
+  // at all.
+  const ogImage = post.featuredImage.src
+    ? { url: post.featuredImage.src, width: post.featuredImage.width, height: post.featuredImage.height, alt: post.featuredImage.alt }
+    : { url: ORGANIZATION.logo, width: 512, height: 512, alt: "Boost Web Digital" };
 
   return {
     title,
@@ -49,7 +55,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       publishedTime: post.publishedAt,
       modifiedTime: post.updatedAt ?? post.publishedAt,
       authors: [post.author.name],
-      images: [{ url: post.featuredImage.src, width: post.featuredImage.width, height: post.featuredImage.height, alt: post.featuredImage.alt }],
+      images: [ogImage],
     },
   };
 }
@@ -61,13 +67,25 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
   const relatedPosts = await getRelatedPosts(slug, 3);
   const postUrl = `${SITE_URL}/blog/${post.slug}/`;
+  // WordPress's featured image is already an absolute blog.boostwebdigital.com
+  // URL, unlike the old local MDX paths (e.g. "/images/blog/foo.svg") this
+  // was written for — prefixing SITE_URL unconditionally produced a
+  // malformed "https://boostwebdigital.comhttps://blog...." string. A post
+  // with no featured image (never possible under the old local-file system,
+  // where the field was required frontmatter) falls back to the org logo
+  // rather than pointing schema at the bare homepage URL.
+  const imageUrl = post.featuredImage.src
+    ? post.featuredImage.src.startsWith("http")
+      ? post.featuredImage.src
+      : `${SITE_URL}${post.featuredImage.src}`
+    : ORGANIZATION.logo;
 
   const blogPosting = {
     "@type": "BlogPosting",
     "@id": `${postUrl}#article`,
     headline: post.title,
     description: post.excerpt,
-    image: `${SITE_URL}${post.featuredImage.src}`,
+    image: imageUrl,
     datePublished: post.publishedAt,
     dateModified: post.updatedAt ?? post.publishedAt,
     author: { "@id": PERSON["@id"] },
@@ -112,11 +130,17 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                     <ShareRail url={postUrl} title={post.title} />
                   </div>
 
-                  <MDXRemote
-                    source={post.content}
-                    components={mdxComponents}
-                    options={{ mdxOptions: { rehypePlugins: [rehypeSlug] } }}
-                  />
+                  {/* WordPress content is real HTML, not MDX — rendered
+                      directly into the same prose column MDX used to fill.
+                      .wp-post-content (globals.css) reproduces the exact
+                      Tailwind classes the old per-tag MDX component map
+                      (h2/h3/p/a/ul/ol/li/blockquote/code/hr/table) applied,
+                      via @apply, so this is a visual no-op. Heading ids were
+                      already injected server-side by processContent() in
+                      lib/blog/wordpress.ts, off the same slug rule the old
+                      rehype-slug pipeline used (github-slugger), so the TOC
+                      on the right still resolves every #anchor correctly. */}
+                  <div className="wp-post-content" dangerouslySetInnerHTML={{ __html: post.content }} />
 
                   <Reveal className="mt-16">
                     <AuthorCard author={post.author} />

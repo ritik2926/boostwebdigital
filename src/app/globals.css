@@ -725,3 +725,78 @@ body {
     text-decoration: underline !important;
   }
 }
+
+/*
+  Blog post body — headless-WordPress content swap (2026-08-22).
+  src/app/blog/[slug]/page.tsx now renders WordPress's real HTML via
+  dangerouslySetInnerHTML instead of MDX, so the old per-tag MDX component
+  map (src/components/blog/MdxComponents.tsx: Heading2/Heading3/Paragraph/
+  Anchor/UnorderedList/OrderedList/ListItem/Blockquote/InlineCode/
+  HorizontalRule/TableWrap/TableHead/TableHeaderCell/TableCell) can no
+  longer intercept raw tag names. Every rule below is the EXACT className
+  string that component used to apply, moved to `@apply` on the matching
+  bare tag — same generated CSS, so this is a visual no-op, not a redesign.
+  Do not hand-tune a value here without checking it still matches that file.
+*/
+.wp-post-content h2 {
+  @apply mb-4 mt-12 scroll-mt-32 font-display text-[1.75rem] font-bold leading-[1.15] tracking-[-0.01em] text-white sm:text-[2rem];
+}
+.wp-post-content h3 {
+  @apply mb-3 mt-8 scroll-mt-32 font-display text-[1.25rem] font-semibold leading-[1.25] text-white sm:text-[1.4rem];
+}
+.wp-post-content p {
+  @apply mb-6 text-[1.125rem] leading-[1.75] text-white/80;
+}
+.wp-post-content p:last-child {
+  margin-bottom: 0;
+}
+.wp-post-content a {
+  @apply text-white underline decoration-white/30 underline-offset-4 transition-colors hover:decoration-white/70;
+}
+.wp-post-content ul {
+  @apply mb-6 ml-1 flex flex-col gap-3 text-[1.0625rem] leading-[1.7] text-white/80 marker:text-accent;
+}
+.wp-post-content ol {
+  @apply mb-6 ml-1 flex list-decimal flex-col gap-3 pl-5 text-[1.0625rem] leading-[1.7] text-white/80 marker:font-medium marker:text-white/50;
+}
+.wp-post-content li {
+  @apply pl-2 marker:content-['—_'];
+}
+.wp-post-content blockquote {
+  @apply my-8 border-l-2 border-white/15 pl-6 text-[1.0625rem] italic leading-[1.7] text-white/65;
+}
+.wp-post-content code {
+  @apply rounded-md border border-white/8 bg-white/[0.06] px-1.5 py-0.5 font-mono text-[0.875em] text-white/85;
+}
+.wp-post-content hr {
+  @apply my-12 border-white/8;
+}
+.wp-post-content table {
+  @apply w-full border-collapse text-left text-sm;
+}
+.wp-post-content thead {
+  @apply border-b border-white/8 bg-white/[0.03];
+}
+.wp-post-content th {
+  @apply px-5 py-3 font-mono text-xs font-semibold uppercase tracking-[0.08em] text-white/60;
+}
+.wp-post-content td {
+  @apply border-t border-white/8 px-5 py-3.5 text-white/75;
+}
+/* Not part of the old MDX map (raw <img> never appeared there — every
+   in-content image went through the custom ImageWithCaption component
+   instead) — WordPress emits plain <img>, so this is new, minimal sizing
+   to keep one from overflowing the prose column, per the swap's own
+   image-safety requirement rather than a copied MDX rule. */
+.wp-post-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 1rem;
+}
+/* Wraps <table>/<pre> — injected by wrapScrollableBlocks() in
+   src/lib/blog/wordpress.ts — so wide content scrolls inside itself
+   instead of pushing the article column wider than the viewport. */
+.wp-scroll-x {
+  max-width: 100%;
+  overflow-x: auto;
+}

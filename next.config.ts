@@ -2,6 +2,17 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   trailingSlash: true,
+  images: {
+    // blog.boostwebdigital.com serves featured images from the headless WP
+    // media library (src/lib/blog/wordpress.ts); secure.gravatar.com is
+    // where WordPress's own author-avatar_urls point — both render through
+    // next/image (PostHero, PostThumbnail, PostMeta, AuthorCard), which
+    // throws on an unlisted remote host.
+    remotePatterns: [
+      { protocol: "https", hostname: "blog.boostwebdigital.com" },
+      { protocol: "https", hostname: "secure.gravatar.com" },
+    ],
+  },
   async redirects() {
     // Source and destination both carry the trailing slash explicitly.
     // A request for the already-slashed "/blog/" matches this rule directly

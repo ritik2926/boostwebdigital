@@ -8,6 +8,7 @@
 - Full homepage: Navbar → Hero → Who We Serve → Why Choose Us (with honest Kaja Hair Studio proof point) → Final CTA → Footer
 - Scroll-triggered and staggered entrance animations via Framer Motion throughout
 - `about/page.tsx` exists (placeholder-level content)
+- Headless WordPress blog (2026-08-22) — `/blogs/` and `/blog/[slug]/` pull live from `blog.boostwebdigital.com`'s REST API via `src/lib/blog/wordpress.ts`; the old local-MDX system (`content/blog/`, `src/lib/blog/local.ts`) is gone. See [08-CMS.md](08-CMS.md) for what's actually wired up vs. still a gap.
 
 ## What's not built yet
 
@@ -15,7 +16,6 @@
 - The real, locked sitemap is much larger than "Services + Contact" — see [13-URL-ARCHITECTURE.md](13-URL-ARCHITECTURE.md) for the full P1–P4 page list (specialty hubs, service spokes, blog, resources, case studies). Phases below should be read against that priority list, not built ad hoc.
 - Real content beyond the homepage (About needs real content too)
 - Contact form + API route + n8n webhook integration
-- WordPress headless CMS connection (REST API, dynamic blog routes)
 - SEO metadata, Open Graph, schema/JSON-LD, sitemap
 - Deployment to Vercel (not yet deployed live)
 - FAQ section
@@ -27,7 +27,7 @@
 1. **Foundation** — core pages + P1 sitemap per [13-URL-ARCHITECTURE.md](13-URL-ARCHITECTURE.md) (including `/privacy-policy/` and `/terms/`, added post-review — not optional launch-day items); premium UI/UX, performance, accessibility, semantic structure — mostly started (see above), not complete
 2. **Launch + Index** — deploy to Vercel on the custom domain, connect Google Search Console + GA4, submit the sitemap, begin indexing. Deliberately moved earlier than a "finish everything then launch" order — the site starts accumulating index age/authority while P2–P4 content is still being built.
 3. **Expand** — P2–P4 pages per [13-URL-ARCHITECTURE.md](13-URL-ARCHITECTURE.md) (remaining specialty hubs/spokes, service pages, blog, topical authority). **State-wise location pages are explicitly deferred out of this phase** — see the gate below.
-4. **Headless WordPress CMS** — blog, SEO metadata, Open Graph, categories, and authors managed by the (future) marketing team inside WordPress; the Next.js frontend consumes it via REST API so WordPress edits appear live automatically (see [08-CMS.md](08-CMS.md))
+4. **Headless WordPress CMS** — ✅ done for blog posts (2026-08-22): categories, authors, and SEO fields (via Yoast) are managed inside WordPress, and the Next.js frontend consumes them via REST API — see [08-CMS.md](08-CMS.md) for the current field mapping and known gaps (no CTA/related-post override fields yet — needs an ACF plugin). Still open: service pages, redirects, and anything beyond blog posts.
 
 ## Geographic expansion gate (deferred, not a calendar phase)
 

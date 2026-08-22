@@ -1,3 +1,3 @@
-// Swap the import below from ./local to ./wordpress to move to headless WP.
-// Nothing else in the app should need to change.
-export { getAllPosts, getPostBySlug, getAllSlugs, getRelatedPosts } from "./local";
+// Swapped from ./local to ./wordpress (headless WP) — 2026-08-22. Nothing
+// else in the app needed to change; that was the point of this seam.
+export { getAllPosts, getPostBySlug, getAllSlugs, getRelatedPosts } from "./wordpress";
