@@ -1,14 +1,13 @@
 import type { Metadata } from "next";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { Container } from "@/components/Container";
 import { FinalCTA } from "@/components/FinalCTA";
 import JsonLd from "@/components/JsonLd";
 import { ORGANIZATION, breadcrumb } from "@/lib/schema";
 import { getAllPosts } from "@/lib/blog/source";
 import { BlogsHero } from "@/components/blog/BlogsHero";
-import { CategoryStrip } from "@/components/blog/CategoryStrip";
-import { PostGrid } from "@/components/blog/PostGrid";
+import { FeaturedSplit } from "@/components/blog/FeaturedSplit";
+import { BlogFilterBar } from "@/components/blog/BlogFilterBar";
 import { BlogMarquee } from "@/components/blog/BlogMarquee";
 
 const SITE_URL = "https://boostwebdigital.com";
@@ -27,15 +26,18 @@ export const metadata: Metadata = {
 export default async function BlogsArchivePage() {
   const posts = await getAllPosts();
 
-  // Category list derived from post data only — never hardcoded, and a
-  // category never appears unless it actually has a post behind it.
-  const categoryMap = new Map<string, { name: string; count: number }>();
-  for (const post of posts) {
-    const existing = categoryMap.get(post.category.slug);
-    categoryMap.set(post.category.slug, { name: post.category.name, count: (existing?.count ?? 0) + 1 });
-  }
-  const categories = Array.from(categoryMap, ([slug, value]) => ({ slug, ...value }));
-  const categoryOrder = categories.map((c) => c.slug);
+  // Gradient-per-category order, derived from post data only — never
+  // hardcoded — so PostThumbnail's fallback-SVG color stays consistent for
+  // a given category everywhere it appears on this page. Category *names*
+  // and *counts* for the filter bar are computed separately, inside
+  // BlogFilterBar, from just the posts it actually filters (see that file).
+  const categoryOrder = Array.from(new Set(posts.map((post) => post.category.slug)));
+
+  // Section 2 (FeaturedSplit) shows post 1 large plus up to 3 more in the
+  // "Latest" panel — the grid below must never repeat those same posts, so
+  // it only ever sees whatever's left over.
+  const featuredSplitCount = Math.min(4, posts.length);
+  const gridPosts = posts.slice(featuredSplitCount);
 
   const collectionPage = {
     "@type": "CollectionPage",
@@ -75,18 +77,8 @@ export default async function BlogsArchivePage() {
       <Navbar />
       <main>
         <BlogsHero />
-
-        <section className="pb-16 lg:pb-24">
-          <Container>
-            {posts.length >= 3 ? (
-              <CategoryStrip categories={categories}>
-                <PostGrid posts={posts} categoryOrder={categoryOrder} />
-              </CategoryStrip>
-            ) : (
-              <PostGrid posts={posts} categoryOrder={categoryOrder} />
-            )}
-          </Container>
-        </section>
+        <FeaturedSplit posts={posts} categoryOrder={categoryOrder} />
+        <BlogFilterBar posts={gridPosts} categoryOrder={categoryOrder} />
 
         <BlogMarquee />
         <FinalCTA />
