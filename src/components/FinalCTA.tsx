@@ -3,6 +3,8 @@ import { Container } from "@/components/Container";
 import { RevealGroup, RevealItem } from "@/components/Reveal";
 import { MagneticButton } from "@/components/Buttons";
 import { AmbientGlow } from "@/components/AmbientGlow";
+import { SECTION_PADDING } from "@/lib/tokens";
+import { cn } from "@/lib/utils";
 
 /**
  * The site's one "Work with us" CTA band — extracted verbatim from
@@ -15,6 +17,12 @@ import { AmbientGlow } from "@/components/AmbientGlow";
  * copy exactly, so existing call sites (About, Blogs) render byte-for-byte
  * identical to before — only a call site that explicitly wants different
  * copy (e.g. /pricing/'s "Not sure which plan?" framing) passes anything.
+ *
+ * Padding was a `py-32 lg:py-40` one-off (2026-08-23 measurement pass):
+ * `lg:py-40` matched the spacious tier's desktop value, but `py-32` (128px)
+ * matched no tier's mobile value at all (compact=64, default=80,
+ * spacious=96). Now spacious on both, 96px mobile — a real but modest
+ * reduction, not a redesign.
  */
 export function FinalCTA({
   kicker = "Work with us",
@@ -30,7 +38,7 @@ export function FinalCTA({
   ctaLabel?: string;
 } = {}) {
   return (
-    <section className="relative overflow-hidden py-32 lg:py-40">
+    <section className={cn("relative overflow-hidden", SECTION_PADDING.spacious)}>
       <AmbientGlow corner="top-right" duration={70} />
       <AmbientGlow corner="bottom-left" duration={85} />
       <Container>
