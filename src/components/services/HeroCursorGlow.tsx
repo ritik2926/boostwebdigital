@@ -15,7 +15,7 @@ import { SPRING, CURSOR_GLOW, Z_INDEX } from "@/lib/tokens";
  * mousemove, and the hero's viewport position can only change via one of
  * those two).
  */
-export function HeroCursorGlow() {
+export function HeroCursorGlow({ targetId = "services-hero" }: { targetId?: string }) {
   const heroRef = useRef<HTMLElement | null>(null);
   const rectRef = useRef<DOMRect | null>(null);
 

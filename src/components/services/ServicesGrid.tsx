@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Container } from "@/components/Container";
 import { Reveal, RevealGroup, RevealItem } from "@/components/Reveal";
 import { REVEAL, SECTION_PADDING, STACK, GRID_GAP, CARD_PADDING, CARD_RADIUS } from "@/lib/tokens";
@@ -29,6 +30,19 @@ function ServiceBlock({ service, isLast }: { service: (typeof SERVICES)[number];
               <p key={p}>{p}</p>
             ))}
           </RevealItem>
+          {service.id === "ai-visibility" && (
+            <RevealItem className={STACK.headingToSub}>
+              <Link
+                href="/ai-visibility-geo/"
+                className="group inline-flex items-center gap-2 font-medium text-accent underline-offset-4 hover:underline"
+              >
+                See how we approach AI visibility
+                <span aria-hidden className="inline-block transition-transform duration-200 group-hover:translate-x-1">
+                  →
+                </span>
+              </Link>
+            </RevealItem>
+          )}
         </RevealGroup>
       </div>
 

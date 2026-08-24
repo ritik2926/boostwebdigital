@@ -16,7 +16,18 @@ const MotionLink = motion.create(Link);
  * second, differently-styled button. Every existing call site omits `href`
  * and is unaffected.
  */
-export function MagneticButton({ children, className, href }: { children: ReactNode; className?: string; href?: string }) {
+export function MagneticButton({
+  children,
+  className,
+  href,
+  dataCta,
+}: {
+  children: ReactNode;
+  className?: string;
+  href?: string;
+  /** Analytics hook only — no tracking script, just the attribute. */
+  dataCta?: string;
+}) {
   const ref = useRef<HTMLButtonElement & HTMLAnchorElement>(null);
   const x = useMotionValue(0);
   const y = useMotionValue(0);
@@ -52,6 +63,7 @@ export function MagneticButton({ children, className, href }: { children: ReactN
         style={{ x: springX, y: springY }}
         whileTap={{ scale: 0.97 }}
         className={cn("shiny-cta", className)}
+        data-cta={dataCta}
       >
         <span>{children}</span>
       </MotionLink>
@@ -66,6 +78,7 @@ export function MagneticButton({ children, className, href }: { children: ReactN
       style={{ x: springX, y: springY }}
       whileTap={{ scale: 0.97 }}
       className={cn("shiny-cta", className)}
+      data-cta={dataCta}
     >
       <span>{children}</span>
     </motion.button>
@@ -81,9 +94,20 @@ export function MagneticButton({ children, className, href }: { children: ReactN
  * `"inline-flex"` or `"hidden lg:inline-flex"`), or the button silently
  * falls back to `display: inline` and its flex layout breaks.
  */
-export function GhostButton({ children, href = "#", className }: { children: ReactNode; href?: string; className?: string }) {
+export function GhostButton({
+  children,
+  href = "#",
+  className,
+  dataCta,
+}: {
+  children: ReactNode;
+  href?: string;
+  className?: string;
+  /** Analytics hook only — no tracking script, just the attribute. */
+  dataCta?: string;
+}) {
   return (
-    <a href={href} className={cn("ghost-cta", className)}>
+    <a href={href} className={cn("ghost-cta", className)} data-cta={dataCta}>
       <span>{children}</span>
       <svg className="icon" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
         <path d="M4 10L10 4M10 4H5M10 4V9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
