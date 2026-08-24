@@ -15,11 +15,21 @@ export const ORGANIZATION = {
   logo: `${SITE_URL}/logo/logo-dark.svg`,
   description:
     "Boost Web Digital is a healthcare-only marketing agency that gets medical practices named by AI search engines like ChatGPT, Google AI Overviews, Perplexity and Gemini, alongside traditional healthcare SEO.",
+  address: {
+    "@type": "PostalAddress",
+    addressLocality: "Amritsar",
+    addressRegion: "Punjab",
+    addressCountry: "IN",
+  },
+  email: "ritik@boostwebdigital.com",
   founder: { "@id": `${SITE_URL}/#ritik` },
-  // sameAs: populate with LinkedIn / Google Business Profile / Clutch
-  // once those profiles are live. Do not emit an empty array — that
-  // asserts "this entity exists nowhere else online," which is worse
-  // than omitting the claim entirely.
+  // Only add URLs to profiles that are confirmed live. A sameAs pointing
+  // at a 404 is worse than an omitted field. Never emit an empty array.
+  sameAs: [
+    "https://www.linkedin.com/company/boostwebdigital",
+    "https://www.instagram.com/boostwebdigital/",
+    "https://www.facebook.com/boostwebdigitals",
+  ],
   knowsAbout: [
     "healthcare marketing",
     "generative engine optimization",
@@ -37,6 +47,7 @@ export const PERSON = {
   jobTitle: "Founder",
   worksFor: { "@id": `${SITE_URL}/#organization` },
   image: `${SITE_URL}/images/ritik-malhotra.webp`,
+  url: `${SITE_URL}/about/`,
 };
 
 export const WEBSITE = {
