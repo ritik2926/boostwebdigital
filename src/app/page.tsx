@@ -92,7 +92,6 @@ const service = {
   "@id": `${SITE_URL}/#services`,
   serviceType: "Healthcare Marketing",
   provider: { "@id": `${SITE_URL}/#organization` },
-  areaServed: "US",
   hasOfferCatalog: {
     "@type": "OfferCatalog",
     name: "Healthcare Marketing Services",

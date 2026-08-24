@@ -43,7 +43,6 @@ export default function ServicesPage() {
     name: "Healthcare Marketing Services",
     serviceType: "Healthcare Marketing",
     provider: { "@id": ORGANIZATION["@id"] },
-    areaServed: { "@type": "Country", name: "United States" },
     hasOfferCatalog: {
       "@type": "OfferCatalog",
       name: "Healthcare Marketing Services",
