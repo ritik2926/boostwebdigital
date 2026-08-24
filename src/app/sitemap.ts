@@ -72,6 +72,8 @@ const PAGE_DATES: Record<string, string> = {
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const posts = await getAllPosts();
 
+  // Legal pages are deliberately noindexed and therefore excluded. A
+  // noindexed URL must never appear in a sitemap — the two must always agree.
   return [
     { url: SITE_URL, lastModified: PAGE_DATES["/"] },
     { url: `${SITE_URL}/about/`, lastModified: PAGE_DATES["/about/"] },

@@ -20,11 +20,6 @@ export const metadata: Metadata = {
   },
   description:
     "Boost Web Digital is a healthcare-only marketing agency — SEO, Google Ads, and AI-search visibility for dental, dermatology, med spa, and hair restoration practices.",
-  // [GSC-TOKEN] — Google Search Console verification is currently missing
-  // from production and the property is verified by HTML tag, so access is
-  // at risk. Replace with the real token from Search Console → Settings →
-  // Ownership verification → HTML tag method before deploy.
-  verification: { google: "[GSC-TOKEN]" },
 };
 
 const geistMono = Geist_Mono({
