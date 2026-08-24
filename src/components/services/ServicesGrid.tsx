@@ -1,38 +1,65 @@
 import { Container } from "@/components/Container";
-import { Kicker } from "@/components/Kicker";
 import { Reveal, RevealGroup, RevealItem } from "@/components/Reveal";
-import { GhostButton, MagneticButton } from "@/components/Buttons";
 import { REVEAL, SECTION_PADDING, STACK, GRID_GAP, CARD_PADDING, CARD_RADIUS } from "@/lib/tokens";
-import { SERVICE_CARDS } from "@/lib/services";
+import { SERVICES } from "@/lib/services";
 import { SpotlightField } from "@/components/services/SpotlightField";
+import { SpotlightTitleCard } from "@/components/services/SpotlightTitleCard";
 import { cn } from "@/lib/utils";
 
-function ServiceCard({ service }: { service: (typeof SERVICE_CARDS)[number] }) {
+function ServiceBlock({ service, isLast }: { service: (typeof SERVICES)[number]; isLast: boolean }) {
   return (
-    <div
-      data-spotlight
-      className={cn(
-        "spotlight-card card-hairline group relative flex h-full min-h-56 flex-col justify-between transition-transform duration-300 hover:-translate-y-1",
-        CARD_RADIUS.feature,
-        CARD_PADDING.feature,
-        service.featured ? "bg-white/[0.05] shadow-[0_20px_50px_rgba(var(--accent-rgb),0.15)]" : "bg-white/[0.03]"
+    <div className={cn(!isLast && "border-b border-white/8 pb-16 lg:pb-20", "pt-16 first:pt-0 lg:pt-20")}>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-10">
+        <Reveal className="lg:col-span-3">
+          <span aria-hidden className="font-display text-6xl font-extrabold text-white/10 sm:text-8xl">
+            {service.number}
+          </span>
+        </Reveal>
+        <RevealGroup as="div" className="lg:col-span-9">
+          <RevealItem>
+            <h2 className="font-display text-[1.875rem] font-bold leading-[1.1] tracking-[-0.01em] text-white sm:text-[2.5rem]">
+              {service.name}
+            </h2>
+          </RevealItem>
+          <RevealItem className={STACK.headingToSub}>
+            <p className="max-w-2xl text-lg font-medium text-white/90">{service.lead}</p>
+          </RevealItem>
+          <RevealItem className={cn(STACK.headingToSub, "flex max-w-2xl flex-col gap-4 text-white/70")}>
+            {service.body.map((p) => (
+              <p key={p}>{p}</p>
+            ))}
+          </RevealItem>
+        </RevealGroup>
+      </div>
+
+      <SpotlightField className={STACK.subToContent}>
+        <RevealGroup
+          as="ul"
+          trigger="viewport"
+          stagger={REVEAL.cardStagger}
+          className={cn("grid grid-cols-1 sm:grid-cols-2", GRID_GAP.default)}
+        >
+          {service.whatWeDo.map((item) => (
+            <RevealItem as="li" key={item.title}>
+              <SpotlightTitleCard title={item.title} body={item.body} />
+            </RevealItem>
+          ))}
+        </RevealGroup>
+      </SpotlightField>
+
+      {service.callout && (
+        <Reveal className={STACK.headingToSub}>
+          <p
+            className={cn(
+              "card-hairline max-w-2xl bg-white/[0.03] text-lg leading-relaxed text-white/80 italic",
+              CARD_RADIUS.standard,
+              CARD_PADDING.standard
+            )}
+          >
+            {service.callout}
+          </p>
+        </Reveal>
       )}
-    >
-      <div className="relative z-2">
-        <h3 className="font-display text-xl font-semibold text-white">{service.name}</h3>
-        <p className="mt-3 text-sm leading-relaxed text-white/60">{service.description}</p>
-      </div>
-      <div className="relative z-2 mt-6">
-        {service.featured ? (
-          <MagneticButton href="/contact/" className="inline-flex w-fit items-center">
-            Get Service
-          </MagneticButton>
-        ) : (
-          <GhostButton href="/contact/" className="inline-flex w-fit items-center">
-            Get Service
-          </GhostButton>
-        )}
-      </div>
     </div>
   );
 }
@@ -41,44 +68,34 @@ export function ServicesGrid() {
   return (
     <section className={SECTION_PADDING.compact}>
       <Container>
-        <RevealGroup as="div" className="mx-auto flex max-w-2xl flex-col items-center text-center">
-          <RevealItem>
-            <Kicker>Our expertise</Kicker>
-          </RevealItem>
-          <RevealItem className={STACK.kickerToHeading}>
-            <h2 className="font-display text-[1.875rem] font-bold leading-[1.1] tracking-[-0.01em] sm:text-[2.5rem]">
-              <span className="text-white">Our expertise, your </span>
-              <span className="text-shimmer">growth</span>
-            </h2>
-          </RevealItem>
-          <RevealItem className={STACK.headingToSub}>
-            <p className="text-white/70">
-              From strategy to execution, we offer a full suite of digital services designed to elevate your brand
-              and drive results. Discover how we can help your business thrive.
-            </p>
-          </RevealItem>
-        </RevealGroup>
+        {SERVICES.map((service, i) => (
+          <ServiceBlock key={service.id} service={service} isLast={i === SERVICES.length - 1} />
+        ))}
 
-        <SpotlightField className={STACK.subToContent}>
-          <RevealGroup
-            as="ul"
-            trigger="viewport"
-            stagger={REVEAL.cardStagger}
-            className={cn("grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3", GRID_GAP.default)}
-          >
-            {SERVICE_CARDS.map((service) => (
-              <RevealItem as="li" key={service.id}>
-                <ServiceCard service={service} />
-              </RevealItem>
-            ))}
+        <div className={cn(STACK.subToContent, "grid grid-cols-1 gap-6 border-t border-white/8 pt-16 lg:grid-cols-12 lg:gap-10 lg:pt-20")}>
+          <Reveal className="lg:col-span-3">
+            <span aria-hidden className="font-display text-6xl font-extrabold text-white/10 sm:text-8xl">
+              +
+            </span>
+          </Reveal>
+          <RevealGroup as="div" className="lg:col-span-9">
+            <RevealItem>
+              <h2 className="font-display text-[1.875rem] font-bold leading-[1.1] tracking-[-0.01em] text-white sm:text-[2.5rem]">
+                What else we do
+              </h2>
+            </RevealItem>
+            <RevealItem className={cn(STACK.headingToSub, "flex max-w-2xl flex-col gap-4 text-white/70")}>
+              <p>
+                Websites, content production, campaigns, paid search and reporting automation. All real work, all
+                delivered where it serves the three services above.
+              </p>
+              <p>
+                We do not sell any of it as a standalone engagement. If a new site is what stands between you and
+                being recommended, we build it. If it is not, we will tell you that instead of quoting for one.
+              </p>
+            </RevealItem>
           </RevealGroup>
-        </SpotlightField>
-
-        <Reveal className={cn(STACK.headingToSub, "flex justify-center")}>
-          <GhostButton href="/contact/" className="inline-flex w-fit items-center">
-            All Service
-          </GhostButton>
-        </Reveal>
+        </div>
       </Container>
     </section>
   );

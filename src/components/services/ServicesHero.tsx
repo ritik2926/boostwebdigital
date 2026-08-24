@@ -57,20 +57,21 @@ export function ServicesHero() {
       <Container className="mx-auto">
         <RevealGroup as="div" trigger="mount" stagger={0.1} className="flex flex-col items-center">
           <RevealItem>
-            <Kicker>What we do</Kicker>
+            <Kicker>Services</Kicker>
           </RevealItem>
           <RevealItem className={STACK.kickerToHeading}>
             <h1 className="mx-auto max-w-3xl font-display text-[2.5rem] font-extrabold leading-[0.98] tracking-[-0.02em] text-white sm:text-6xl lg:text-[4.5rem]">
-              Your success
-              <br />
-              is our <span className="text-shimmer">priority</span>
+              Healthcare Marketing <span className="text-shimmer">Services</span>
             </h1>
           </RevealItem>
           <RevealItem className={STACK.headingToSub}>
-            <p className="mx-auto max-w-2xl text-white/70">Get in touch to see how we can help your business thrive.</p>
+            <p className="mx-auto max-w-2xl text-white/70">
+              Three services, built around one question: when a patient asks an AI for a recommendation, does it say
+              your name? Everything below serves that. Nothing below is sold separately.
+            </p>
           </RevealItem>
           <RevealItem className="mt-10">
-            <ServicesCtaButton href="/contact/">Let&apos;s Contact</ServicesCtaButton>
+            <ServicesCtaButton href="/contact/">Get my free report</ServicesCtaButton>
           </RevealItem>
         </RevealGroup>
       </Container>

@@ -21,9 +21,10 @@ const CIRCLE_RING = "0 0 0 1px rgba(var(--accent-rgb),0.35)";
 export function ThreePillarsVenn() {
   return (
     <div className="relative mx-auto flex h-72 w-full max-w-xs items-center justify-center sm:h-90 sm:max-w-2xl">
-      {/* Left circle — Technical Expertise. A thin inset ring (box-shadow,
-          not border, so it doesn't affect layout) keeps each circle's own
-          boundary legible even where fills overlap and blend together. */}
+      {/* Left circle — AI Search Visibility (GEO). A thin inset ring
+          (box-shadow, not border, so it doesn't affect layout) keeps each
+          circle's own boundary legible even where fills overlap and blend
+          together. */}
       <motion.div
         initial={{ scale: 0.5, opacity: 0 }}
         whileInView={{ scale: 1, opacity: 1 }}
@@ -32,7 +33,7 @@ export function ThreePillarsVenn() {
         className={cn(CIRCLE_STYLE, "left-[6%] top-[10%] sm:left-[16%] sm:top-[8%]")}
         style={{ background: CIRCLE_BG, boxShadow: CIRCLE_RING, mixBlendMode: "screen", "--pillar-delay": "0s" } as React.CSSProperties}
       />
-      {/* Right circle — Strategic Focus */}
+      {/* Right circle — Healthcare SEO */}
       <motion.div
         initial={{ scale: 0.5, opacity: 0 }}
         whileInView={{ scale: 1, opacity: 1 }}
@@ -41,7 +42,7 @@ export function ThreePillarsVenn() {
         className={cn(CIRCLE_STYLE, "right-[6%] top-[10%] sm:right-[16%] sm:top-[8%]")}
         style={{ background: CIRCLE_BG, boxShadow: CIRCLE_RING, mixBlendMode: "screen", "--pillar-delay": "3.4s" } as React.CSSProperties}
       />
-      {/* Bottom-center circle — Creative Excellence (the callout card sits above it) */}
+      {/* Bottom-center circle — Reputation Management (the callout card sits above it) */}
       <motion.div
         initial={{ scale: 0.5, opacity: 0 }}
         whileInView={{ scale: 1, opacity: 1 }}
@@ -51,12 +52,19 @@ export function ThreePillarsVenn() {
         style={{ background: CIRCLE_BG, boxShadow: CIRCLE_RING, mixBlendMode: "screen", "--pillar-delay": "6.8s" } as React.CSSProperties}
       />
 
-      {/* Outer labels, vertically aligned with their circle's own center */}
-      <span className="absolute left-0 top-[26%] max-w-24 text-center font-mono text-[0.65rem] font-semibold uppercase tracking-[0.1em] text-white/70 sm:top-[18%] sm:max-w-28 sm:text-left sm:text-xs">
-        Technical Expertise
+      {/* Outer labels, vertically aligned with their circle's own center —
+          the three real services (src/lib/services.ts), not the earlier
+          placeholder "Technical Expertise"/"Strategic Focus" pair. "AI
+          Search Visibility (GEO)" is longer than the placeholder it
+          replaced, so it wraps to more lines at the old top-[26%]/max-w-24
+          geometry and collides with the callout card on narrow viewports —
+          raised and widened at the base breakpoint to clear it; sm+ was
+          already fine and is unchanged. */}
+      <span className="absolute left-0 top-[8%] max-w-28 text-center font-mono text-[0.65rem] font-semibold uppercase tracking-[0.1em] text-white/70 sm:top-[18%] sm:max-w-28 sm:text-left sm:text-xs">
+        AI Search Visibility (GEO)
       </span>
-      <span className="absolute right-0 top-[26%] max-w-24 text-center font-mono text-[0.65rem] font-semibold uppercase tracking-[0.1em] text-white/70 sm:top-[18%] sm:max-w-28 sm:text-right sm:text-xs">
-        Strategic Focus
+      <span className="absolute right-0 top-[8%] max-w-28 text-center font-mono text-[0.65rem] font-semibold uppercase tracking-[0.1em] text-white/70 sm:top-[18%] sm:max-w-28 sm:text-right sm:text-xs">
+        Healthcare SEO
       </span>
 
       {/* Raised callout card over the center overlap — real card styling,
@@ -73,10 +81,9 @@ export function ThreePillarsVenn() {
           CARD_PADDING.standard
         )}
       >
-        <h3 className="font-display text-base font-semibold text-white">Creative Excellence</h3>
+        <h3 className="font-display text-base font-semibold text-white">Reputation Management</h3>
         <p className="mt-2 text-sm leading-relaxed text-white/60">
-          Focus on cutting-edge design, user-centric aesthetics, and innovative ideas that capture attention and
-          deliver impact.
+          The last gate before a booking, and the one most practices leave to chance.
         </p>
       </motion.div>
     </div>

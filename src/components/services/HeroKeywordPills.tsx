@@ -16,15 +16,19 @@ import { seeded } from "@/lib/utils";
  * see ContactForm.tsx/TestimonialCarousel.tsx's history). Rect is cached
  * here instead and only re-measured on resize.
  */
+/**
+ * Text pulled verbatim from the three services' own "what we do" sub-item
+ * titles (src/lib/services.ts) — real page content, not invented keywords.
+ */
 const SERVICE_KEYWORDS: Array<{ text: string; top: string; left: string }> = [
-  { text: "Brand Identity", top: "9%", left: "9%" },
-  { text: "SEO Optimization", top: "6%", left: "60%" },
-  { text: "PPC Campaigns", top: "15%", left: "89%" },
-  { text: "Web Design", top: "52%", left: "4%" },
-  { text: "Copywriting", top: "58%", left: "92%" },
-  { text: "Public Relations", top: "80%", left: "16%" },
-  { text: "Graphic Studio", top: "83%", left: "66%" },
-  { text: "Business Consultancy", top: "78%", left: "88%" },
+  { text: "Entity Consistency", top: "9%", left: "9%" },
+  { text: "Structured Data", top: "6%", left: "60%" },
+  { text: "Third-Party Mentions", top: "15%", left: "89%" },
+  { text: "Technical Foundations", top: "52%", left: "4%" },
+  { text: "Specialty-Specific Content", top: "58%", left: "92%" },
+  { text: "Local Visibility", top: "80%", left: "16%" },
+  { text: "Review Velocity", top: "83%", left: "66%" },
+  { text: "Rating Trajectory", top: "78%", left: "88%" },
 ];
 
 function KeywordPill({ text, top, left, seed }: { text: string; top: string; left: string; seed: number }) {

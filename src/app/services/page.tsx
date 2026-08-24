@@ -3,28 +3,50 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import JsonLd from "@/components/JsonLd";
 import { ORGANIZATION, WEBSITE, breadcrumb } from "@/lib/schema";
-import { SERVICE_CARDS } from "@/lib/services";
 import { ServicesHero } from "@/components/services/ServicesHero";
 import { ServicesGrid } from "@/components/services/ServicesGrid";
 import { ServicesApproach } from "@/components/services/ServicesApproach";
 import { ServicesStats } from "@/components/services/ServicesStats";
+import { ServicesProcess } from "@/components/services/ServicesProcess";
+import { ServicesAudience } from "@/components/services/ServicesAudience";
 import { ServicesCTA } from "@/components/services/ServicesCTA";
-import { ContactLogoMarquee } from "@/components/contact/ContactLogoMarquee";
-import { TestimonialCarousel } from "@/components/contact/TestimonialCarousel";
 
 const SITE_URL = "https://boostwebdigital.com";
 const SERVICES_URL = `${SITE_URL}/services/`;
 
-const TITLE = "Healthcare Marketing Services";
+const TITLE = "Healthcare Marketing Services | Boost Web Digital";
 const DESCRIPTION =
-  "AI visibility (GEO), healthcare SEO, reputation management and paid search — full-service marketing built for how patients search in 2026.";
+  "AI search visibility, healthcare SEO and reputation management for medical, dental, aesthetic and hair restoration practices. Measured monthly, not quarterly.";
 
 export const metadata: Metadata = {
-  title: TITLE,
+  title: { absolute: TITLE },
   description: DESCRIPTION,
   alternates: { canonical: "/services/" },
   openGraph: { title: TITLE, description: DESCRIPTION, url: "/services/", type: "website" },
 };
+
+/**
+ * OfferCatalog — docs/services-content.md, SCHEMA section. Exactly these
+ * three entries, verbatim; no url field (those pages don't exist yet), no
+ * areaServed (removed sitewide — see src/lib/schema.ts). "Supporting work
+ * is not an Offer" per the same doc, so it's deliberately absent here even
+ * though it's a real section on the page.
+ */
+const SERVICE_OFFERS = [
+  {
+    name: "AI Search Visibility (GEO) for Healthcare Practices",
+    description:
+      "We get your practice named by ChatGPT, Google AI Overviews, Perplexity and Gemini, measured monthly against a fixed set of patient questions.",
+  },
+  {
+    name: "Healthcare SEO",
+    description: "Technical foundations, specialty-specific content, local visibility and Google Business Profile optimisation.",
+  },
+  {
+    name: "Reputation Management for Medical Practices",
+    description: "Review velocity, response quality and rating trajectory — the profile patients check before they book.",
+  },
+];
 
 export default function ServicesPage() {
   const servicesWebPage = {
@@ -46,7 +68,7 @@ export default function ServicesPage() {
     hasOfferCatalog: {
       "@type": "OfferCatalog",
       name: "Healthcare Marketing Services",
-      itemListElement: SERVICE_CARDS.map((s) => ({
+      itemListElement: SERVICE_OFFERS.map((s) => ({
         "@type": "Offer",
         itemOffered: { "@type": "Service", name: s.name, description: s.description },
       })),
@@ -72,11 +94,11 @@ export default function ServicesPage() {
       <Navbar />
       <main>
         <ServicesHero />
-        <ContactLogoMarquee />
-        <ServicesGrid />
         <ServicesApproach />
+        <ServicesGrid />
         <ServicesStats />
-        <TestimonialCarousel />
+        <ServicesProcess />
+        <ServicesAudience />
         <ServicesCTA />
       </main>
       <Footer />
