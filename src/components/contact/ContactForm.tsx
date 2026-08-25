@@ -60,6 +60,10 @@ export function ContactForm() {
   const [file, setFile] = useState<File | null>(null);
   const [dragActive, setDragActive] = useState(false);
   const [honeypot, setHoneypot] = useState("");
+  // Bot-timing check — a real visitor can't fill out and submit this form
+  // in under 3 seconds. Captured once, at mount, so it reflects when the
+  // form actually rendered rather than when the field happens to be read.
+  const [renderedAt] = useState(() => Date.now());
   const [errors, setErrors] = useState<FormErrors>({});
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [serverError, setServerError] = useState("");
@@ -146,6 +150,7 @@ export function ContactForm() {
     formData.append("message", message);
     formData.append("budget", budget ?? "");
     formData.append("needs", JSON.stringify(needs));
+    formData.append("rendered-at", String(renderedAt));
     if (file) formData.append("file", file);
 
     try {
@@ -202,6 +207,7 @@ export function ContactForm() {
           onChange={(e) => setHoneypot(e.target.value)}
         />
       </div>
+      <input type="hidden" name="rendered-at" value={renderedAt} readOnly />
 
       <div>
         <span className="font-mono text-xs font-semibold uppercase tracking-[0.14em] text-white/40">What do you need?</span>

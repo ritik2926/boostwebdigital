@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { renderEmail } from "@/lib/email/template";
 
 export const runtime = "nodejs";
 
@@ -11,10 +13,22 @@ const ALLOWED_FILE_TYPES = [
   "image/jpeg",
 ];
 const MAX_FILE_BYTES = 10 * 1024 * 1024;
-const TO_EMAIL = "hello@boostwebdigital.com";
+const TO_EMAIL = process.env.CONTACT_TO_EMAIL ?? "contact@boostwebdigital.com";
+const FROM_EMAIL = "Boost Web Digital <website@boostwebdigital.com>";
+
+const RATE_LIMIT_MAX = 3;
+const RATE_LIMIT_WINDOW_SECONDS = 60 * 60; // 1 hour
+const MIN_SUBMIT_DELAY_MS = 3000;
 
 function isValidEmail(value: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
+/** "Jane Rivera" -> "Jane". Falls back to "there" if the name can't be
+ * split cleanly (empty after trimming). */
+function getFirstName(fullName: string): string {
+  const first = fullName.trim().split(/\s+/)[0];
+  return first && first.length > 0 ? first : "there";
 }
 
 // Never trust the client — every rule the form checks client-side is
@@ -46,6 +60,23 @@ export async function POST(request: Request) {
   const budget = String(formData.get("budget") ?? "");
   const needsRaw = String(formData.get("needs") ?? "[]");
   const file = formData.get("file");
+
+  // Timing check — a real visitor can't fill out and submit this form in
+  // under 3 seconds. Same decoy response as the honeypot, and for the same
+  // reason: tell a bot's script nothing, but never send mail.
+  const renderedAt = Number(formData.get("rendered-at"));
+  if (!Number.isNaN(renderedAt) && Date.now() - renderedAt < MIN_SUBMIT_DELAY_MS) {
+    return NextResponse.json({ ok: true });
+  }
+
+  // Rate limit before validation and before any Resend call, so a flood of
+  // requests never burns real email quota — even ones that would fail
+  // validation still cost an Upstash round trip if checked after it.
+  const ip = getClientIp(request);
+  const rateLimit = await checkRateLimit(ip, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_SECONDS);
+  if (!rateLimit.ok) {
+    return NextResponse.json({ error: "Too many messages. Please try again in an hour." }, { status: 429 });
+  }
 
   const errors = validate({ name, email, message, budget });
   if (errors.length > 0) {
@@ -93,7 +124,7 @@ export async function POST(request: Request) {
 
   try {
     const { error } = await resend.emails.send({
-      from: "Boost Web Digital <onboarding@resend.dev>",
+      from: FROM_EMAIL,
       to: TO_EMAIL,
       replyTo: email,
       subject: `New inquiry from ${name}`,
@@ -116,6 +147,40 @@ export async function POST(request: Request) {
   } catch (err) {
     console.error("[contact] Failed to send email:", err);
     return NextResponse.json({ message: "The email service is unavailable right now. Please email us directly." }, { status: 503 });
+  }
+
+  // Auto-reply to the submitter — best-effort. The important email (to
+  // Ritik) already sent, so a failure here is logged and swallowed rather
+  // than reported back to the visitor as an error.
+  try {
+    const firstName = getFirstName(name);
+    const { html, text } = renderEmail({
+      preheader: "Thanks for getting in touch — here's what happens next.",
+      heading: `Thanks, ${firstName}`,
+      bodyHtml:
+        "<p style=\"margin: 0 0 16px 0;\">Your message reached us and we&#39;ll reply within one business day.</p>" +
+        "<p style=\"margin: 0;\">If it&#39;s urgent, reply directly to this email — it comes straight to us.</p>",
+      bodyText:
+        "Your message reached us and we'll reply within one business day.\n\n" +
+        "If it's urgent, reply directly to this email — it comes straight to us.",
+      cta: { label: "Read the blog", url: "https://boostwebdigital.com/blogs/" },
+      footerNote: "You received this because you submitted the contact form at boostwebdigital.com.",
+    });
+
+    const { error: autoReplyError } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: email,
+      replyTo: "contact@boostwebdigital.com",
+      subject: "We got your message",
+      html,
+      text,
+    });
+
+    if (autoReplyError) {
+      console.error("[contact] Auto-reply returned an error:", autoReplyError);
+    }
+  } catch (err) {
+    console.error("[contact] Auto-reply failed to send:", err);
   }
 
   return NextResponse.json({ ok: true });
