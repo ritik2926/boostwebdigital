@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
-import { renderEmail } from "@/lib/email/template";
+import { renderEmail, escapeHtml } from "@/lib/email/template";
 
 export const runtime = "nodejs";
 
@@ -123,21 +123,28 @@ export async function POST(request: Request) {
 
   const resend = new Resend(apiKey);
 
+  const needsText = needs.length ? needs.join(", ") : "Not specified";
+  const notificationEmail = renderEmail({
+    preheader: `New inquiry from ${name}`,
+    heading: `New inquiry from ${escapeHtml(name)}`,
+    bodyHtml:
+      `<p style="margin: 0 0 12px 0;"><strong>Email:</strong> ${escapeHtml(email)}</p>` +
+      `<p style="margin: 0 0 12px 0;"><strong>Budget:</strong> ${escapeHtml(budget)}</p>` +
+      `<p style="margin: 0 0 12px 0;"><strong>Needs:</strong> ${escapeHtml(needsText)}</p>` +
+      `<p style="margin: 0 0 4px 0;"><strong>Message:</strong></p>` +
+      `<p style="margin: 0;">${escapeHtml(message).replace(/\n/g, "<br />")}</p>`,
+    bodyText: [`Email: ${email}`, `Budget: ${budget}`, `Needs: ${needsText}`, "", "Message:", message].join("\n"),
+    showSignature: false,
+  });
+
   try {
     const { error } = await resend.emails.send({
       from: FROM_EMAIL,
       to: TO_EMAIL,
       replyTo: email,
       subject: `New inquiry from ${name}`,
-      text: [
-        `Name: ${name}`,
-        `Email: ${email}`,
-        `Budget: ${budget}`,
-        `Needs: ${needs.length ? needs.join(", ") : "Not specified"}`,
-        "",
-        "Message:",
-        message,
-      ].join("\n"),
+      html: notificationEmail.html,
+      text: notificationEmail.text,
       attachments: attachment ? [attachment] : undefined,
     });
 
@@ -166,6 +173,7 @@ export async function POST(request: Request) {
         "If it's urgent, reply directly to this email — it comes straight to us.",
       cta: { label: "Read the blog", url: "https://boostwebdigital.com/blogs/" },
       footerNote: "You received this because you submitted the contact form at boostwebdigital.com.",
+      showSignature: true,
     });
 
     const { error: autoReplyError } = await resend.emails.send({
