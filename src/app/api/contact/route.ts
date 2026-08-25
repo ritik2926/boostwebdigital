@@ -75,7 +75,8 @@ export async function POST(request: Request) {
   const ip = getClientIp(request);
   const rateLimit = await checkRateLimit(ip, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_SECONDS);
   if (!rateLimit.ok) {
-    return NextResponse.json({ error: "Too many messages. Please try again in an hour." }, { status: 429 });
+    const rateLimitMessage = "Too many messages. Please try again in an hour.";
+    return NextResponse.json({ error: rateLimitMessage, message: rateLimitMessage }, { status: 429 });
   }
 
   const errors = validate({ name, email, message, budget });
