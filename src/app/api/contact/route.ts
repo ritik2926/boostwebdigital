@@ -14,7 +14,7 @@ const ALLOWED_FILE_TYPES = [
 ];
 const MAX_FILE_BYTES = 10 * 1024 * 1024;
 const TO_EMAIL = process.env.CONTACT_TO_EMAIL ?? "contact@boostwebdigital.com";
-const FROM_EMAIL = "Boost Web Digital <website@boostwebdigital.com>";
+const FROM_EMAIL = "Boost Web Digital <hello@boostwebdigital.com>";
 
 const RATE_LIMIT_MAX = 3;
 const RATE_LIMIT_WINDOW_SECONDS = 60 * 60; // 1 hour
