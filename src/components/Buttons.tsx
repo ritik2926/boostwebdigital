@@ -14,9 +14,26 @@ const MotionLink = motion.create(Link);
  * renders as a real navigable link (`motion(Link)`) instead of a bare
  * `<button>` — needed so the Navbar's CTA can point at /contact/ without a
  * second, differently-styled button. Every existing call site omits `href`
- * and is unaffected.
+ * and is unaffected. `onClick`/`disabled`/`type` are optional and new too
+ * (newsletter subscribe/unsubscribe, both real actions not navigation) —
+ * only meaningful on the no-`href` `<button>` branch; every existing
+ * `href`-less call site already omitted them and is unaffected.
  */
-export function MagneticButton({ children, className, href }: { children: ReactNode; className?: string; href?: string }) {
+export function MagneticButton({
+  children,
+  className,
+  href,
+  onClick,
+  disabled,
+  type = "button",
+}: {
+  children: ReactNode;
+  className?: string;
+  href?: string;
+  onClick?: React.MouseEventHandler<HTMLButtonElement>;
+  disabled?: boolean;
+  type?: "button" | "submit";
+}) {
   const ref = useRef<HTMLButtonElement & HTMLAnchorElement>(null);
   const x = useMotionValue(0);
   const y = useMotionValue(0);
@@ -61,6 +78,9 @@ export function MagneticButton({ children, className, href }: { children: ReactN
   return (
     <motion.button
       ref={ref}
+      type={type}
+      onClick={onClick}
+      disabled={disabled}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       style={{ x: springX, y: springY }}

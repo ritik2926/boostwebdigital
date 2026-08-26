@@ -5,6 +5,7 @@ import { Footer } from "@/components/Footer";
 import { Container } from "@/components/Container";
 import { Reveal, RevealGroup, RevealItem } from "@/components/Reveal";
 import { MagneticButton } from "@/components/Buttons";
+import { SubscribeForm } from "@/components/newsletter/SubscribeForm";
 import { SECTION_PADDING, STACK } from "@/lib/tokens";
 import { cn } from "@/lib/utils";
 import JsonLd from "@/components/JsonLd";
@@ -171,6 +172,9 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
               </RevealItem>
               <RevealItem className={STACK.contentToCta}>
                 <MagneticButton>{post.cta?.label ?? "Get My Free AI Visibility Report"}</MagneticButton>
+              </RevealItem>
+              <RevealItem className={cn(STACK.contentToCta, "w-full max-w-md border-t border-white/8 pt-12")}>
+                <SubscribeForm source="blog-post" className="mx-auto" />
               </RevealItem>
             </RevealGroup>
           </Container>

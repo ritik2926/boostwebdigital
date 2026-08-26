@@ -11,7 +11,12 @@ const ALLOWED_FILE_TYPES = [
   "image/jpeg",
 ];
 const MAX_FILE_BYTES = 10 * 1024 * 1024;
-const TO_EMAIL = "hello@boostwebdigital.com";
+// contact@ is a Google Workspace alias whose existence we could not verify,
+// and replies were not arriving. ritik@ is a confirmed real mailbox. Switch
+// back once the alias is proven. (This constant was "hello@boostwebdigital.com"
+// before this change — not "contact@", which the newsletter task's brief
+// assumed; see that task's report for the discrepancy.)
+const TO_EMAIL = "ritik@boostwebdigital.com";
 
 function isValidEmail(value: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);

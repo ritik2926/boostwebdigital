@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Container } from "@/components/Container";
 import { Reveal, RevealGroup, RevealItem, usePrefersReducedMotion } from "@/components/Reveal";
 import { GhostButton } from "@/components/Buttons";
+import { SubscribeForm } from "@/components/newsletter/SubscribeForm";
 import { cn, seeded } from "@/lib/utils";
 import { EASE } from "@/lib/tokens";
 
@@ -29,14 +30,14 @@ import { EASE } from "@/lib/tokens";
 // constraint (accent-hue-only, low-opacity, slow) — only the "none at all"
 // rule for this one section changed.
 //
-// Content (CTA line, four-column nav, copyright bar) is the real footer
-// that existed before the full-site reset (recovered from git history at
+// Content (CTA line, nav columns, copyright bar) is the real footer that
+// existed before the full-site reset (recovered from git history at
 // src/components/Footer.tsx), rebuilt in the current design system with
-// current URL-architecture-locked links — the newsletter-signup column
-// (no real backend to submit to) and the two never-wired "#" social links
-// were dropped rather than carried forward as fake functional UI; a real
-// specialty-links column replaced them, serving the same "sitewide internal
-// linking" SEO objective Scene 09 already calls for.
+// current URL-architecture-locked links. The newsletter-signup column was
+// dropped at that rebuild for lack of a real backend to submit to (and the
+// two never-wired "#" social links were dropped as fake functional UI) —
+// there's a backend now (src/app/api/newsletter/), so the newsletter
+// column is restored as its own fifth grid item, real this time.
 // ---------------------------------------------------------------------------
 
 const FOOTER_NAV = {
@@ -262,7 +263,7 @@ export function Footer() {
           </RevealItem>
         </RevealGroup>
 
-        <RevealGroup as="div" className="grid gap-10 border-t border-white/8 py-14 sm:grid-cols-2 md:grid-cols-4">
+        <RevealGroup as="div" className="grid gap-10 border-t border-white/8 py-14 sm:grid-cols-2 lg:grid-cols-5">
           <RevealItem>
             <span className="font-display text-lg font-semibold text-white">Boost Web Digital</span>
             <p className="mt-3 max-w-xs text-sm text-white/50">
@@ -321,6 +322,11 @@ export function Footer() {
                 </li>
               ))}
             </ul>
+          </RevealItem>
+
+          <RevealItem>
+            <span className="font-mono text-xs uppercase tracking-[0.14em] text-white/40">Newsletter</span>
+            <SubscribeForm source="footer" className="mt-4 max-w-xs" />
           </RevealItem>
         </RevealGroup>
 
