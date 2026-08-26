@@ -46,3 +46,6 @@ next-env.d.ts
 
 # design-review screenshots (regenerated on demand via npm run shot)
 docs/refs/shots/
+
+.vercel
+.env*
