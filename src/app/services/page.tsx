@@ -27,16 +27,18 @@ export const metadata: Metadata = {
 
 /**
  * OfferCatalog — docs/services-content.md, SCHEMA section. Exactly these
- * three entries, verbatim; no url field (those pages don't exist yet), no
- * areaServed (removed sitewide — see src/lib/schema.ts). "Supporting work
- * is not an Offer" per the same doc, so it's deliberately absent here even
- * though it's a real section on the page.
+ * three entries, verbatim; no areaServed (removed sitewide — see
+ * src/lib/schema.ts). "Supporting work is not an Offer" per the same doc,
+ * so it's deliberately absent here even though it's a real section on the
+ * page. The other two still omit `url` (those pages don't exist yet) —
+ * AI Search Visibility restores one now that /ai-visibility-geo/ is live.
  */
 const SERVICE_OFFERS = [
   {
     name: "AI Search Visibility (GEO) for Healthcare Practices",
     description:
       "We get your practice named by ChatGPT, Google AI Overviews, Perplexity and Gemini, measured monthly against a fixed set of patient questions.",
+    url: `${SITE_URL}/ai-visibility-geo/`,
   },
   {
     name: "Healthcare SEO",
@@ -70,7 +72,12 @@ export default function ServicesPage() {
       name: "Healthcare Marketing Services",
       itemListElement: SERVICE_OFFERS.map((s) => ({
         "@type": "Offer",
-        itemOffered: { "@type": "Service", name: s.name, description: s.description },
+        itemOffered: {
+          "@type": "Service",
+          name: s.name,
+          description: s.description,
+          ...("url" in s ? { url: s.url } : {}),
+        },
       })),
     },
   };

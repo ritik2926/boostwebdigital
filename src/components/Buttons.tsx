@@ -26,6 +26,7 @@ export function MagneticButton({
   onClick,
   disabled,
   type = "button",
+  dataCta,
 }: {
   children: ReactNode;
   className?: string;
@@ -33,6 +34,8 @@ export function MagneticButton({
   onClick?: React.MouseEventHandler<HTMLButtonElement>;
   disabled?: boolean;
   type?: "button" | "submit";
+  /** Analytics hook only — no tracking script, just the attribute. */
+  dataCta?: string;
 }) {
   const ref = useRef<HTMLButtonElement & HTMLAnchorElement>(null);
   const x = useMotionValue(0);
@@ -69,6 +72,7 @@ export function MagneticButton({
         style={{ x: springX, y: springY }}
         whileTap={{ scale: 0.97 }}
         className={cn("shiny-cta", className)}
+        data-cta={dataCta}
       >
         <span>{children}</span>
       </MotionLink>
@@ -86,6 +90,7 @@ export function MagneticButton({
       style={{ x: springX, y: springY }}
       whileTap={{ scale: 0.97 }}
       className={cn("shiny-cta", className)}
+      data-cta={dataCta}
     >
       <span>{children}</span>
     </motion.button>
@@ -101,9 +106,20 @@ export function MagneticButton({
  * `"inline-flex"` or `"hidden lg:inline-flex"`), or the button silently
  * falls back to `display: inline` and its flex layout breaks.
  */
-export function GhostButton({ children, href = "#", className }: { children: ReactNode; href?: string; className?: string }) {
+export function GhostButton({
+  children,
+  href = "#",
+  className,
+  dataCta,
+}: {
+  children: ReactNode;
+  href?: string;
+  className?: string;
+  /** Analytics hook only — no tracking script, just the attribute. */
+  dataCta?: string;
+}) {
   return (
-    <a href={href} className={cn("ghost-cta", className)}>
+    <a href={href} className={cn("ghost-cta", className)} data-cta={dataCta}>
       <span>{children}</span>
       <svg className="icon" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
         <path d="M4 10L10 4M10 4H5M10 4V9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />

@@ -22,12 +22,14 @@ const PAGE_DATES: Record<string, string> = {
   "/pricing/": "2026-08-22",
   "/services/": "2026-08-22",
   "/faq/": "2026-08-22",
+  "/ai-visibility-geo/": "2026-08-25",
 };
 
 /**
  * Homepage, /about/, /contact/, /blogs/ (+ every post at /blog/<slug>/),
  * /pricing/, /services/ (the generic services hub — its child pillar
- * pages below are still unbuilt), and /faq/ are live today. `/blog/` itself
+ * pages below are still unbuilt except /ai-visibility-geo/, now live),
+ * /faq/, and /ai-visibility-geo/ are live today. `/blog/` itself
  * is a 301 redirect to /blogs/ (next.config.ts) and is deliberately NOT
  * listed here — a redirecting URL in a sitemap is a Search Console warning.
  * `/design-lab` is excluded from production entirely (see its page.tsx),
@@ -55,8 +57,8 @@ const PAGE_DATES: Record<string, string> = {
  *   /chiropractic-marketing/, /mental-health-marketing/ — each with its own
  *   -seo/, google-ads-for-.../, -website-design/ spokes per the slug
  *   formulas table
- * Generic services layer children (hub itself is live — see above): seo/,
- *   ai-search-optimization/, web-design/, google-ads/, meta-ads/,
+ * Generic services layer children (hub + /ai-visibility-geo/ are live —
+ *   see above): seo/, web-design/, google-ads/, meta-ads/,
  *   social-media-marketing/, content-marketing/, ai-automation/,
  *   ai-chatbots/, conversion-rate-optimization/, reputation-management/
  * Content/proof: /resources/, /resources/what-is-{term}/,
@@ -82,6 +84,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/pricing/`, lastModified: PAGE_DATES["/pricing/"] },
     { url: `${SITE_URL}/services/`, lastModified: PAGE_DATES["/services/"] },
     { url: `${SITE_URL}/faq/`, lastModified: PAGE_DATES["/faq/"] },
+    { url: `${SITE_URL}/ai-visibility-geo/`, lastModified: PAGE_DATES["/ai-visibility-geo/"] },
     ...posts.map((post) => ({
       url: `${SITE_URL}/blog/${post.slug}/`,
       lastModified: post.updatedAt ?? post.publishedAt,

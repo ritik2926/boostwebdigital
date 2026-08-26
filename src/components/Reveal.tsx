@@ -108,12 +108,12 @@ export function RevealGroup({
 }: {
   children: ReactNode;
   className?: string;
-  as?: "div" | "section" | "ul";
+  as?: "div" | "section" | "ul" | "tbody";
   stagger?: number;
   delay?: number;
   trigger?: RevealTrigger;
 }) {
-  const MotionTag = as === "section" ? motion.section : as === "ul" ? motion.ul : motion.div;
+  const MotionTag = as === "section" ? motion.section : as === "ul" ? motion.ul : as === "tbody" ? motion.tbody : motion.div;
   const groupVariants: Variants = {
     hidden: {},
     visible: { transition: { staggerChildren: stagger, delayChildren: delay } },
@@ -133,10 +133,10 @@ export function RevealItem({
 }: {
   children: ReactNode;
   className?: string;
-  as?: "div" | "li";
+  as?: "div" | "li" | "tr";
 }) {
   const { variants, transition } = useReveal();
-  const MotionTag = as === "li" ? motion.li : motion.div;
+  const MotionTag = as === "li" ? motion.li : as === "tr" ? motion.tr : motion.div;
   return (
     <MotionTag variants={variants} transition={transition} className={className}>
       {children}

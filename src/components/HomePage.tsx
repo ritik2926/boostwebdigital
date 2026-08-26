@@ -13,6 +13,7 @@ import {
 } from "framer-motion";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import Link from "next/link";
 import { Container } from "@/components/Container";
 import { Reveal, RevealGroup, RevealItem, usePrefersReducedMotion } from "@/components/Reveal";
 import { Navbar } from "@/components/Navbar";
@@ -1301,15 +1302,8 @@ function ServiceRow({
   onHoverStart: () => void;
   onHoverEnd: () => void;
 }) {
-  return (
-    <div
-      aria-label={service.cta}
-      onMouseEnter={onHoverStart}
-      onMouseLeave={onHoverEnd}
-      onFocus={onHoverStart}
-      onBlur={onHoverEnd}
-      className="group relative block border-t border-white/8 py-8 last:border-b md:py-10"
-    >
+  const content = (
+    <>
       {/* Gradient hairline overlaying the plain border — same accent-fade
           language as /services/'s card treatment, adapted for a full-width
           row (a boxed border would fight the "list, not cards" shape this
@@ -1382,8 +1376,30 @@ function ServiceRow({
           →
         </span>
       </div>
-    </div>
+    </>
   );
+
+  const sharedProps = {
+    "aria-label": service.cta,
+    onMouseEnter: onHoverStart,
+    onMouseLeave: onHoverEnd,
+    onFocus: onHoverStart,
+    onBlur: onHoverEnd,
+    className: "group relative block border-t border-white/8 py-8 last:border-b md:py-10",
+  };
+
+  // Only ai-visibility-geo has a real destination today — see the SERVICES
+  // comment above. The other three rows stay plain <div>s until their pages
+  // exist.
+  if (service.id === "ai-visibility-geo") {
+    return (
+      <Link href={service.href} {...sharedProps}>
+        {content}
+      </Link>
+    );
+  }
+
+  return <div {...sharedProps}>{content}</div>;
 }
 
 function Services() {

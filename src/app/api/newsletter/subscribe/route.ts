@@ -2,13 +2,15 @@ import crypto from "crypto";
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 import { sql } from "@/lib/db";
-import { checkRateLimit } from "@/lib/rate-limit";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { isDisposableEmail } from "@/lib/email/disposable";
 import { renderEmail } from "@/lib/email/template";
 
 export const runtime = "nodejs";
 
 const SITE_URL = "https://boostwebdigital.com";
+const RATE_LIMIT_MAX = 3;
+const RATE_LIMIT_WINDOW_SECONDS = 60 * 60; // 1 hour
 
 // Identical wording in every outcome (new / already-pending / already-
 // confirmed / re-opting-in) — never reveal whether a given address is
@@ -19,12 +21,9 @@ function isValidEmail(value: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
 
-function getClientIp(request: Request): string {
-  const forwarded = request.headers.get("x-forwarded-for");
-  if (forwarded) return forwarded.split(",")[0]!.trim();
-  return request.headers.get("x-real-ip") ?? "unknown";
-}
-
+// checkRateLimit hashes its own identifier before it ever reaches Upstash —
+// this second hash is a separate concern, the subscribers.ip_hash column,
+// so the raw IP itself is never persisted.
 function hashIp(ip: string): string {
   return crypto.createHash("sha256").update(ip).digest("hex");
 }
@@ -63,8 +62,8 @@ export async function POST(request: Request) {
   // 3. Rate limit — 3 signups per IP per hour, shared Upstash-backed helper.
   const ip = getClientIp(request);
   const ipHash = hashIp(ip);
-  const { allowed } = await checkRateLimit(`newsletter-subscribe:${ipHash}`, { limit: 3, windowSeconds: 3600 });
-  if (!allowed) {
+  const rateLimit = await checkRateLimit(`newsletter-subscribe:${ip}`, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_SECONDS);
+  if (!rateLimit.ok) {
     return NextResponse.json({ ok: false, message: "Too many attempts. Try again in an hour." }, { status: 429 });
   }
 
@@ -118,13 +117,14 @@ export async function POST(request: Request) {
     } else {
       const confirmUrl = `${SITE_URL}/api/newsletter/confirm?token=${token}`;
       const { html, text } = renderEmail({
-        subject: "Confirm your subscription",
         preheader: "One click and you're on the list.",
         heading: "Confirm your subscription",
-        body: [
-          "You asked for new posts from Boost Web Digital. Click below to confirm and we'll email you when something new goes up.",
+        bodyHtml:
+          '<p style="margin: 0 0 16px 0;">You asked for new posts from Boost Web Digital. Click below to confirm and we&#39;ll email you when something new goes up.</p>' +
+          '<p style="margin: 0;">If you didn&#39;t sign up, ignore this — you won&#39;t hear from us again.</p>',
+        bodyText:
+          "You asked for new posts from Boost Web Digital. Click below to confirm and we'll email you when something new goes up.\n\n" +
           "If you didn't sign up, ignore this — you won't hear from us again.",
-        ],
         cta: { label: "Confirm subscription", url: confirmUrl },
         showSignature: true,
         footerNote:

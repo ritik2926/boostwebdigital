@@ -1,53 +1,89 @@
+import { Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis";
+import { createHash } from "crypto";
+
 /**
- * Distributed rate limiting via Upstash Redis's plain REST API — no SDK
- * (`@upstash/redis`/`@upstash/ratelimit`), since the newsletter task's only
- * approved new dependency is `@neondatabase/serverless`. UPSTASH_REDIS_REST_URL
- * / UPSTASH_REDIS_REST_TOKEN were already present in this project's env
- * (unused until now) — a plain in-memory counter would reset on every cold
- * start and diverge across concurrent serverless instances, so it can't
- * actually enforce "N per hour" the way an in-memory Map would silently
- * pretend to.
+ * Generic sliding-window rate limiter on top of Upstash Redis. No
+ * contact-form-specific logic here — the contact route (and, later, the AI
+ * checker) supply their own identifier/limit/window and interpret the
+ * result themselves.
  *
- * One pipelined round trip: INCR always increments, `EXPIRE ... NX` sets
- * the window's TTL only the first time the key is created (Redis 7+) so a
- * burst of requests inside the window doesn't keep pushing the expiry back.
+ * Fails OPEN: a missing Upstash config or an unreachable Redis must never
+ * block a genuine visitor. Only a confirmed "over limit" response blocks.
  */
-const UPSTASH_URL = process.env.UPSTASH_REDIS_REST_URL;
-const UPSTASH_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
+
+let redisClient: Redis | null = null;
+const limiters = new Map<string, Ratelimit>();
+
+function getRedis(): Redis | null {
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!url || !token) return null;
+  if (!redisClient) {
+    try {
+      // `new Redis(...)` throws synchronously on a malformed URL — this
+      // was outside checkRateLimit's own try/catch, so a bad env value
+      // crashed the request with a 500 instead of the fail-open behavior
+      // this module's own doc comment promises. Caught here so a
+      // misconfigured Upstash env still degrades to "no rate limiting"
+      // rather than breaking the caller entirely.
+      redisClient = new Redis({ url, token });
+    } catch (err) {
+      console.warn("[rate-limit] Failed to construct Upstash Redis client — failing open:", err);
+      return null;
+    }
+  }
+  return redisClient;
+}
+
+function getLimiter(redis: Redis, limit: number, windowSeconds: number): Ratelimit {
+  const key = `${limit}:${windowSeconds}`;
+  let limiter = limiters.get(key);
+  if (!limiter) {
+    limiter = new Ratelimit({
+      redis,
+      limiter: Ratelimit.slidingWindow(limit, `${windowSeconds} s`),
+      prefix: "ratelimit",
+    });
+    limiters.set(key, limiter);
+  }
+  return limiter;
+}
 
 export async function checkRateLimit(
-  key: string,
-  { limit, windowSeconds }: { limit: number; windowSeconds: number }
-): Promise<{ allowed: boolean }> {
-  if (!UPSTASH_URL || !UPSTASH_TOKEN) {
-    // Fail OPEN, not closed — a misconfigured limiter should never be the
-    // reason a real signup silently disappears. The honeypot, timing check
-    // and disposable-domain filter upstream of this call still apply.
-    console.warn("[rate-limit] UPSTASH_REDIS_REST_URL/TOKEN not set — allowing request without limiting.");
-    return { allowed: true };
+  identifier: string,
+  limit: number,
+  windowSeconds: number
+): Promise<{ ok: boolean; remaining: number; resetAt: number }> {
+  const redis = getRedis();
+  if (!redis) {
+    console.warn("[rate-limit] UPSTASH_REDIS_REST_URL/UPSTASH_REDIS_REST_TOKEN not set — failing open");
+    return { ok: true, remaining: limit, resetAt: Date.now() + windowSeconds * 1000 };
   }
 
-  let res: Response;
+  // Never store or send the raw identifier (e.g. an IP address) to Redis.
+  const hashed = createHash("sha256").update(identifier).digest("hex");
+
   try {
-    res = await fetch(`${UPSTASH_URL}/pipeline`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${UPSTASH_TOKEN}`, "Content-Type": "application/json" },
-      body: JSON.stringify([
-        ["INCR", key],
-        ["EXPIRE", key, windowSeconds, "NX"],
-      ]),
-    });
+    const limiter = getLimiter(redis, limit, windowSeconds);
+    const result = await limiter.limit(hashed);
+    return { ok: result.success, remaining: result.remaining, resetAt: result.reset };
   } catch (err) {
-    console.error("[rate-limit] Upstash request threw:", err);
-    return { allowed: true };
+    console.warn("[rate-limit] Upstash request failed — failing open:", err);
+    return { ok: true, remaining: limit, resetAt: Date.now() + windowSeconds * 1000 };
   }
+}
 
-  if (!res.ok) {
-    console.error("[rate-limit] Upstash returned", res.status);
-    return { allowed: true };
+/** Best-effort caller IP for rate-limiting — first x-forwarded-for entry,
+ * then x-real-ip, then "unknown" (which still rate-limits, just as one
+ * shared bucket for every caller neither header identifies). */
+export function getClientIp(request: Request): string {
+  const forwardedFor = request.headers.get("x-forwarded-for");
+  if (forwardedFor) {
+    const first = forwardedFor.split(",")[0]?.trim();
+    if (first) return first;
   }
-
-  const results = (await res.json()) as Array<{ result?: number; error?: string }>;
-  const count = results[0]?.result ?? 0;
-  return { allowed: count <= limit };
+  const realIp = request.headers.get("x-real-ip");
+  if (realIp) return realIp;
+  return "unknown";
 }

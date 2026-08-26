@@ -18,8 +18,15 @@ import { EASE } from "@/lib/tokens";
 const NAV_LINKS = [
   { label: "Home", href: "/" },
   { label: "About Us", href: "/about/" },
-  { label: "Services", href: "/services/" },
   { label: "Contact", href: "/contact/" },
+];
+
+// Services renders as its own dropdown (see ServicesDropdown) rather than a
+// plain NAV_LINKS entry, so /ai-visibility-geo/ can live as a real sub-page
+// under it without a second top-level nav item.
+const SERVICES_SUBLINKS: Array<{ label: string; href: string }> = [
+  { label: "All Services", href: "/services/" },
+  { label: "AI Search Visibility", href: "/ai-visibility-geo/" },
 ];
 
 // Grouped under the "Other" dropdown. `href: null` means the page doesn't
@@ -48,6 +55,12 @@ function getActiveLabel(pathname: string) {
       return item.label;
     }
   }
+  for (const item of SERVICES_SUBLINKS) {
+    const hrefPath = item.href.replace(/\/$/, "");
+    if (pathname === hrefPath || pathname.startsWith(`${hrefPath}/`)) {
+      return "Services";
+    }
+  }
   for (const item of OTHER_LINKS) {
     if (!item.href || item.href.includes("#")) continue;
     const hrefPath = item.href.replace(/\/$/, "");
@@ -66,6 +79,74 @@ function NavHighlight() {
       style={{ boxShadow: "0 0 6px rgba(255,255,255,0.55), 0 -8px 10px -4px rgba(255,255,255,0.35)" }}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
     />
+  );
+}
+
+/**
+ * Unlike OtherDropdown, "Services" has a real destination of its own, so
+ * the trigger is a genuine <Link> to /services/ (not just a toggle button)
+ * — the chevron is decorative only. Hovering/focusing still reveals the
+ * sub-page list underneath, same panel mechanics as OtherDropdown.
+ */
+function ServicesDropdown({ active, onHover }: { active: boolean; onHover: (label: string | null) => void }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div
+      className="relative"
+      onMouseEnter={() => {
+        onHover("Services");
+        setOpen(true);
+      }}
+      onMouseLeave={() => setOpen(false)}
+      onFocus={() => {
+        onHover("Services");
+        setOpen(true);
+      }}
+      onBlur={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget as Node)) setOpen(false);
+      }}
+    >
+      <Link href="/services/" className="relative flex items-center gap-1 px-4 py-2 text-sm">
+        {active && <NavHighlight />}
+        <span className={cn("relative transition-colors", active ? "text-white" : "text-white/60")}>Services</span>
+        <svg
+          width="10"
+          height="10"
+          viewBox="0 0 10 10"
+          fill="none"
+          aria-hidden
+          className={cn("relative mt-px text-white/50 transition-transform duration-200", open && "rotate-180")}
+        >
+          <path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </Link>
+
+      {/* Always rendered — see OtherDropdown's identical note on crawlers
+          that never fire hover/focus. */}
+      <motion.div
+        initial={false}
+        animate={{ opacity: open ? 1 : 0, y: open ? 0 : 6 }}
+        transition={{ duration: 0.2, ease: EASE.primary }}
+        style={{ pointerEvents: open ? "auto" : "none" }}
+        aria-hidden={!open}
+        className="absolute left-1/2 top-full z-(--z-raised) w-52 -translate-x-1/2 pt-3"
+      >
+        <div className="overflow-hidden rounded-2xl border border-white/8 bg-[#0b0b0f]/95 py-2 shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-xl">
+          {SERVICES_SUBLINKS.map((item) => (
+            <Link
+              key={item.label}
+              href={item.href}
+              tabIndex={open ? 0 : -1}
+              onClick={() => setOpen(false)}
+              className="block px-4 py-2.5 text-sm text-white/70 transition-colors hover:bg-white/5 hover:text-white"
+            >
+              {item.label}
+            </Link>
+          ))}
+        </div>
+      </motion.div>
+    </div>
   );
 }
 
@@ -163,7 +244,26 @@ function DesktopNavLinks({ className }: { className?: string }) {
       className={cn("relative hidden items-center gap-1 lg:flex", className)}
       onMouseLeave={() => setHovered(null)}
     >
-      {NAV_LINKS.map((item) => {
+      {NAV_LINKS.slice(0, 2).map((item) => {
+        const isActive = active === item.label;
+        return (
+          <Link
+            key={item.label}
+            href={item.href}
+            onMouseEnter={() => setHovered(item.label)}
+            className="relative px-4 py-2 text-sm"
+          >
+            {isActive && <NavHighlight />}
+            <span className={cn("relative transition-colors", isActive ? "text-white" : "text-white/60")}>
+              {item.label}
+            </span>
+          </Link>
+        );
+      })}
+
+      <ServicesDropdown active={active === "Services"} onHover={setHovered} />
+
+      {NAV_LINKS.slice(2).map((item) => {
         const isActive = active === item.label;
         return (
           <Link
@@ -188,6 +288,7 @@ function DesktopNavLinks({ className }: { className?: string }) {
 function MobileNav() {
   const [open, setOpen] = useState(false);
   const [otherOpen, setOtherOpen] = useState(false);
+  const [servicesOpen, setServicesOpen] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -198,10 +299,13 @@ function MobileNav() {
     };
   }, [open]);
 
-  // Collapse the "Other" panel every time the menu itself closes, so it
-  // doesn't reopen already-expanded next time.
+  // Collapse the "Other"/"Services" panels every time the menu itself
+  // closes, so they don't reopen already-expanded next time.
   useEffect(() => {
-    if (!open) setOtherOpen(false);
+    if (!open) {
+      setOtherOpen(false);
+      setServicesOpen(false);
+    }
   }, [open]);
 
   return (
@@ -252,7 +356,7 @@ function MobileNav() {
             />
 
             <nav className="relative flex flex-1 flex-col items-center justify-center gap-1 overflow-y-auto px-6 py-8">
-              {NAV_LINKS.map((item, i) => (
+              {NAV_LINKS.slice(0, 2).map((item, i) => (
                 <MotionLink
                   key={item.label}
                   href={item.href}
@@ -267,6 +371,78 @@ function MobileNav() {
                 </MotionLink>
               ))}
 
+              <motion.div
+                initial={{ opacity: 0, y: 22 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 14 }}
+                transition={{ duration: 0.4, delay: 0.16 + 0.06 * 2, ease: EASE.primary }}
+                className="flex items-center gap-2"
+              >
+                <MotionLink
+                  href="/services/"
+                  onClick={() => setOpen(false)}
+                  className="font-display py-3 text-3xl text-white/80 transition-colors hover:text-white sm:text-4xl"
+                >
+                  Services
+                </MotionLink>
+                <button
+                  type="button"
+                  onClick={() => setServicesOpen((v) => !v)}
+                  aria-expanded={servicesOpen}
+                  aria-label="Toggle services sub-menu"
+                  className="flex h-8 w-8 items-center justify-center"
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 10 10"
+                    fill="none"
+                    aria-hidden
+                    className={cn("text-white/40 transition-transform duration-200", servicesOpen && "rotate-180")}
+                  >
+                    <path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
+              </motion.div>
+
+              <AnimatePresence initial={false}>
+                {servicesOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.3, ease: EASE.primary }}
+                    className="flex w-full flex-col items-center overflow-hidden"
+                  >
+                    {SERVICES_SUBLINKS.map((item) => (
+                      <Link
+                        key={item.label}
+                        href={item.href}
+                        onClick={() => setOpen(false)}
+                        className="font-display py-2 text-xl text-white/60 transition-colors hover:text-white sm:text-2xl"
+                      >
+                        {item.label}
+                      </Link>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {NAV_LINKS.slice(2).map((item, i) => (
+                <MotionLink
+                  key={item.label}
+                  href={item.href}
+                  onClick={() => setOpen(false)}
+                  initial={{ opacity: 0, y: 22 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 14 }}
+                  transition={{ duration: 0.4, delay: 0.16 + 0.06 * (3 + i), ease: EASE.primary }}
+                  className="font-display py-3 text-3xl text-white/80 transition-colors hover:text-white sm:text-4xl"
+                >
+                  {item.label}
+                </MotionLink>
+              ))}
+
               <motion.button
                 type="button"
                 onClick={() => setOtherOpen((v) => !v)}
@@ -274,7 +450,7 @@ function MobileNav() {
                 initial={{ opacity: 0, y: 22 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 14 }}
-                transition={{ duration: 0.4, delay: 0.16 + 0.06 * NAV_LINKS.length, ease: EASE.primary }}
+                transition={{ duration: 0.4, delay: 0.16 + 0.06 * 4, ease: EASE.primary }}
                 className="font-display flex items-center gap-2 py-3 text-3xl text-white/80 transition-colors hover:text-white sm:text-4xl"
               >
                 Other
@@ -329,7 +505,7 @@ function MobileNav() {
                 initial={{ opacity: 0, y: 22 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 14 }}
-                transition={{ duration: 0.4, delay: 0.16 + 0.06 * (NAV_LINKS.length + 1), ease: EASE.primary }}
+                transition={{ duration: 0.4, delay: 0.16 + 0.06 * 5, ease: EASE.primary }}
                 className="mx-auto mt-8 w-full max-w-xs px-2"
               >
                 <MagneticButton href="/contact/" className="flex w-full items-center justify-center">Book a consultation</MagneticButton>
