@@ -1,0 +1,219 @@
+Read CLAUDE.md before starting.
+
+Build the blog-publish → subscriber notification. This is the last piece of
+the newsletter system.
+
+╔══════════════════════════════════════════════════════════════╗
+║ RULE 0 — SECRETS                                             ║
+╚══════════════════════════════════════════════════════════════╝
+Never print, echo, or log the value of any environment variable. Refer to
+them by name only. If you need to verify one is set, check whether it is
+defined — never output its value. Applies to console output, commit
+messages, and your final report.
+
+╔══════════════════════════════════════════════════════════════╗
+║ HOW IT HANGS TOGETHER                                        ║
+╚══════════════════════════════════════════════════════════════╝
+
+  WordPress publish
+        ↓  (existing mu-plugin ping — DO NOT MODIFY WORDPRESS)
+  POST /api/revalidate?secret=...  { slug }
+        ↓
+  1. existing cache revalidation runs FIRST, unchanged
+        ↓
+  2. then: notifySubscribers(slug)
+        ↓
+  3. response returns
+
+Read src/app/api/revalidate/route.ts before changing anything. The cache
+revalidation must keep working exactly as it does now. It runs first, and a
+newsletter failure must never change its response.
+
+╔══════════════════════════════════════════════════════════════╗
+║ PART 1 — src/lib/newsletter/notify.ts                        ║
+╚══════════════════════════════════════════════════════════════╝
+
+export async function notifySubscribers(slug: string):
+  Promise<{ sent: number; skipped: string | null }>
+
+Steps, in this exact order:
+
+1. CLAIM THE SLUG FIRST — before fetching anything, before sending anything:
+
+     INSERT INTO sent_posts (post_slug) VALUES ($1)
+     ON CONFLICT (post_slug) DO NOTHING
+     RETURNING post_slug
+
+   If it returns NO row, this post was already sent. Return immediately with
+   { sent: 0, skipped: "already-sent" }.
+
+   ⚠️ This ordering is the whole duplicate guard. WordPress fires its ping
+   on every status change, and can fire twice for one publish. Claiming the
+   row first means the second ping loses the race and sends nothing. If you
+   send first and record after, a double-fire emails the entire list twice.
+
+2. Fetch the post from the WordPress REST API by slug, using the existing
+   helpers in src/lib/blog/wordpress.ts. Do not write new fetch code.
+
+3. VERIFY IT IS ACTUALLY PUBLISHED. If the post is missing, or its status is
+   not "publish", DELETE the sent_posts row you just claimed and return
+   { sent: 0, skipped: "not-published" }.
+
+   Reason: the ping also fires when a post is unpublished or trashed. Without
+   this check you would email subscribers about a post that isn't live.
+
+4. Load recipients:
+     SELECT email, token FROM subscribers WHERE status = 'confirmed'
+
+   Zero recipients → update recipient_count to 0 and return
+   { sent: 0, skipped: "no-subscribers" }. Not an error.
+
+5. Send (see PART 2).
+
+6. UPDATE sent_posts SET recipient_count = <actual> WHERE post_slug = $1
+
+╔══════════════════════════════════════════════════════════════╗
+║ PART 2 — SENDING                                             ║
+╚══════════════════════════════════════════════════════════════╝
+
+Use Resend's BATCH endpoint (resend.batch.send), not a loop of single sends.
+Chunk into groups of 100.
+
+Each email is PERSONALISED — every subscriber gets their own unsubscribe
+token — so build one payload object per recipient.
+
+  From:     Boost Web Digital <hello@boostwebdigital.com>
+  Reply-To: ritik@boostwebdigital.com
+  Subject:  the post title, verbatim, nothing prepended
+
+Use the EXISTING renderEmail() from src/lib/email/template.ts. Do not build a
+second template.
+
+  preheader:  the post excerpt, trimmed to 100 chars
+  heading:    the post title
+  bodyHtml:   the excerpt as one or two paragraphs. STRIP ALL HTML TAGS from
+              the WordPress excerpt first, then escape it. Never pass raw
+              WordPress HTML into the email.
+  bodyText:   the same text, unescaped
+  cta:        { label: "Read the post", url: <the public post URL> }
+  showSignature: true
+  footerNote: You're receiving this because you confirmed your subscription
+              at boostwebdigital.com. Unsubscribe: <unsubscribe URL>
+
+The public post URL is https://boostwebdigital.com/blog/<slug>/ — the public
+site, NEVER the blog.boostwebdigital.com CMS domain.
+
+The unsubscribe URL is
+https://boostwebdigital.com/newsletter/unsubscribe/?token=<their token>
+
+─── REQUIRED HEADERS ───
+
+Set these on every send:
+
+  "List-Unsubscribe": "<https://boostwebdigital.com/api/newsletter/unsubscribe?token=TOKEN>"
+  "List-Unsubscribe-Post": "List-Unsubscribe=One-Click"
+
+Gmail and Yahoo expect bulk mail to carry these. Mail without them is more
+likely to be filtered, and the recipient's only way out becomes the spam
+button — which damages sender reputation far more than an unsubscribe does.
+
+To support this, the POST /api/newsletter/unsubscribe route must ALSO accept
+the token from the query string, not only the JSON body. Mail providers POST
+to that URL with a form body, not JSON. Accept both. Return 200 either way.
+
+─── RATE AND FAILURE HANDLING ───
+
+- Resend free tier is 100 emails per DAY. If the confirmed-subscriber count
+  exceeds 100, send the first 100, log a clear warning naming how many were
+  skipped, and still return the real sent count. Do NOT silently truncate.
+- A failure on one batch must not abort the remaining batches. Collect
+  errors, continue, report the total actually sent.
+- Wrap the whole send in try/catch. A total send failure must not throw out
+  of notifySubscribers.
+
+╔══════════════════════════════════════════════════════════════╗
+║ PART 3 — WIRING INTO /api/revalidate                         ║
+╚══════════════════════════════════════════════════════════════╝
+
+In src/app/api/revalidate/route.ts, AFTER the existing revalidation logic
+and only when a slug is present:
+
+  try {
+    const result = await notifySubscribers(slug);
+    console.log("[newsletter]", slug, result);
+  } catch (err) {
+    console.error("[newsletter] failed for", slug, err);
+  }
+
+Rules:
+- The existing revalidation must run FIRST and be completely unaffected.
+- The route's response shape must not change.
+- A newsletter failure must NEVER make revalidate return an error. Cache
+  invalidation is the more important job.
+- Raise maxDuration to 60 on this route.
+
+╔══════════════════════════════════════════════════════════════╗
+║ PART 4 — A WAY TO TEST WITHOUT SPAMMING REAL PEOPLE          ║
+╚══════════════════════════════════════════════════════════════╝
+
+Add POST /api/newsletter/test-send — secret-gated with the SAME secret as
+the revalidate route.
+
+  Body: { slug, email }
+
+- Sends exactly ONE email, to the address given, using the identical
+  rendering path as the real send.
+- Does NOT touch sent_posts.
+- Does NOT read the subscribers table.
+- Returns 401 without a valid secret.
+
+This is how Ritik previews a newsletter before it goes out. Without it the
+only way to test is to publish a real post to a real list.
+
+╔══════════════════════════════════════════════════════════════╗
+║ CONSTRAINTS                                                  ║
+╚══════════════════════════════════════════════════════════════╝
+- No new dependencies.
+- Do not modify the WordPress mu-plugin or any WordPress file.
+- Do not modify the existing cache-revalidation logic.
+- Never render a subscriber token in any page or log line.
+- npm run build clean.
+- Commit. DO NOT PUSH.
+
+╔══════════════════════════════════════════════════════════════╗
+║ TEST BEFORE REPORTING                                        ║
+╚══════════════════════════════════════════════════════════════╝
+Use test-send and a manually-inserted test subscriber. Delete all test rows
+afterwards and confirm the tables are clean.
+
+1. test-send with a valid secret → one email arrives, correctly rendered,
+   logo present, CTA links to boostwebdigital.com/blog/<slug>/ (NOT the CMS
+   domain).
+2. test-send without the secret → 401, nothing sent.
+3. Call revalidate with a real published slug → email sends, sent_posts row
+   created with the right recipient_count.
+4. Call revalidate with the SAME slug again → NOTHING sends, skipped
+   "already-sent". This is the critical one.
+5. Call revalidate with a slug that does not exist in WordPress → nothing
+   sends, and NO row is left behind in sent_posts.
+6. With zero confirmed subscribers → returns cleanly, no crash, no error.
+7. Confirm the cache revalidation still works: publish a change in WordPress
+   and see it appear on the live blog.
+8. Open the received email and click the unsubscribe link → the confirm page
+   → button → status becomes 'unsubscribed'.
+9. Inspect the raw email headers of the received message and confirm
+   List-Unsubscribe and List-Unsubscribe-Post are present.
+
+╔══════════════════════════════════════════════════════════════╗
+║ REPORT                                                       ║
+╚══════════════════════════════════════════════════════════════╝
+1. Files created and changed.
+2. All nine test results. Tests 4 and 5 matter most.
+3. Confirmation that no WordPress file was touched.
+4. Confirmation the existing revalidate behaviour is unchanged.
+5. The exact public URL format used in the CTA.
+6. The two List-Unsubscribe header values, as sent.
+7. Confirmation that all test rows were removed from subscribers and
+   sent_posts.
+8. Confirmation no env var value appears anywhere in your output.
+9. QUESTIONS — anything you could not decide.

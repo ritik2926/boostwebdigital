@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import { revalidatePath, revalidateTag } from "next/cache";
+import { notifySubscribers } from "@/lib/newsletter/notify";
 
 export const runtime = "nodejs";
+export const maxDuration = 60;
 
 // Called by a WordPress webhook (or Ritik, manually) after publishing or
 // editing a post, so the site doesn't wait for the next full redeploy to
@@ -26,6 +28,19 @@ export async function POST(request: Request) {
   if (slug) {
     revalidatePath(`/blog/${slug}`);
     revalidatePath("/sitemap.xml");
+  }
+
+  // Runs after revalidation, only when a slug is present, and can never
+  // change this route's response — cache invalidation is the more
+  // important job, and a newsletter failure must never look like a
+  // revalidate failure to the caller (the WordPress mu-plugin).
+  if (slug) {
+    try {
+      const result = await notifySubscribers(slug);
+      console.log("[newsletter]", slug, result);
+    } catch (err) {
+      console.error("[newsletter] failed for", slug, err);
+    }
   }
 
   return NextResponse.json({ revalidated: true, now: Date.now() });

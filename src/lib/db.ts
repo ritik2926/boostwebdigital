@@ -6,11 +6,16 @@ import { neon } from "@neondatabase/serverless";
  * is its own stateless HTTPS call.
  *
  * Import boundary: this file may ONLY be imported from files under
- * src/app/api/. A page/layout/client component importing it would bundle
- * (or attempt to run) a database client outside a request handler, and a
- * client component importing it would try to ship DATABASE_URL to the
- * browser. Verified via `grep -rL "app/api" $(grep -rl "lib/db" src)` —
- * see the newsletter task report.
+ * src/app/api/, or from src/lib/newsletter/notify.ts — which is itself
+ * only ever imported from src/app/api/revalidate/route.ts and
+ * src/app/api/newsletter/test-send/route.ts (notify.ts's own queries are
+ * specified directly by the blog-publish-notification task, not layered
+ * behind the API routes). A page/layout/client component importing this
+ * file would bundle (or attempt to run) a database client outside a
+ * request handler, and a client component importing it would try to ship
+ * DATABASE_URL to the browser. Verified via
+ * `grep -rL "app/api\|lib/newsletter/notify" $(grep -rl "lib/db" src)` —
+ * see the newsletter task reports.
  *
  * Lazily constructed — `neon()` throws immediately if DATABASE_URL is
  * unset, and Next collects page data for every route module at build time
