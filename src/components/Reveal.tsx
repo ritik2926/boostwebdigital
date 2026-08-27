@@ -1,6 +1,6 @@
 "use client";
 
-import { useSyncExternalStore, type ReactNode } from "react";
+import { useCallback, useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
 import { motion, type Variants } from "framer-motion";
 import { EASE, REVEAL } from "@/lib/tokens";
 
@@ -52,12 +52,67 @@ export function usePrefersReducedMotion() {
 
 const VIEWPORT = { once: true, margin: "-10% 0px" } as const;
 
+// Found via Google Search Console's Test Live URL: the rendered screenshot
+// came back solid black/blank sitewide, not just below the fold. Cause:
+// `whileInView` has no fallback if its IntersectionObserver never fires —
+// and it never does for a renderer that doesn't scroll the page. The dark
+// theme's background (#08080a) painted fine; every viewport-triggered
+// section was sitting at its hidden opacity (confirmed directly: the raw
+// SSR HTML already ships `style="opacity:0;transform:translateY(26px)
+// scale(0.98)"` on these wrappers, and effective opacity stayed 0 even
+// after a full scripted scroll-to-bottom pass in a real headless browser).
+// `onViewportEnter` uses the exact same observer as `whileInView` and
+// fires the identical instant a real user scrolls a section into view, so
+// nothing changes for a normal visit — this timeout only ever matters as a
+// backstop for whatever never scrolls there at all.
+const VIEWPORT_FALLBACK_MS = 2000;
+
+export function useViewportEntered() {
+  const [entered, setEntered] = useState(false);
+  const enter = useCallback(() => setEntered(true), []);
+
+  useEffect(() => {
+    if (entered) return;
+    const timer = setTimeout(enter, VIEWPORT_FALLBACK_MS);
+    return () => clearTimeout(timer);
+  }, [entered, enter]);
+
+  return { animate: entered ? "visible" : "hidden", onViewportEnter: enter, viewport: VIEWPORT } as const;
+}
+
+/**
+ * Same fallback problem as `useViewportEntered` above, but for the rarer
+ * bidirectional (`once: false`) `whileInView` sections — HomePage's
+ * WhyChooseUs light flip and About's LightBand, both of which fade back out
+ * on scroll-away, so a permanent "lock visible" fallback would break that.
+ * This only forces `animate` while the real IntersectionObserver has never
+ * once reported in *or* out; the instant it does (`onViewportEnter`/
+ * `onViewportLeave`, the same observer whileInView itself uses), the
+ * override drops out on that same render and whileInView runs unmodified.
+ */
+export function useBidirectionalViewportFallback() {
+  const [hasRealEvent, setHasRealEvent] = useState(false);
+  const [fallbackForced, setFallbackForced] = useState(false);
+  const markRealEvent = useCallback(() => setHasRealEvent(true), []);
+
+  useEffect(() => {
+    if (hasRealEvent) return;
+    const timer = setTimeout(() => setFallbackForced(true), VIEWPORT_FALLBACK_MS);
+    return () => clearTimeout(timer);
+  }, [hasRealEvent]);
+
+  return {
+    onViewportEnter: markRealEvent,
+    onViewportLeave: markRealEvent,
+    ...(fallbackForced && !hasRealEvent ? { animate: { opacity: 1 } } : {}),
+  };
+}
+
 export type RevealTrigger = "viewport" | "mount" | "inherit";
 
-function triggerProps(trigger: RevealTrigger) {
+function triggerProps(trigger: Exclude<RevealTrigger, "viewport">) {
   if (trigger === "inherit") return {};
-  if (trigger === "mount") return { initial: "hidden", animate: "visible" };
-  return { initial: "hidden", whileInView: "visible", viewport: VIEWPORT };
+  return { initial: "hidden", animate: "visible" };
 }
 
 /**
@@ -91,8 +146,13 @@ export function Reveal({
   trigger?: Exclude<RevealTrigger, "inherit">;
 }) {
   const { variants, transition } = useReveal(delay);
+  // Called unconditionally regardless of `trigger` — Rules of Hooks; unused
+  // (and inert, since its own useEffect no-ops after first mount either
+  // way) when trigger isn't "viewport".
+  const viewportEntered = useViewportEntered();
+  const props = trigger === "viewport" ? { initial: "hidden", ...viewportEntered } : triggerProps(trigger);
   return (
-    <motion.div {...triggerProps(trigger)} variants={variants} transition={transition} className={className}>
+    <motion.div {...props} variants={variants} transition={transition} className={className}>
       {children}
     </motion.div>
   );
@@ -119,8 +179,13 @@ export function RevealGroup({
     visible: { transition: { staggerChildren: stagger, delayChildren: delay } },
   };
 
+  // Called unconditionally regardless of `trigger` — Rules of Hooks; unused
+  // when trigger isn't "viewport".
+  const viewportEntered = useViewportEntered();
+  const props = trigger === "viewport" ? { initial: "hidden", ...viewportEntered } : triggerProps(trigger);
+
   return (
-    <MotionTag {...triggerProps(trigger)} variants={groupVariants} className={className}>
+    <MotionTag {...props} variants={groupVariants} className={className}>
       {children}
     </MotionTag>
   );

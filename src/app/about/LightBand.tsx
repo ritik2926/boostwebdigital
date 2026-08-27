@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { Container } from "@/components/Container";
-import { RevealGroup, RevealItem, usePrefersReducedMotion } from "@/components/Reveal";
+import { RevealGroup, RevealItem, useBidirectionalViewportFallback, usePrefersReducedMotion } from "@/components/Reveal";
 import { EASE, REVEAL, SECTION_PADDING, STACK, GRID_GAP, CARD_PADDING } from "@/lib/tokens";
 import { cn } from "@/lib/utils";
 
@@ -163,6 +163,10 @@ function WhoWeAreCard({ item }: { item: (typeof WHO_WE_ARE)[number] }) {
 
 export function LightBand() {
   const reducedMotion = usePrefersReducedMotion();
+  // Same bidirectional-fallback need as HomePage's WhyChooseUs — see
+  // useBidirectionalViewportFallback's doc comment in Reveal.tsx.
+  const overlayFallback = useBidirectionalViewportFallback();
+  const contentFallback = useBidirectionalViewportFallback();
 
   return (
     <section className={cn("relative overflow-hidden", SECTION_PADDING.compact)}>
@@ -173,6 +177,7 @@ export function LightBand() {
         whileInView={{ opacity: 1 }}
         viewport={{ once: false, margin: "-10% 0px" }}
         transition={{ duration: reducedMotion ? 0.4 : 1.4, ease: EASE.primary }}
+        {...overlayFallback}
       >
         <div className="absolute inset-0 bg-[#f2f2f5]" />
         <div
@@ -189,6 +194,7 @@ export function LightBand() {
         whileInView={{ opacity: 1 }}
         viewport={{ once: false, margin: "-10% 0px" }}
         transition={{ duration: reducedMotion ? 0.4 : 1.4, ease: EASE.primary }}
+        {...contentFallback}
         className="relative text-[#08080a]"
       >
         <Container>

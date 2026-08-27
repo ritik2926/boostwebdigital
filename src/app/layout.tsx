@@ -88,6 +88,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className="dark">
       <body className={`${switzer.variable} ${geistMono.variable}`}>
+        {/* Scroll-reveal content ships its hidden `opacity:0` state in the
+            raw SSR HTML (Reveal.tsx) and needs JS to ever animate to
+            visible. Inert for every real visitor and for Google's renderer
+            (both run JS, so this block is never applied) — a pure-CSS
+            backstop for the case JS genuinely doesn't run at all. */}
+        <noscript>
+          <style>{'[style*="opacity:0"],[style*="opacity: 0"]{opacity:1!important;transform:none!important}'}</style>
+        </noscript>
         {children}
         <Analytics />
         <VercelAnalytics />

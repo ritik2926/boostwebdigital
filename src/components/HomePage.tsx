@@ -15,7 +15,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Link from "next/link";
 import { Container } from "@/components/Container";
-import { Reveal, RevealGroup, RevealItem, usePrefersReducedMotion } from "@/components/Reveal";
+import { Reveal, RevealGroup, RevealItem, useBidirectionalViewportFallback, usePrefersReducedMotion } from "@/components/Reveal";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Pricing } from "@/components/Pricing";
@@ -1615,9 +1615,19 @@ function WhyChooseAmbientDrift() {
  * slow cross-fade, not a strobing flicker, per the follow-up correction).
  * The content wrapper right below plays the identical fade on the same
  * trigger, so text and background always arrive/leave together.
+ *
+ * Fallback: `whileInView` never fires for a renderer that doesn't scroll
+ * (see Reveal.tsx), and this section can't use that fix as-is — it's
+ * bidirectional (`once: false`), so a permanent `animate="visible"` lock
+ * would stop it fading back out once a real visitor scrolls past.
+ * `useBidirectionalViewportFallback` (Reveal.tsx) only forces `animate`
+ * while the real IntersectionObserver has never once reported in *or* out;
+ * the moment it does, the override drops out on that same render and
+ * whileInView runs exactly as it always has.
  */
 function WhyChooseWhiteFade() {
   const reducedMotion = usePrefersReducedMotion();
+  const fallback = useBidirectionalViewportFallback();
   return (
     <motion.div
       aria-hidden
@@ -1626,12 +1636,14 @@ function WhyChooseWhiteFade() {
       whileInView={{ opacity: 1 }}
       viewport={{ once: false, amount: 0.4 }}
       transition={{ duration: reducedMotion ? 0.4 : 1.4, ease: EASE.primary }}
+      {...fallback}
     />
   );
 }
 
 function WhyChooseUs() {
   const reducedMotion = usePrefersReducedMotion();
+  const fallback = useBidirectionalViewportFallback();
 
   return (
     <section className={cn("relative overflow-hidden", SECTION_PADDING.compact)}>
@@ -1643,6 +1655,7 @@ function WhyChooseUs() {
           whileInView={{ opacity: 1 }}
           viewport={{ once: false, amount: 0.4 }}
           transition={{ duration: reducedMotion ? 0.4 : 1.4, ease: EASE.primary }}
+          {...fallback}
           className="relative text-[#08080a]"
         >
           <div className="relative mx-auto flex max-w-2xl flex-col items-center py-16 text-center lg:py-24">
