@@ -188,27 +188,40 @@ function mapPost(wp: WPPost): BlogPost {
   };
 }
 
-async function fetchJson<T>(path: string): Promise<{ data: T; headers: Headers } | null> {
-  if (!WP_API_URL) {
-    console.error("[blog/wordpress] WP_API_URL is not set");
-    return null;
+/**
+ * Thrown for anything that means "we couldn't ask WordPress" — missing
+ * config, a network failure, a non-2xx response. Deliberately NOT thrown
+ * for "WordPress answered and there's genuinely nothing here" (a 200 with
+ * an empty result array) — that's a real, cacheable "not found," and the
+ * two must stay distinguishable so a transient upstream hiccup can never
+ * get cached as a 404. See getPostBySlug and fetchAllPosts.
+ */
+export class BlogFetchError extends Error {
+  constructor(message: string, options?: { cause?: unknown }) {
+    super(message, options);
+    this.name = "BlogFetchError";
   }
+}
+
+async function fetchJson<T>(path: string): Promise<{ data: T; headers: Headers }> {
+  if (!WP_API_URL) {
+    throw new BlogFetchError("[blog/wordpress] WP_API_URL is not set");
+  }
+  let res: Response;
   try {
     // `revalidate` is a time-based fallback alongside the tag, not a
     // replacement for it: /api/revalidate's revalidateTag("posts", "max")
     // call is unverified against Next 16's new second-argument signature
     // (see that route's comment) — if tag invalidation silently no-ops,
     // this still self-heals within an hour instead of caching forever.
-    const res = await fetch(`${WP_API_URL}${path}`, { next: { tags: ["posts"], revalidate: 3600 } });
-    if (!res.ok) {
-      console.error(`[blog/wordpress] GET ${path} -> ${res.status}`);
-      return null;
-    }
-    return { data: (await res.json()) as T, headers: res.headers };
+    res = await fetch(`${WP_API_URL}${path}`, { next: { tags: ["posts"], revalidate: 3600 } });
   } catch (err) {
-    console.error(`[blog/wordpress] GET ${path} failed:`, err);
-    return null;
+    throw new BlogFetchError(`[blog/wordpress] GET ${path} failed`, { cause: err });
   }
+  if (!res.ok) {
+    throw new BlogFetchError(`[blog/wordpress] GET ${path} -> ${res.status}`);
+  }
+  return { data: (await res.json()) as T, headers: res.headers };
 }
 
 /**
@@ -220,10 +233,17 @@ async function fetchJson<T>(path: string): Promise<{ data: T; headers: Headers }
  * at all) — passed explicitly anyway so the guarantee doesn't rely on that
  * implicit behavior alone.
  */
+/**
+ * Any page in here throwing (missing config, network failure, non-2xx)
+ * propagates straight out of getAllPosts/getAllSlugs rather than quietly
+ * returning a partial or empty list — a caller that treats "no posts"
+ * as a real, cacheable state (the archive, the sitemap, generateStaticParams)
+ * must never be handed that on a transient WordPress hiccup. See
+ * BlogFetchError's doc comment.
+ */
 async function fetchAllPosts(): Promise<WPPost[]> {
   const perPage = 100;
   const first = await fetchJson<WPPost[]>(`/posts?_embed&status=publish&per_page=${perPage}&page=1`);
-  if (!first) return [];
 
   const posts = [...first.data];
   const totalPages = Number(first.headers.get("x-wp-totalpages")) || 1;
@@ -234,7 +254,7 @@ async function fetchAllPosts(): Promise<WPPost[]> {
         fetchJson<WPPost[]>(`/posts?_embed&status=publish&per_page=${perPage}&page=${i + 2}`)
       )
     );
-    for (const page of rest) if (page) posts.push(...page.data);
+    for (const page of rest) posts.push(...page.data);
   }
 
   return posts;
@@ -245,9 +265,17 @@ export async function getAllPosts(): Promise<BlogPost[]> {
   return wpPosts.map(mapPost).sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
 }
 
+/**
+ * Returns null ONLY for a genuine "no post with this slug" — WordPress
+ * answered successfully with zero matches. Any upstream problem (network
+ * failure, non-2xx, missing config) throws BlogFetchError instead, so a
+ * caller like blog/[slug]/page.tsx can call notFound() on a real miss and
+ * let a transient failure surface as a retryable error rather than caching
+ * a soft-404.
+ */
 export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
   const result = await fetchJson<WPPost[]>(`/posts?_embed&status=publish&slug=${encodeURIComponent(slug)}`);
-  if (!result || result.data.length === 0) return null;
+  if (result.data.length === 0) return null;
   return mapPost(result.data[0]);
 }
 

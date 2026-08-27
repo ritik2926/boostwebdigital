@@ -70,29 +70,49 @@ const VIEWPORT_FALLBACK_MS = 2000;
 /**
  * Confirmed live (2026-08-27): even after the timeout fallback above shipped
  * and was verified serving correctly, Search Console's Test Live URL kept
- * showing the same blank render on a fresh re-test — so its render budget
- * can't be trusted to leave 2s of headroom. `navigator.webdriver` is the
- * standard flag every headless/automated Chromium exposes (Googlebot's WRS
- * included — well-documented in JS-SEO tooling), so a verified automated
- * renderer gets the fallback instantly, no race against any timeout at all.
- * Real visitors are never headless, so this never fires for them — the 2s
- * timer above still does its job for anything else that doesn't scroll.
+ * showing the same blank render on a fresh re-test. Root cause: this used to
+ * gate the fallback on `navigator.webdriver` alone, and that flag is NOT
+ * reliably set by Google's renderer — so Googlebot's WRS was silently
+ * falling through to the full VIEWPORT_FALLBACK_MS timer, which is longer
+ * than its screenshot budget. Matching known crawler/renderer/synthetic-
+ * monitoring user-agent strings is the more reliable signal; webdriver is
+ * kept as a second, broader net for whatever else DOES set it honestly.
+ * Content and links are identical either way — this only ever skips the
+ * entrance ANIMATION, never anything a bot vs. a human would each see.
  */
-function isAutomatedBrowser() {
-  return typeof navigator !== "undefined" && navigator.webdriver === true;
+const BOT_USER_AGENT_PATTERN =
+  /googlebot|google-inspectiontool|google page rendering|bingbot|duckduckbot|headlesschrome|lighthouse|chrome-lighthouse|pingdom|gtmetrix|prerender|bot|crawler|spider/i;
+
+export function shouldRevealInstantly() {
+  if (typeof navigator === "undefined") return false;
+  if (navigator.webdriver === true) return true;
+  return BOT_USER_AGENT_PATTERN.test(navigator.userAgent);
 }
 
+/**
+ * The lazy `useState` initializer runs once per environment (server render
+ * and the client's hydration render each call it fresh, independently — no
+ * shared state crosses that boundary) — on the server `navigator` doesn't
+ * exist, so `shouldRevealInstantly()` returns false there regardless, same
+ * as always. On the client it CAN see `navigator`, so a detected bot starts
+ * this hook already `entered`, before its own first paint, with no timer
+ * involved at all — not "fires the 0ms fallback a tick sooner," genuinely
+ * pre-entered from the first client render. Framer Motion applies the
+ * resolved style in a layout effect (synchronous, pre-paint), so this
+ * resolves before the browser — real or a renderer's — ever paints a frame.
+ */
 export function useViewportEntered() {
-  const [entered, setEntered] = useState(false);
+  const [entered, setEntered] = useState(() => shouldRevealInstantly());
   const enter = useCallback(() => setEntered(true), []);
 
   useEffect(() => {
     if (entered) return;
-    const timer = setTimeout(enter, isAutomatedBrowser() ? 0 : VIEWPORT_FALLBACK_MS);
+    const timer = setTimeout(enter, VIEWPORT_FALLBACK_MS);
     return () => clearTimeout(timer);
   }, [entered, enter]);
 
-  return { animate: entered ? "visible" : "hidden", onViewportEnter: enter, viewport: VIEWPORT } as const;
+  const state = entered ? "visible" : "hidden";
+  return { initial: state, animate: state, onViewportEnter: enter, viewport: VIEWPORT } as const;
 }
 
 /**
@@ -107,14 +127,14 @@ export function useViewportEntered() {
  */
 export function useBidirectionalViewportFallback() {
   const [hasRealEvent, setHasRealEvent] = useState(false);
-  const [fallbackForced, setFallbackForced] = useState(false);
+  const [fallbackForced, setFallbackForced] = useState(() => shouldRevealInstantly());
   const markRealEvent = useCallback(() => setHasRealEvent(true), []);
 
   useEffect(() => {
-    if (hasRealEvent) return;
-    const timer = setTimeout(() => setFallbackForced(true), isAutomatedBrowser() ? 0 : VIEWPORT_FALLBACK_MS);
+    if (hasRealEvent || fallbackForced) return;
+    const timer = setTimeout(() => setFallbackForced(true), VIEWPORT_FALLBACK_MS);
     return () => clearTimeout(timer);
-  }, [hasRealEvent]);
+  }, [hasRealEvent, fallbackForced]);
 
   return {
     onViewportEnter: markRealEvent,
@@ -165,7 +185,7 @@ export function Reveal({
   // (and inert, since its own useEffect no-ops after first mount either
   // way) when trigger isn't "viewport".
   const viewportEntered = useViewportEntered();
-  const props = trigger === "viewport" ? { initial: "hidden", ...viewportEntered } : triggerProps(trigger);
+  const props = trigger === "viewport" ? viewportEntered : triggerProps(trigger);
   return (
     <motion.div {...props} variants={variants} transition={transition} className={className}>
       {children}
@@ -197,7 +217,7 @@ export function RevealGroup({
   // Called unconditionally regardless of `trigger` — Rules of Hooks; unused
   // when trigger isn't "viewport".
   const viewportEntered = useViewportEntered();
-  const props = trigger === "viewport" ? { initial: "hidden", ...viewportEntered } : triggerProps(trigger);
+  const props = trigger === "viewport" ? viewportEntered : triggerProps(trigger);
 
   return (
     <MotionTag {...props} variants={groupVariants} className={className}>

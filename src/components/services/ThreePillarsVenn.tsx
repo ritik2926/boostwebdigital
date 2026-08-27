@@ -77,7 +77,6 @@ export function ThreePillarsVenn() {
           lifted above the circles both visually (z-index) and literally
           (rises last on scroll-in). */}
       <motion.div
-        initial="hidden"
         variants={{ hidden: { y: 16, opacity: 0 }, visible: { y: 0, opacity: 1 } }}
         {...calloutViewport}
         viewport={{ once: true, amount: 0.5 }}

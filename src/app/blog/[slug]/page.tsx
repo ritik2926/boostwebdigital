@@ -66,7 +66,16 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
   const post = await getPostBySlug(slug);
   if (!post) notFound();
 
-  const relatedPosts = await getRelatedPosts(slug, 3);
+  // Related posts are a secondary feature built on top of getAllPosts() —
+  // a transient WordPress hiccup here shouldn't take down a page whose own,
+  // separately-fetched content already loaded successfully. Degrades to an
+  // empty related-posts section rather than failing the whole page.
+  let relatedPosts: Awaited<ReturnType<typeof getRelatedPosts>> = [];
+  try {
+    relatedPosts = await getRelatedPosts(slug, 3);
+  } catch (err) {
+    console.error(`[blog/[slug]] getRelatedPosts failed for ${slug}:`, err);
+  }
   const postUrl = `${SITE_URL}/blog/${post.slug}/`;
   // WordPress's featured image is already an absolute blog.boostwebdigital.com
   // URL, unlike the old local MDX paths (e.g. "/images/blog/foo.svg") this
