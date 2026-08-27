@@ -26,7 +26,14 @@ const nextConfig: NextConfig = {
     // strings can avoid; the only way to actually collapse it to one hop
     // would be disabling trailingSlash sitewide or adding middleware —
     // both bigger changes than a redirect-rule fix.
-    return [{ source: "/blog/", destination: "/blogs/", permanent: true }];
+    return [
+      { source: "/blog/", destination: "/blogs/", permanent: true },
+      // The flat sitemap.ts route was replaced by a Yoast-style
+      // sitemap_index.xml + page-sitemap.xml/post-sitemap.xml split — this
+      // keeps the URL already submitted in Search Console (and any other
+      // existing references to it) resolving instead of 404ing.
+      { source: "/sitemap.xml", destination: "/sitemap_index.xml", permanent: true },
+    ];
   },
   async headers() {
     return [

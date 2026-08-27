@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: "/",
       disallow: ["/api/", "/design-lab/", "/handbook/"],
     },
-    sitemap: "https://boostwebdigital.com/sitemap.xml",
+    sitemap: "https://boostwebdigital.com/sitemap_index.xml",
   };
 }

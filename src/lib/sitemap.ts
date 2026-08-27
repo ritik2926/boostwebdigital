@@ -1,7 +1,11 @@
-import type { MetadataRoute } from "next";
 import { getAllPosts } from "@/lib/blog/source";
 
-const SITE_URL = "https://boostwebdigital.com";
+export const SITE_URL = "https://boostwebdigital.com";
+
+export interface SitemapUrlEntry {
+  url: string;
+  lastModified: string;
+}
 
 /**
  * Update the date when you meaningfully change a page. A stale date here is
@@ -26,21 +30,18 @@ const PAGE_DATES: Record<string, string> = {
 };
 
 /**
- * Homepage, /about/, /contact/, /blogs/ (+ every post at /blog/<slug>/),
- * /pricing/, /services/ (the generic services hub — its child pillar
- * pages below are still unbuilt except /ai-visibility-geo/, now live),
- * /faq/, and /ai-visibility-geo/ are live today. `/blog/` itself
- * is a 301 redirect to /blogs/ (next.config.ts) and is deliberately NOT
- * listed here — a redirecting URL in a sitemap is a Search Console warning.
- * `/design-lab` is excluded from production entirely (see its page.tsx),
- * `/api/contact/` is a route handler not a page, and the five legal pages
- * (/terms/, /privacy/, /refund-policy/, /disclaimer/, /cookie-policy/)
- * carry `robots: { index: false }` in their own metadata — all deliberately
+ * Homepage, /about/, /contact/, /blogs/, /pricing/, /services/ (the
+ * generic services hub — its child pillar pages below are still unbuilt
+ * except /ai-visibility-geo/, now live), /faq/, and /ai-visibility-geo/
+ * are live today. `/blog/` itself is a 301 redirect to /blogs/
+ * (next.config.ts) and is deliberately NOT listed here — a redirecting URL
+ * in a sitemap is a Search Console warning. `/design-lab` is excluded from
+ * production entirely (see its page.tsx), `/api/contact/` is a route
+ * handler not a page, and the five legal pages (/terms/, /privacy/,
+ * /refund-policy/, /disclaimer/, /cookie-policy/) carry
+ * `robots: { index: false }` in their own metadata — all deliberately
  * excluded here, since submitting a noindex URL in a sitemap is itself a
- * Search Console warning ("Submitted URL marked noindex"). Blog post
- * entries are generated from getAllSlugs() via getAllPosts(), so a new post
- * appears here automatically the day it's added to content/blog/ — nothing
- * to hand-maintain for those.
+ * Search Console warning ("Submitted URL marked noindex").
  *
  * Planned routes (not yet built — do not add until the page exists), per
  * docs/13-URL-ARCHITECTURE.md:
@@ -71,11 +72,7 @@ const PAGE_DATES: Record<string, string> = {
  * stated publicly it ignores both, so they were noise in a file whose only
  * job is to declare the indexable URL set.
  */
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const posts = await getAllPosts();
-
-  // Legal pages are deliberately noindexed and therefore excluded. A
-  // noindexed URL must never appear in a sitemap — the two must always agree.
+export function getStaticPageEntries(): SitemapUrlEntry[] {
   return [
     { url: SITE_URL, lastModified: PAGE_DATES["/"] },
     { url: `${SITE_URL}/about/`, lastModified: PAGE_DATES["/about/"] },
@@ -85,9 +82,52 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/services/`, lastModified: PAGE_DATES["/services/"] },
     { url: `${SITE_URL}/faq/`, lastModified: PAGE_DATES["/faq/"] },
     { url: `${SITE_URL}/ai-visibility-geo/`, lastModified: PAGE_DATES["/ai-visibility-geo/"] },
-    ...posts.map((post) => ({
-      url: `${SITE_URL}/blog/${post.slug}/`,
-      lastModified: post.updatedAt ?? post.publishedAt,
-    })),
   ];
+}
+
+/** Blog post entries are generated from getAllPosts(), so a new post
+ * appears here automatically the day it's published — nothing to
+ * hand-maintain for those. */
+export async function getPostSitemapEntries(): Promise<SitemapUrlEntry[]> {
+  const posts = await getAllPosts();
+  return posts.map((post) => ({
+    url: `${SITE_URL}/blog/${post.slug}/`,
+    lastModified: post.updatedAt ?? post.publishedAt,
+  }));
+}
+
+/** The newest lastmod among a set of entries, returned as its original
+ * string (never reformatted) — used for a sitemap index's per-child
+ * <lastmod>. Falls back to today's date if the set is ever empty, so the
+ * index always has a valid, well-formed lastmod. */
+export function getNewestLastMod(entries: SitemapUrlEntry[]): string {
+  if (entries.length === 0) return new Date().toISOString();
+  return entries.reduce((newest, entry) =>
+    new Date(entry.lastModified).getTime() > new Date(newest.lastModified).getTime() ? entry : newest
+  ).lastModified;
+}
+
+function escapeXml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
+}
+
+const XML_STYLESHEET_PI = `<?xml-stylesheet type="text/xsl" href="/sitemap.xsl"?>`;
+
+export function renderUrlset(entries: SitemapUrlEntry[]): string {
+  const urls = entries
+    .map((e) => `  <url>\n    <loc>${escapeXml(e.url)}</loc>\n    <lastmod>${escapeXml(e.lastModified)}</lastmod>\n  </url>`)
+    .join("\n");
+  return `<?xml version="1.0" encoding="UTF-8"?>\n${XML_STYLESHEET_PI}\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`;
+}
+
+export function renderSitemapIndex(entries: SitemapUrlEntry[]): string {
+  const sitemaps = entries
+    .map((e) => `  <sitemap>\n    <loc>${escapeXml(e.url)}</loc>\n    <lastmod>${escapeXml(e.lastModified)}</lastmod>\n  </sitemap>`)
+    .join("\n");
+  return `<?xml version="1.0" encoding="UTF-8"?>\n${XML_STYLESHEET_PI}\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${sitemaps}\n</sitemapindex>\n`;
 }
