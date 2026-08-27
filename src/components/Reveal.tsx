@@ -67,13 +67,28 @@ const VIEWPORT = { once: true, margin: "-10% 0px" } as const;
 // backstop for whatever never scrolls there at all.
 const VIEWPORT_FALLBACK_MS = 2000;
 
+/**
+ * Confirmed live (2026-08-27): even after the timeout fallback above shipped
+ * and was verified serving correctly, Search Console's Test Live URL kept
+ * showing the same blank render on a fresh re-test — so its render budget
+ * can't be trusted to leave 2s of headroom. `navigator.webdriver` is the
+ * standard flag every headless/automated Chromium exposes (Googlebot's WRS
+ * included — well-documented in JS-SEO tooling), so a verified automated
+ * renderer gets the fallback instantly, no race against any timeout at all.
+ * Real visitors are never headless, so this never fires for them — the 2s
+ * timer above still does its job for anything else that doesn't scroll.
+ */
+function isAutomatedBrowser() {
+  return typeof navigator !== "undefined" && navigator.webdriver === true;
+}
+
 export function useViewportEntered() {
   const [entered, setEntered] = useState(false);
   const enter = useCallback(() => setEntered(true), []);
 
   useEffect(() => {
     if (entered) return;
-    const timer = setTimeout(enter, VIEWPORT_FALLBACK_MS);
+    const timer = setTimeout(enter, isAutomatedBrowser() ? 0 : VIEWPORT_FALLBACK_MS);
     return () => clearTimeout(timer);
   }, [entered, enter]);
 
@@ -97,7 +112,7 @@ export function useBidirectionalViewportFallback() {
 
   useEffect(() => {
     if (hasRealEvent) return;
-    const timer = setTimeout(() => setFallbackForced(true), VIEWPORT_FALLBACK_MS);
+    const timer = setTimeout(() => setFallbackForced(true), isAutomatedBrowser() ? 0 : VIEWPORT_FALLBACK_MS);
     return () => clearTimeout(timer);
   }, [hasRealEvent]);
 
