@@ -5,7 +5,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: ["/api/", "/design-lab/"],
+      disallow: ["/api/", "/design-lab/", "/handbook/"],
     },
     sitemap: "https://boostwebdigital.com/sitemap.xml",
   };
