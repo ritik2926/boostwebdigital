@@ -10,6 +10,7 @@ import {
   useTransform,
   useVelocity,
   type MotionValue,
+  type Variants,
 } from "framer-motion";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -306,6 +307,49 @@ function KeywordPill({ text, top, left, seed }: { text: string; top: string; lef
  */
 const HERO_REVEAL_STAGGER = 0.08;
 
+/** Orchestration only, no own visual state — timing matches what the
+ * <RevealGroup trigger="mount" stagger={HERO_REVEAL_STAGGER}
+ * delay={HERO_REVEAL_STAGGER}> below used to provide directly. */
+const HERO_GROUP_VARIANTS: Variants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: HERO_REVEAL_STAGGER, delayChildren: HERO_REVEAL_STAGGER } },
+};
+
+/**
+ * The Hero's kicker/H1/paragraphs/CTA never rest at opacity:0, unlike every
+ * other RevealItem sitewide — found stuck invisible in Google Search
+ * Console's rendered snapshot (2026-08-27). Root cause: the "mount" trigger
+ * (Reveal.tsx's `triggerProps`) animates hidden→visible over time
+ * post-hydration with no instant-resolve path — that short-circuit lives in
+ * `useViewportEntered`, which only the "viewport" trigger uses — so a
+ * renderer whose snapshot lands before the transition finishes catches the
+ * single most important heading on the site at opacity:0. Same rise+scale
+ * motion as everywhere else, just without opacity as part of it, so the raw
+ * SSR HTML is fully legible text from the very first paint, before any JS
+ * runs at all. Scoped to the Hero only, as a local replacement for
+ * <RevealGroup trigger="mount">/<RevealItem> here — Reveal.tsx itself is
+ * unchanged, so every other "mount"-triggered hero sitewide keeps its
+ * current (unaffected-by-this-fix) behavior.
+ */
+function heroItemVariants(reducedMotion: boolean): Variants {
+  return reducedMotion
+    ? { hidden: { opacity: 1, y: 0, scale: 1 }, visible: { opacity: 1, y: 0, scale: 1 } }
+    : { hidden: { opacity: 1, y: REVEAL.y, scale: REVEAL.scale }, visible: { opacity: 1, y: 0, scale: 1 } };
+}
+
+function HeroReveal({ children, className }: { children: React.ReactNode; className?: string }) {
+  const reducedMotion = usePrefersReducedMotion();
+  return (
+    <motion.div
+      variants={heroItemVariants(reducedMotion)}
+      transition={{ duration: reducedMotion ? 0.5 : REVEAL.duration, ease: EASE.primary }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
 /**
  * Height math for the first-screen composition: Navbar (~5.5rem measured) +
  * Hero + half the Logo Marquee's own height (~2.5rem) should sum to exactly
@@ -337,18 +381,18 @@ function Hero() {
 
       <div className="relative flex flex-1 items-center" style={{ zIndex: Z_INDEX.base }}>
         <Container className="flex flex-col items-center text-center">
-          <RevealGroup as="div" trigger="mount" stagger={HERO_REVEAL_STAGGER} delay={HERO_REVEAL_STAGGER} className="contents">
-            <RevealItem>
+          <motion.div initial="hidden" animate="visible" variants={HERO_GROUP_VARIANTS} className="contents">
+            <HeroReveal>
               <Kicker>Services</Kicker>
-            </RevealItem>
-            <RevealItem className="mt-7">
+            </HeroReveal>
+            <HeroReveal className="mt-7">
               <h1 className="max-w-6xl font-display text-[2.25rem] font-extrabold leading-[0.98] tracking-[-0.02em] text-white sm:text-[3.5rem] lg:text-[4.25rem]">
                 Healthcare Marketing Agency That{" "}
                 <br className="hidden lg:inline" />
                 Gets Practices Recommended by AI
               </h1>
-            </RevealItem>
-            <RevealItem className="mt-8 max-w-2xl space-y-4">
+            </HeroReveal>
+            <HeroReveal className="mt-8 max-w-2xl space-y-4">
               <p className="text-sm text-white/60 sm:text-base">
                 88% of health-related searches now show an AI answer before a single blue link. If ChatGPT, Google AI
                 Overviews and Perplexity aren&apos;t naming your practice inside that answer, patients never reach
@@ -359,11 +403,11 @@ function Hero() {
                 2026. We work with medical, dental, aesthetic and hair restoration practices to make sure that when a
                 patient asks an AI for a recommendation, it says your name.
               </p>
-            </RevealItem>
-            <RevealItem className="mt-10">
+            </HeroReveal>
+            <HeroReveal className="mt-10">
               <MagneticButton>Check My Practice&apos;s AI Visibility →</MagneticButton>
-            </RevealItem>
-          </RevealGroup>
+            </HeroReveal>
+          </motion.div>
         </Container>
       </div>
     </section>
