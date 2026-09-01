@@ -334,7 +334,14 @@ export function Pricing() {
                 itemRefs={tabRefs}
               />
 
-              <AnimatePresence mode="wait">
+              {/* initial={false}: without it, AnimatePresence plays the
+                  child's enter transition on the very first render too —
+                  the plan name/price/features (real content, not gated by
+                  scroll at all) started at opacity:0 on first paint,
+                  purely on framer-motion's own mount timing. Tab-switch
+                  transitions are unaffected — this only skips the very
+                  first mount. */}
+              <AnimatePresence mode="wait" initial={false}>
                 <motion.div
                   key={`${plan.id}-${currency}`}
                   initial={{ opacity: 0, y: 8 }}

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { Container } from "@/components/Container";
-import { RevealGroup, RevealItem, useBidirectionalViewportFallback, usePrefersReducedMotion } from "@/components/Reveal";
+import { RevealGroup, RevealItem, usePrefersReducedMotion } from "@/components/Reveal";
 import { EASE, REVEAL, SECTION_PADDING, STACK, GRID_GAP, CARD_PADDING } from "@/lib/tokens";
 import { cn } from "@/lib/utils";
 
@@ -163,13 +163,13 @@ function WhoWeAreCard({ item }: { item: (typeof WHO_WE_ARE)[number] }) {
 
 export function LightBand() {
   const reducedMotion = usePrefersReducedMotion();
-  // Same bidirectional-fallback need as HomePage's WhyChooseUs — see
-  // useBidirectionalViewportFallback's doc comment in Reveal.tsx.
-  const overlayFallback = useBidirectionalViewportFallback();
-  const contentFallback = useBidirectionalViewportFallback();
 
   return (
     <section className={cn("relative overflow-hidden", SECTION_PADDING.compact)}>
+      {/* Purely decorative background wash — aria-hidden, carries no
+          content, so it stays framer-motion-driven (RULE 5: no need to
+          spend effort making decoration crawler-safe). The actual content
+          wrapper below is the one that matters and is CSS-driven now. */}
       <motion.div
         aria-hidden
         className="absolute inset-0"
@@ -177,7 +177,6 @@ export function LightBand() {
         whileInView={{ opacity: 1 }}
         viewport={{ once: false, margin: "-10% 0px" }}
         transition={{ duration: reducedMotion ? 0.4 : 1.4, ease: EASE.primary }}
-        {...overlayFallback}
       >
         <div className="absolute inset-0 bg-[#f2f2f5]" />
         <div
@@ -189,14 +188,13 @@ export function LightBand() {
         />
       </motion.div>
 
-      <motion.div
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: false, margin: "-10% 0px" }}
-        transition={{ duration: reducedMotion ? 0.4 : 1.4, ease: EASE.primary }}
-        {...contentFallback}
-        className="relative text-[#08080a]"
-      >
+      {/* Real content (headings, cards, copy) — previously framer-motion
+          `whileInView` with no fallback if the observer never fires (a
+          renderer that doesn't scroll never sees it). `.scroll-fade-inout`
+          (globals.css) drives the same fade-in/hold/fade-out natively via
+          `animation-timeline: view()`, defaulting to opacity:1 outside
+          `@supports` — never hidden regardless of JS/scroll support. */}
+      <div className="scroll-fade-inout relative text-[#08080a]">
         <Container>
           <RevealGroup as="div" className="flex flex-col items-center text-center">
             <RevealItem>
@@ -260,7 +258,7 @@ export function LightBand() {
             ))}
           </RevealGroup>
         </Container>
-      </motion.div>
+      </div>
     </section>
   );
 }

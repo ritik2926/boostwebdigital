@@ -827,3 +827,90 @@ body {
   max-width: 100%;
   overflow-x: auto;
 }
+
+/*
+  ── Scroll-linked reveals (native CSS, no JS) ──────────────────────────
+  Below-the-fold sections that used to fade in/out via framer-motion's
+  `useScroll`/`whileInView`, rewritten as `animation-timeline: view()` so
+  the browser drives it directly — no IntersectionObserver, no fallback
+  timer, and (the actual point) no dependency on JS running at all for
+  the content underneath to be visible. Every rule below sets the AT-REST
+  opacity to 1 outside the `@supports` block, so a renderer without
+  scroll-timeline support — or one that never scrolls at all, which is
+  the entire reason this exists — simply sees the content, fully visible,
+  unanimated. `prefers-reduced-motion` disables the animation outright.
+*/
+@property --statement-mask-stop {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 92%;
+}
+
+.scroll-fade-inout {
+  opacity: 1;
+}
+
+.scroll-statement-fade {
+  opacity: 1;
+}
+
+@supports (animation-timeline: view()) {
+  .scroll-fade-inout {
+    animation: scroll-fade-inout-keyframes linear both;
+    animation-timeline: view();
+    animation-range: cover 0% cover 100%;
+  }
+
+  .scroll-statement-fade {
+    --statement-mask-stop: 92%;
+    animation: scroll-statement-fade-keyframes linear both;
+    animation-timeline: view();
+    animation-range: cover 0% cover 100%;
+    -webkit-mask-image: linear-gradient(to bottom, white 0%, white var(--statement-mask-stop), transparent 100%);
+    mask-image: linear-gradient(to bottom, white 0%, white var(--statement-mask-stop), transparent 100%);
+  }
+}
+
+@keyframes scroll-fade-inout-keyframes {
+  0% {
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes scroll-statement-fade-keyframes {
+  0% {
+    opacity: 0.2;
+    --statement-mask-stop: 92%;
+  }
+  30% {
+    opacity: 1;
+    --statement-mask-stop: 92%;
+  }
+  75% {
+    opacity: 1;
+    --statement-mask-stop: 92%;
+  }
+  100% {
+    opacity: 1;
+    --statement-mask-stop: 8%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-fade-inout,
+  .scroll-statement-fade {
+    animation: none !important;
+    opacity: 1 !important;
+    -webkit-mask-image: none !important;
+    mask-image: none !important;
+  }
+}

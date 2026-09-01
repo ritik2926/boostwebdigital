@@ -202,14 +202,24 @@ export function PricingPlansCards() {
         className={cn("mt-10 grid w-full grid-cols-1 items-start lg:mt-14 lg:grid-cols-3", GRID_GAP.default)}
       >
         {PLANS.map((plan) => {
-          const showContent = isDesktop || mobilePlan === plan.id;
           return (
           <RevealItem
             as="li"
             key={plan.id}
             className={cn(plan.mobileOrder, mobilePlan === plan.id ? "block" : "hidden", "lg:block")}
           >
-            {showContent && (
+            {/* Content always mounted — CSS (the className above) is what
+                hides the non-selected mobile plans, the same as any
+                tab/accordion pattern. Previously this was ALSO gated by a
+                JS conditional mount (`showContent`), which on a mobile
+                viewport post-hydration actually removed two of three
+                plans' name/price/features from the DOM entirely — worse
+                than an invisible-but-present element, since there was
+                nothing left to read at all. SSR always showed all three
+                (isDesktop defaults true server-side, see
+                useIsDesktopViewport's comment above), so this only ever
+                bit a renderer that executes JS at a mobile viewport width
+                — which is Google's default (mobile-first indexing). */}
             <div className="relative h-full">
               {plan.featured && (
                 <div
@@ -276,7 +286,6 @@ export function PricingPlansCards() {
                 </div>
               </div>
             </div>
-            )}
           </RevealItem>
           );
         })}

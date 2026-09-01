@@ -1,7 +1,6 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useViewportEntered } from "@/components/Reveal";
 import { CARD_PADDING, CARD_RADIUS, EASE } from "@/lib/tokens";
 import { cn } from "@/lib/utils";
 
@@ -20,11 +19,6 @@ const CIRCLE_BG = "radial-gradient(circle, rgba(var(--accent-rgb),0.65), transpa
 const CIRCLE_RING = "0 0 0 1px rgba(var(--accent-rgb),0.35)";
 
 export function ThreePillarsVenn() {
-  // Only the callout card carries real text content (the other three
-  // `whileInView`s are decorative circles) — same no-fallback bug as
-  // Reveal.tsx's default trigger; see that file's doc comment.
-  const calloutViewport = useViewportEntered();
-
   return (
     <div className="relative mx-auto flex h-72 w-full max-w-xs items-center justify-center sm:h-90 sm:max-w-2xl">
       {/* Left circle — AI Search Visibility (GEO). A thin inset ring
@@ -77,8 +71,9 @@ export function ThreePillarsVenn() {
           lifted above the circles both visually (z-index) and literally
           (rises last on scroll-in). */}
       <motion.div
-        variants={{ hidden: { y: 16, opacity: 0 }, visible: { y: 0, opacity: 1 } }}
-        {...calloutViewport}
+        initial="hidden"
+        whileInView="visible"
+        variants={{ hidden: { y: 16, opacity: 1 }, visible: { y: 0, opacity: 1 } }}
         viewport={{ once: true, amount: 0.5 }}
         transition={{ duration: 0.6, delay: 0.5, ease: EASE.primary }}
         className={cn(

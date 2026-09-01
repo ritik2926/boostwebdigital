@@ -16,7 +16,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Link from "next/link";
 import { Container } from "@/components/Container";
-import { Reveal, RevealGroup, RevealItem, useBidirectionalViewportFallback, usePrefersReducedMotion } from "@/components/Reveal";
+import { Reveal, RevealGroup, RevealItem, usePrefersReducedMotion } from "@/components/Reveal";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Pricing } from "@/components/Pricing";
@@ -1660,18 +1660,13 @@ function WhyChooseAmbientDrift() {
  * The content wrapper right below plays the identical fade on the same
  * trigger, so text and background always arrive/leave together.
  *
- * Fallback: `whileInView` never fires for a renderer that doesn't scroll
- * (see Reveal.tsx), and this section can't use that fix as-is — it's
- * bidirectional (`once: false`), so a permanent `animate="visible"` lock
- * would stop it fading back out once a real visitor scrolls past.
- * `useBidirectionalViewportFallback` (Reveal.tsx) only forces `animate`
- * while the real IntersectionObserver has never once reported in *or* out;
- * the moment it does, the override drops out on that same render and
- * whileInView runs exactly as it always has.
+ * Purely decorative (aria-hidden), so it stays framer-motion-driven —
+ * RULE 5: no need to spend effort making decoration crawler-safe. The
+ * content wrapper in WhyChooseUs below is the one that carries real text,
+ * and is CSS-driven (`.scroll-fade-inout`) for that reason.
  */
 function WhyChooseWhiteFade() {
   const reducedMotion = usePrefersReducedMotion();
-  const fallback = useBidirectionalViewportFallback();
   return (
     <motion.div
       aria-hidden
@@ -1680,28 +1675,23 @@ function WhyChooseWhiteFade() {
       whileInView={{ opacity: 1 }}
       viewport={{ once: false, amount: 0.4 }}
       transition={{ duration: reducedMotion ? 0.4 : 1.4, ease: EASE.primary }}
-      {...fallback}
     />
   );
 }
 
 function WhyChooseUs() {
-  const reducedMotion = usePrefersReducedMotion();
-  const fallback = useBidirectionalViewportFallback();
-
   return (
     <section className={cn("relative overflow-hidden", SECTION_PADDING.compact)}>
       <WhyChooseWhiteFade />
       <WhyChooseAmbientDrift />
       <Container className="relative">
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: false, amount: 0.4 }}
-          transition={{ duration: reducedMotion ? 0.4 : 1.4, ease: EASE.primary }}
-          {...fallback}
-          className="relative text-[#08080a]"
-        >
+        {/* Real content (headings, cards, copy) — previously framer-motion
+            `whileInView` with no fallback if the observer never fires (a
+            renderer that doesn't scroll never sees it). `.scroll-fade-inout`
+            (globals.css) drives the same fade-in/hold/fade-out natively via
+            `animation-timeline: view()`, defaulting to opacity:1 outside
+            `@supports` — never hidden regardless of JS/scroll support. */}
+        <div className="scroll-fade-inout relative text-[#08080a]">
           <div className="relative mx-auto flex max-w-2xl flex-col items-center py-16 text-center lg:py-24">
             <OrbitRing count={WHY_CHOOSE_US.length} />
             <div className="relative z-10">
@@ -1727,7 +1717,7 @@ function WhyChooseUs() {
               </div>
             ))}
           </div>
-        </motion.div>
+        </div>
       </Container>
     </section>
   );
