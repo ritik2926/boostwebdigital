@@ -183,7 +183,7 @@ function SourcesSection({ sources }: { sources: string[] }) {
                 href={url}
                 rel="nofollow noopener"
                 target="_blank"
-                className="text-accent underline-offset-4 hover:underline"
+                className="text-white/70 underline-offset-4 hover:text-accent hover:underline"
               >
                 {url}
               </a>
@@ -290,7 +290,7 @@ export function CheckerReport({ report, onReset }: { report: CheckerReportData; 
       <div className="flex flex-col items-start gap-4 border-t border-white/8 pt-8 print:hidden sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-white">This was one question, on one engine. We run fifteen, on four.</p>
-          <Link href="/ai-visibility-geo/" className="mt-1 inline-block text-sm text-accent underline-offset-4 hover:underline">
+          <Link href="/ai-visibility-geo/" className="mt-1 inline-block text-sm text-white/70 underline-offset-4 hover:text-accent hover:underline">
             See the full AI Search Visibility service
           </Link>
         </div>

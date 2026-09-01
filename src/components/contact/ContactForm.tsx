@@ -184,7 +184,7 @@ export function ContactForm() {
         </p>
         <a
           href="mailto:contact@boostwebdigital.com"
-          className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-accent underline-offset-4 hover:underline"
+          className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-white/70 underline-offset-4 hover:text-accent hover:underline"
         >
           contact@boostwebdigital.com
         </a>

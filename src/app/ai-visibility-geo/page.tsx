@@ -190,7 +190,7 @@ const FAQ_ACCORDION_ITEMS: GeoFaqItem[] = FAQ_ITEMS.map((item) =>
         answer: (
           <>
             Pricing is published in full on our{" "}
-            <Link href="/pricing/" className="text-accent underline-offset-4 hover:underline">
+            <Link href="/pricing/" className="text-white/70 underline-offset-4 hover:text-accent hover:underline">
               pricing page
             </Link>
             . You do not need to book a call to see it.
@@ -522,7 +522,7 @@ export default function AiVisibilityGeoPage() {
               <Link
                 href={CTA_HREF}
                 data-cta="process-inline"
-                className="group inline-flex items-center gap-2 font-medium text-accent underline-offset-4 hover:underline"
+                className="group inline-flex items-center gap-2 font-medium text-white/70 underline-offset-4 hover:text-accent hover:underline"
               >
                 Step one is free and it starts today
                 <span aria-hidden className="inline-block transition-transform duration-200 group-hover:translate-x-1">

@@ -170,7 +170,7 @@ export function AnswerBlock({ ctaHref }: { ctaHref: string }) {
           <Link
             href={ctaHref}
             data-cta="answer-inline"
-            className="group inline-flex items-center gap-2 text-base font-medium text-accent underline-offset-4 hover:underline"
+            className="group inline-flex items-center gap-2 text-base font-medium text-white/70 underline-offset-4 hover:text-accent hover:underline"
           >
             Find out whose name is in it instead of yours
             <span aria-hidden className="inline-block transition-transform duration-200 group-hover:translate-x-1">

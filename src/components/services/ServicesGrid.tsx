@@ -34,7 +34,7 @@ function ServiceBlock({ service, isLast }: { service: (typeof SERVICES)[number];
             <RevealItem className={STACK.headingToSub}>
               <Link
                 href="/ai-visibility-geo/"
-                className="group inline-flex items-center gap-2 font-medium text-accent underline-offset-4 hover:underline"
+                className="group inline-flex items-center gap-2 font-medium text-white/70 underline-offset-4 hover:text-accent hover:underline"
               >
                 See how we approach AI visibility
                 <span aria-hidden className="inline-block transition-transform duration-200 group-hover:translate-x-1">

@@ -19,7 +19,7 @@ export function AuthorCard({ author }: { author: BlogPost["author"] }) {
         <h3 className="mt-1.5 font-display text-lg font-semibold text-white">{author.name}</h3>
         <p className="mt-1 text-sm text-white/60">{author.role}</p>
         {author.url && (
-          <Link href={author.url} className="mt-2 inline-block text-sm text-accent underline-offset-4 hover:underline">
+          <Link href={author.url} className="mt-2 inline-block text-sm text-white/70 underline-offset-4 hover:text-accent hover:underline">
             More about {author.name.split(" ")[0]} →
           </Link>
         )}

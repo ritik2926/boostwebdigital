@@ -418,7 +418,7 @@ export function CheckerWidget() {
         ) : (
           <>
             <p className="text-white/70">This is our limit, not yours — nothing about your free reports has changed.</p>
-            <a href="/contact/" className="text-sm text-accent underline-offset-4 hover:underline">
+            <a href="/contact/" className="text-sm text-white/70 underline-offset-4 hover:text-accent hover:underline">
               Contact us
             </a>
           </>
