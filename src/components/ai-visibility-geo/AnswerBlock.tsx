@@ -25,22 +25,30 @@ import { usePrefersReducedMotion } from "@/components/Reveal";
  * once scrolled into view) — but Google's renderer never scrolls, so the
  * sequence never started at all and the text sat at opacity:0 forever.
  * It now starts shortly after mount instead, regardless of scroll
- * position. For a real visitor this mostly reads the same: the ~6-second
+ * position. For a real visitor this mostly reads the same: the ~2-second
  * sequence typically finishes before someone scrolls down two sections to
  * reach this one. The one real difference is a visitor who scrolls here
  * unusually fast may catch the answer already fully typed rather than
  * watching it type — the tradeoff for it being guaranteed to run at all.
+ *
+ * Timing was shortened from ~28ms/char (~7s total) to ~7ms/char (~2s
+ * total, quote itself complete by ~1.4s) — a renderer's JS-execution
+ * budget is commonly cited around 5s and isn't guaranteed, and the
+ * original pacing risked a screenshot landing mid-typing. Faster reads
+ * as a quick reveal rather than a deliberate "natural" type — a real,
+ * disclosed visual difference, traded for the sequence reliably finishing
+ * well inside any reasonable render budget.
  */
 
 const ANSWER_TEXT =
   "Based on their reviews, published specialty pages and how consistently they're described across the web, I'd recommend [Another Practice] for a full-arch consultation in your area.";
 const ACCENT_PHRASE = "[Another Practice]";
 
-const MS_PER_CHAR = 28;
-const TYPING_START_DELAY_MS = 400;
-const CAPTION_DELAY_MS = 500; // "a beat" after typing completes
-const LINE_DELAY_MS = 500; // after the caption
-const CTA_DELAY_MS = 600; // after the line, per the brief
+const MS_PER_CHAR = 7;
+const TYPING_START_DELAY_MS = 150;
+const CAPTION_DELAY_MS = 150; // "a beat" after typing completes
+const LINE_DELAY_MS = 150; // after the caption
+const CTA_DELAY_MS = 250; // after the line
 
 function buildCharacters(text: string, accentPhrase: string) {
   const start = text.indexOf(accentPhrase);

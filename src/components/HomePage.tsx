@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
   AnimatePresence,
   motion,
@@ -568,17 +568,46 @@ function StatNumeral({ value, isOpen }: { value: string; isOpen: boolean }) {
   );
 }
 
-/** Radial arc gauge for "88%" — a plain data-graphic (the editorial/
+/**
+ * Radial arc gauge for "88%" — a plain data-graphic (the editorial/
  * data-journalism vocabulary, not a dashboard gauge): flat accent arc, no
  * glow filter, no rounded soft cap, sized large enough that scale carries
- * the visual weight instead of lighting. */
+ * the visual weight instead of lighting.
+ *
+ * The ring's fill defaults to the REAL percentage — this is the one
+ * `StatGraphic` variant that's mounted by default (the accordion's first
+ * item is open on load; the other two only mount once a visitor clicks a
+ * different tab, the same "closed tab" content Google already indexes
+ * fine). Previously the ring's `initial` shipped at 0% fill in the SSR
+ * HTML and only reached 88% once its mount transition finished — the
+ * `{percent}%` text label next to it was always correct, but the ring
+ * itself was wrong by default. `useLayoutEffect` (resolves before the
+ * browser's first paint) resets it to 0% and animates back to the real
+ * value for a real browser, so nothing changes visually for a visitor.
+ */
 function ArcGauge({ percent, previousPercent }: { percent: number; previousPercent: number }) {
   const reducedMotion = usePrefersReducedMotion();
+  const startedRef = useRef(false);
   const size = 240;
   const stroke = 14;
   const r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;
   const offset = c * (1 - percent / 100);
+
+  const [dashoffset, setDashoffset] = useState(offset);
+
+  useLayoutEffect(() => {
+    if (reducedMotion) {
+      setDashoffset(offset);
+      return;
+    }
+    if (startedRef.current) return;
+    startedRef.current = true;
+
+    setDashoffset(c); // reset to 0% fill, before the browser's first paint
+    const timer = setTimeout(() => setDashoffset(offset), 0); // next tick: animate to the real value
+    return () => clearTimeout(timer);
+  }, [reducedMotion, offset, c]);
 
   return (
     <div className="flex flex-col gap-5">
@@ -593,8 +622,7 @@ function ArcGauge({ percent, previousPercent }: { percent: number; previousPerce
             stroke="rgb(var(--accent-rgb))"
             strokeWidth={stroke}
             strokeDasharray={c}
-            initial={{ strokeDashoffset: reducedMotion ? offset : c }}
-            animate={{ strokeDashoffset: offset }}
+            animate={{ strokeDashoffset: dashoffset }}
             transition={{ duration: reducedMotion ? 0 : 1.2, ease: EASE.primary, delay: reducedMotion ? 0 : 0.1 }}
           />
         </svg>
