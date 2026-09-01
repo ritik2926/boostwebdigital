@@ -1,5 +1,5 @@
-import { MODELS } from "../config.ts";
-import type { VisibilityEngine } from "./types.ts";
+import { MODELS } from "../config";
+import type { VisibilityEngine } from "./types";
 
 const GEMINI_API_BASE = "https://generativelanguage.googleapis.com/v1beta/models";
 const REQUEST_TIMEOUT_MS = 45_000;

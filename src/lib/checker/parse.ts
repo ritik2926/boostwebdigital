@@ -94,16 +94,31 @@ export interface MentionResult {
  * Tries three name variants, in order, and stops at the first one that
  * appears in the answer. False positives are worse than false negatives
  * here — a wrong "you were mentioned" destroys trust in the whole tool —
- * so every variant is rejected outright if it's down to a single word
- * (never fuzzy-matched, never partial-word: "Smile Dental" stripped of its
- * "Dental" suffix leaves the single word "Smile", which this refuses to use
- * as a match candidate at all — the same guard that keeps a generic
- * industry word like "dental" from ever being matched on its own, whether
- * or not it also happens to appear in the keyword the visitor typed).
+ * so every variant is rejected outright if:
+ *   - it's down to a single word (never fuzzy-matched, never partial-word:
+ *     "Smile Dental" stripped of its "Dental" suffix leaves the single word
+ *     "Smile", which this refuses to use as a match candidate at all — the
+ *     same guard that keeps a generic industry word like "dental" from
+ *     ever being matched on its own);
+ *   - every one of its words is also present in the keyword the visitor
+ *     typed. "Dental Clinic Amritsar" checked against keyword "best dental
+ *     clinic" would otherwise match on the stripped/two-word variant
+ *     "dental clinic" — a phrase that's entirely just the keyword's own
+ *     generic terms, near-guaranteed to appear in any answer about the
+ *     same search, and not real evidence the business itself was named.
+ *     The full name ("dental clinic amritsar") is unaffected by this rule
+ *     and can still match — "amritsar" isn't in the keyword, so that
+ *     variant is more specific than the keyword itself.
  */
-export function findMentions(answer: string, businessName: string): MentionResult {
+export function findMentions(answer: string, businessName: string, keyword: string): MentionResult {
   const searchable = charNormaliseForSearch(answer);
   const fullNormalised = normalise(businessName);
+  const keywordWords = new Set(normalise(keyword).split(" ").filter(Boolean));
+
+  function isEntirelyInKeyword(candidate: string): boolean {
+    const candidateWords = candidate.split(" ").filter(Boolean);
+    return candidateWords.length > 0 && candidateWords.every((word) => keywordWords.has(word));
+  }
 
   const candidates: string[] = [];
 
@@ -125,6 +140,7 @@ export function findMentions(answer: string, businessName: string): MentionResul
 
   for (const candidate of candidates) {
     if (wordCount(candidate) < 2) continue; // never match on a single word
+    if (isEntirelyInKeyword(candidate)) continue; // never match on the keyword's own words alone
     const firstMatch = searchable.match(buildVariantRegex(candidate, "u"));
     if (firstMatch && typeof firstMatch.index === "number") {
       const allMatches = searchable.match(buildVariantRegex(candidate, "gu")) ?? [];
