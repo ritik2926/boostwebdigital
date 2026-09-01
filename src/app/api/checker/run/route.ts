@@ -25,9 +25,10 @@ export const runtime = "nodejs";
 export const maxDuration = 60;
 
 /**
- * REAL SCHEMA — confirmed live against information_schema.columns on
- * 2026-09-01 (see this task's report for the full diff against what the
- * previous build assumed). Not created or altered here.
+ * REAL SCHEMA — confirmed live against information_schema.columns, most
+ * recently on 2026-09-01 (variant_matched, status, and a now-nullable
+ * raw_answer were hand-added to `reports` after the previous task; not
+ * created or altered by this route).
  *
  *   reports (
  *     id                 uuid primary key default ...,
@@ -42,7 +43,7 @@ export const maxDuration = 60;
  *     engine             text not null,   -- e.g. "exa"
  *     model              text not null,   -- e.g. "exa/answer"
  *     query_sent         text not null,
- *     raw_answer         text not null,   -- NOT NULL: '' for a real-but-empty answer
+ *     raw_answer         text,            -- nullable; '' for a real-but-empty answer
  *     grounding_sources  jsonb,
  *     mentioned          boolean not null,
  *     mention_index      integer,
@@ -55,7 +56,9 @@ export const maxDuration = 60;
  *     visitor_id         uuid not null,
  *     ip_hash            text not null,
  *     user_agent         text,
- *     referrer           text
+ *     referrer           text,
+ *     variant_matched    text,            -- nullable
+ *     status             text not null default 'ok'  -- 'ok' | 'no-answer'
  *   )
  *
  *   usage_counters (
@@ -66,13 +69,10 @@ export const maxDuration = 60;
  *     last_seen  timestamptz not null
  *   )
  *
- * No column exists for a per-variant match string, a score breakdown, or a
- * pending/no-answer status — those still exist in the JSON response this
- * route returns to the caller, they're just not persisted (there's nowhere
- * to put them without altering a table, which is out of scope here).
+ * Still no column for the score breakdown array — that exists in the JSON
+ * response this route returns to the caller, it's just not persisted.
  */
 
-const SITE_ORIGIN = "https://boostwebdigital.com";
 const RATE_LIMIT_MAX = 10;
 const RATE_LIMIT_WINDOW_SECONDS = 60 * 60; // 1 hour
 const MIN_SUBMIT_DELAY_MS = 3000;
@@ -140,13 +140,23 @@ function optionalField(value: unknown, maxLength: number): string | null {
   return value.trim();
 }
 
+/**
+ * Compares against the REQUEST's own origin (request.nextUrl.origin —
+ * http://localhost:3000 in dev, https://boostwebdigital.com in production),
+ * not a hardcoded SITE_ORIGIN constant. A hardcoded production URL would
+ * reject every same-origin request made from local dev or a preview
+ * deploy — this bug was only caught once the form was actually tested
+ * through a real browser fetch() instead of a curl call with a manually
+ * supplied Origin header.
+ */
 function isOurOrigin(request: NextRequest): boolean {
+  const selfOrigin = request.nextUrl.origin;
   const origin = request.headers.get("origin");
-  if (origin) return origin === SITE_ORIGIN;
+  if (origin) return origin === selfOrigin;
   const referer = request.headers.get("referer");
   if (!referer) return false; // neither header present — reject rather than assume same-origin
   try {
-    return new URL(referer).origin === SITE_ORIGIN;
+    return new URL(referer).origin === selfOrigin;
   } catch {
     return false;
   }
@@ -280,7 +290,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
 
   if (blocked) {
-    const response = NextResponse.json({ ok: true, blocked: true, reports: previousReports });
+    const response = NextResponse.json({ ok: true, blocked: true, reason: "visitor-limit", reports: previousReports });
     setVisitorCookie(response, visitorId);
     return response;
   }
@@ -352,6 +362,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     answer,
     sources,
     matched: mentions.matched,
+    variantMatched: mentions.variantMatched,
     firstIndex: mentions.firstIndex,
     mentionCount: mentions.count,
     score,
@@ -361,27 +372,30 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     recommendations: generated?.recommendations ?? null,
     userAgent: request.headers.get("user-agent"),
     referrer: request.headers.get("referer"),
+    status: isEmptyAnswer ? "no-answer" : "ok",
   });
 
-  // Increment only now — a real, measured report was produced and returned
-  // (an empty/no-mention answer still counts: the visitor got a real,
-  // if disappointing, result).
-  try {
-    await sql`
-      INSERT INTO usage_counters (visitor_id, ip_hash, count, first_seen, last_seen)
-      VALUES (${visitorId}, ${ipHash}, 1, now(), now())
-      ON CONFLICT (visitor_id) DO UPDATE SET count = usage_counters.count + 1, last_seen = now()
-    `;
-  } catch (err) {
-    console.error("[checker/run] Failed to increment usage_counters:", err instanceof Error ? err.message : String(err));
+  // Increment only for a real answer — a 501/empty answer is real evidence
+  // (saved above) but not a report the visitor actually got value from, so
+  // it must not cost them one of their two free reports.
+  if (!isEmptyAnswer) {
+    try {
+      await sql`
+        INSERT INTO usage_counters (visitor_id, ip_hash, count, first_seen, last_seen)
+        VALUES (${visitorId}, ${ipHash}, 1, now(), now())
+        ON CONFLICT (visitor_id) DO UPDATE SET count = usage_counters.count + 1, last_seen = now()
+      `;
+    } catch (err) {
+      console.error("[checker/run] Failed to increment usage_counters:", err instanceof Error ? err.message : String(err));
+    }
   }
 
   const response = NextResponse.json({
     ok: true,
     report: {
       id: row?.id ?? null,
-      status: isEmptyAnswer ? "no_answer" : "complete",
-      message: isEmptyAnswer ? "No answer was returned for this query." : undefined,
+      status: isEmptyAnswer ? "no-answer" : "ok",
+      message: isEmptyAnswer ? "No answer was returned for this query. This did not use one of your free reports." : undefined,
       query,
       model,
       answer,
@@ -418,6 +432,7 @@ interface SaveRowInput {
   answer: string;
   sources: string[];
   matched: boolean;
+  variantMatched: string | null;
   firstIndex: number | null;
   mentionCount: number;
   score: number;
@@ -427,6 +442,7 @@ interface SaveRowInput {
   recommendations?: unknown;
   userAgent: string | null;
   referrer: string | null;
+  status: "ok" | "no-answer";
 }
 
 /** A database write failure must never lose the report the caller is about
@@ -438,18 +454,18 @@ async function saveRow(input: SaveRowInput): Promise<{ id: string } | null> {
       INSERT INTO reports (
         business_name, website, email, keyword, city, region, country,
         engine, model, query_sent, raw_answer, grounding_sources,
-        mentioned, mention_index, mention_count, competitors,
+        mentioned, variant_matched, mention_index, mention_count, competitors,
         visibility_score, strengths, weaknesses, recommendations,
-        visitor_id, ip_hash, user_agent, referrer
+        visitor_id, ip_hash, user_agent, referrer, status
       ) VALUES (
         ${input.businessName}, ${input.website || null}, ${input.email}, ${input.keyword}, ${input.city},
         ${input.region || null}, ${input.country}, ${input.engine}, ${input.model}, ${input.query},
-        ${input.answer}, ${JSON.stringify(input.sources)}, ${input.matched}, ${input.firstIndex},
+        ${input.answer}, ${JSON.stringify(input.sources)}, ${input.matched}, ${input.variantMatched}, ${input.firstIndex},
         ${input.mentionCount}, ${JSON.stringify(input.competitors)}, ${input.score},
         ${input.strengths ? JSON.stringify(input.strengths) : null},
         ${input.weaknesses ? JSON.stringify(input.weaknesses) : null},
         ${input.recommendations ? JSON.stringify(input.recommendations) : null},
-        ${input.visitorId}, ${input.ipHash}, ${input.userAgent}, ${input.referrer}
+        ${input.visitorId}, ${input.ipHash}, ${input.userAgent}, ${input.referrer}, ${input.status}
       )
       RETURNING id
     `) as Array<{ id: string }>;

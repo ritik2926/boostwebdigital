@@ -73,6 +73,17 @@ const SECTIONS: LegalSection[] = [
     ),
   },
   {
+    id: "ai-visibility-checker",
+    heading: "AI Visibility Checker",
+    content: (
+      <LegalP>
+        The AI Visibility Checker sends your business name, keyword and location to Exa, a third-party AI search
+        provider, to retrieve a real AI-generated answer. We store your submission and the resulting report to
+        provide the service and to contact you about it. Please do not submit confidential information.
+      </LegalP>
+    ),
+  },
+  {
     id: "cookies",
     heading: "Cookies & Tracking Technologies",
     content: (

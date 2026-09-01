@@ -33,6 +33,7 @@ const SERVICES_SUBLINKS: Array<{ label: string; href: string }> = [
 // exist yet — rendered disabled with a "Soon" tag rather than a dead link
 // (no fake functional UI, per CLAUDE.md's honesty rule).
 const OTHER_LINKS: Array<{ label: string; href: string | null }> = [
+  { label: "AI Visibility Checker", href: "/tools/ai-visibility-checker/" },
   { label: "Blogs", href: "/blogs/" },
   { label: "AI News", href: null },
   { label: "FAQs", href: "/faq/" },

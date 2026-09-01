@@ -1,4 +1,5 @@
 import { callExaAnswer } from "./engines/exa";
+import { normalise } from "./parse";
 
 export interface AnalysisResult {
   competitors: string[];
@@ -51,7 +52,7 @@ You are analysing a single AI-generated answer to a patient's search query, prov
 
 Rules, all mandatory:
 - Write ONLY about what appears in the provided answer text.
-- "competitors" must be business names that literally appear in that text. Do not add any you know of from elsewhere or from your own search. If the answer names no other businesses, return an empty array.
+- "competitors" must be business names that literally appear in that text, and must NEVER include the business being checked itself (named explicitly below) — it is not its own competitor. Do not add any competitor you know of from elsewhere or from your own search. If the answer names no other businesses, return an empty array.
 - Invent no statistics, no rankings, and no claims about the business being checked beyond what the answer text itself supports.
 - The measured facts given to you (matched, score) are already final and correct — use them as context only, do not contradict or recompute them.
 `.trim();
@@ -73,7 +74,7 @@ Measured visibility score: ${input.score}/100
 ${input.answer}
 === END ANSWER TEXT ===
 
-Return the analysis as JSON: competitors (business names that literally appear in the answer text above), 2-3 strengths, 2-3 weaknesses, and exactly 3 recommendations (each with title, why, and effort of "low"/"medium"/"high").`.trim();
+Return the analysis as JSON: competitors (other business names that literally appear in the answer text above — never include "${input.businessName}" itself in this list, it is the business being checked, not a competitor), 2-3 strengths, 2-3 weaknesses, and exactly 3 recommendations (each with title, why, and effort of "low"/"medium"/"high").`.trim();
 
   return strict
     ? `${base}\n\nReturn ONLY the JSON object matching the schema. No markdown, no code fences, no commentary.`
@@ -136,6 +137,20 @@ async function attempt(input: AnalyseInput, strict: boolean): Promise<AnalysisRe
 }
 
 /**
+ * The prompt (SYSTEM_PROMPT + buildQuery, above) already tells Exa never to
+ * list the checked business as its own competitor — this is the guarantee,
+ * not the request: a live bug in the previous build showed the business
+ * being checked in its own competitor list, so nothing downstream may rely
+ * on the model actually following that instruction. Reuses parse.ts's own
+ * `normalise` so "Sahib Dental Clinic" and "sahib dental clinic." (trailing
+ * punctuation, different case) are still recognised as the same name.
+ */
+function excludeSelfFromCompetitors(result: AnalysisResult, businessName: string): AnalysisResult {
+  const self = normalise(businessName);
+  return { ...result, competitors: result.competitors.filter((competitor) => normalise(competitor) !== self) };
+}
+
+/**
  * Call 2 — prose only, never feeds back into the measured score. Malformed
  * output gets one retry with a stricter instruction; if that also fails,
  * this returns null so the caller still returns the measured half of the
@@ -144,8 +159,8 @@ async function attempt(input: AnalyseInput, strict: boolean): Promise<AnalysisRe
 export async function analyse(input: AnalyseInput): Promise<AnalysisResult | null> {
   try {
     const first = await attempt(input, false);
-    if (first) return first;
-    return await attempt(input, true);
+    const result = first ?? (await attempt(input, true));
+    return result ? excludeSelfFromCompetitors(result, input.businessName) : null;
   } catch (err) {
     console.error("[checker/analyse] Call 2 failed:", err instanceof Error ? err.message : String(err));
     return null;

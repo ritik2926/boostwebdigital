@@ -27,13 +27,14 @@ const PAGE_DATES: Record<string, string> = {
   "/services/": "2026-08-22",
   "/faq/": "2026-08-22",
   "/ai-visibility-geo/": "2026-08-25",
+  "/tools/ai-visibility-checker/": "2026-09-01",
 };
 
 /**
  * Homepage, /about/, /contact/, /blogs/, /pricing/, /services/ (the
  * generic services hub — its child pillar pages below are still unbuilt
- * except /ai-visibility-geo/, now live), /faq/, and /ai-visibility-geo/
- * are live today. `/blog/` itself is a 301 redirect to /blogs/
+ * except /ai-visibility-geo/, now live), /faq/, /ai-visibility-geo/, and
+ * /tools/ai-visibility-checker/ are live today. `/blog/` itself is a 301 redirect to /blogs/
  * (next.config.ts) and is deliberately NOT listed here — a redirecting URL
  * in a sitemap is a Search Console warning. `/design-lab` is excluded from
  * production entirely (see its page.tsx), `/api/contact/` is a route
@@ -82,6 +83,7 @@ export function getStaticPageEntries(): SitemapUrlEntry[] {
     { url: `${SITE_URL}/services/`, lastModified: PAGE_DATES["/services/"] },
     { url: `${SITE_URL}/faq/`, lastModified: PAGE_DATES["/faq/"] },
     { url: `${SITE_URL}/ai-visibility-geo/`, lastModified: PAGE_DATES["/ai-visibility-geo/"] },
+    { url: `${SITE_URL}/tools/ai-visibility-checker/`, lastModified: PAGE_DATES["/tools/ai-visibility-checker/"] },
   ];
 }
 

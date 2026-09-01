@@ -724,6 +724,33 @@ body {
     color: #1627c6 !important;
     text-decoration: underline !important;
   }
+
+  /* Same problem, same fix, for the AI Visibility Checker's report
+     (src/components/checker/CheckerReport.tsx) — see the comment above. */
+  .checker-print-doc {
+    background: #ffffff !important;
+    color: #111111 !important;
+  }
+  .checker-print-doc * {
+    color: #111111 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+  .checker-print-doc h2,
+  .checker-print-doc h3,
+  .checker-print-doc p:first-child,
+  .checker-print-doc strong {
+    color: #000000 !important;
+  }
+  .checker-print-doc mark {
+    background: #fef08a !important;
+    color: #000000 !important;
+  }
+  .checker-print-doc a {
+    color: #1627c6 !important;
+    text-decoration: underline !important;
+  }
 }
 
 /*
