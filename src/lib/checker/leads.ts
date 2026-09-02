@@ -52,32 +52,24 @@ export interface LeadReportData {
   recommendations: LeadRecommendation[] | null;
   // The matched answer with the earliest (best) relative position, or null
   // if the business wasn't named in any answer — same "best" answer
-  // run/route.ts already tracks for the score's position bonus.
+  // run/route.ts already tracks for the score's position bonus. Still used
+  // for the Sheet mirror's mention_index; no longer for a subject line —
+  // see CORRECTIONS below.
   bestAnswer: LeadBestAnswer | null;
+  // False for a "no-answer" report (Exa returned nothing for any of the
+  // three questions) — the owner alert still fires either way, but the
+  // visitor email and the Sheet mirror do not (see sendLeadNotifications).
+  hasAnswer: boolean;
 }
 
 /**
- * A rough, honest "named Nth" for a subject line — NOT the measured score,
- * which never depends on competitor ranking (see parse.ts's own header
- * comment). Counts how many aggregated competitor names appear earlier than
- * the business's own first mention in its best answer, case-insensitive
- * substring search — the same convention this codebase already used for a
- * display-only rank before the three-query rework. Returns null when the
- * business wasn't named anywhere, since "position" has no meaning then.
+ * CORRECTIONS (2026-09-02, same day): a bare "#2" in a subject line
+ * overstated a three-query sample as a ranking, and a certain two-word
+ * phrase (engine name + "search") is banned sitewide. Every subject/
+ * heading below now states a fraction out of `totalQueries` instead of a
+ * rank, and never uses that phrase — see the sitewide grep in this task's
+ * report, which this file must pass with zero matches.
  */
-function computePosition(bestAnswer: LeadBestAnswer | null, competitors: LeadCompetitor[]): number | null {
-  if (!bestAnswer) return null;
-  const lowerAnswer = bestAnswer.answer.toLowerCase();
-  const earlier = competitors.filter((c) => {
-    const idx = lowerAnswer.indexOf(c.name.toLowerCase());
-    return idx !== -1 && idx < bestAnswer.firstIndex;
-  }).length;
-  return 1 + earlier;
-}
-
-function namedLabel(position: number | null): string {
-  return position === null ? "NOT NAMED" : `NAMED #${position}`;
-}
 
 /**
  * SINK 1 — the report email to the VISITOR who submitted the form.
@@ -85,18 +77,19 @@ function namedLabel(position: number | null): string {
  * link and, deliberately, no newsletter signup — consent to receive a
  * report is not consent to receive a newsletter (see this task's report).
  */
-async function sendVisitorEmail(data: LeadReportData, position: number | null): Promise<void> {
+async function sendVisitorEmail(data: LeadReportData): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
     console.log("[checker/leads] visitor email: skipped (RESEND_API_KEY not set)");
     return;
   }
 
-  const heading = position === null ? `${data.businessName} was not named` : `${data.businessName} was named #${position}`;
+  const heading =
+    data.namedCount > 0 ? `${data.businessName} was named in ${data.namedCount} of ${data.totalQueries} answers` : `${data.businessName} was not named`;
   const subject =
-    position === null
-      ? `${data.businessName} was not named in AI search for '${data.keyword}'`
-      : `${data.businessName} was named #${position} in AI search for '${data.keyword}'`;
+    data.namedCount > 0
+      ? `${data.businessName} was named in ${data.namedCount} of ${data.totalQueries} answers for '${data.keyword}'`
+      : `${data.businessName} was not named in any of ${data.totalQueries} answers for '${data.keyword}'`;
 
   const verdictLine =
     data.namedCount > 0
@@ -162,14 +155,22 @@ async function sendVisitorEmail(data: LeadReportData, position: number | null): 
  * Gmail by subject line rather than read as a polished document. Reply-To
  * is the PROSPECT's address so replying in Gmail goes straight to the lead.
  */
-async function sendOwnerAlert(data: LeadReportData, position: number | null): Promise<void> {
+async function sendOwnerAlert(data: LeadReportData): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
     console.log("[checker/leads] owner alert: skipped (RESEND_API_KEY not set)");
     return;
   }
 
-  const subject = `[Checker] ${data.businessName} — ${data.city} — Score ${data.score} — ${namedLabel(position)}`;
+  // Three distinct subjects, not two — a no-answer submission is neither
+  // "named" nor honestly "not named" (Exa gave nothing to check), so it
+  // gets its own clearly-labeled subject rather than being folded into
+  // NOT NAMED, which would misstate what actually happened.
+  const subject = !data.hasAnswer
+    ? `[Checker] ${data.businessName} — ${data.city} — NO ANSWER RETURNED`
+    : data.namedCount > 0
+      ? `[Checker] ${data.businessName} — ${data.city} — Score ${data.score} — NAMED IN ${data.namedCount} OF ${data.totalQueries}`
+      : `[Checker] ${data.businessName} — ${data.city} — Score ${data.score} — NOT NAMED`;
 
   const breakdownLines = data.breakdown.length > 0 ? data.breakdown.map((row) => `  +${row.points}  ${row.signal}`) : ["  (no signals earned)"];
   const competitorLines =
@@ -183,17 +184,24 @@ async function sendOwnerAlert(data: LeadReportData, position: number | null): Pr
     `Email:       ${data.email}`,
     `Keyword:     ${data.keyword}`,
     `Location:    ${data.city}${data.region ? ", " + data.region : ""}, ${data.country}`,
-    `Named in:    ${data.namedCount} of ${data.totalQueries} answers`,
-    `Score:       ${data.score}/100`,
-    "",
-    "Score breakdown:",
-    ...breakdownLines,
-    "",
-    "Named instead:",
-    ...competitorLines,
-    "",
-    `Report ID (Neon "reports" table): ${data.reportId ?? "(not saved)"}`,
   ];
+
+  if (data.hasAnswer) {
+    textLines.push(
+      `Named in:    ${data.namedCount} of ${data.totalQueries} answers`,
+      `Score:       ${data.score}/100`,
+      "",
+      "Score breakdown:",
+      ...breakdownLines,
+      "",
+      "Named instead:",
+      ...competitorLines
+    );
+  } else {
+    textLines.push("", "STATUS: No answer was returned for any of the three questions. This is still a real lead — the fields above are what they submitted.");
+  }
+
+  textLines.push("", `Report ID (Neon "reports" table): ${data.reportId ?? "(not saved)"}`);
   const text = textLines.join("\n");
   const html = `<pre style="font-family: ui-monospace, monospace; font-size: 13px; white-space: pre-wrap;">${escapeHtml(text)}</pre>`;
 
@@ -262,12 +270,21 @@ async function mirrorToSheet(data: LeadReportData): Promise<void> {
 }
 
 /**
- * Fires all three sinks concurrently. Every sink above already catches its
- * own errors and never throws, so this never rejects — but it's still
- * awaited from inside `after()` in run/route.ts, never before the response
- * is returned to the visitor.
+ * Fires the applicable sinks concurrently. Every sink above already
+ * catches its own errors and never throws, so this never rejects — but
+ * it's still awaited from inside `after()` in run/route.ts, never before
+ * the response is returned to the visitor.
+ *
+ * The owner alert ALWAYS fires — someone who submitted the form is a real
+ * lead regardless of whether Exa returned an answer. The visitor email and
+ * the Sheet mirror only fire when `hasAnswer` is true: there's no report
+ * to send the visitor for a no-answer result, and no answer-derived data
+ * worth mirroring to the Sheet.
  */
 export async function sendLeadNotifications(data: LeadReportData): Promise<void> {
-  const position = computePosition(data.bestAnswer, data.competitors);
-  await Promise.all([sendVisitorEmail(data, position), sendOwnerAlert(data, position), mirrorToSheet(data)]);
+  const tasks: Promise<void>[] = [sendOwnerAlert(data)];
+  if (data.hasAnswer) {
+    tasks.push(sendVisitorEmail(data), mirrorToSheet(data));
+  }
+  await Promise.all(tasks);
 }

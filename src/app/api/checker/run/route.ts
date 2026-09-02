@@ -112,16 +112,16 @@ const IP_REPORTS_24H_LIMIT = 5;
  * fifty cookies. This is what actually protects the Exa credit balance.
  * Change this number, not the query below, if the limit needs to move.
  *
- * TASK 4 (2026-09-02) — now bounded by RESEND, not by Exa. Since the
- * previous task's FIX B (which set this to 15 against Exa's $10/month free
- * credit), each report also sends TWO emails (visitor + owner alert), and
- * Resend's free tier is 100 emails/day shared across this entire site —
- * contact form, its auto-reply, newsletter confirmations/broadcasts, and
- * now this. 25 reports/day = 50 emails/day from the checker alone, leaving
- * 50/day headroom for everything else this site sends. Expected real
- * volume is ~30 reports/MONTH, so 25/day is a runaway guard, not a target.
+ * FIX B (2026-09-02) — bounded by EXA, not by Resend. A report costs FOUR
+ * Exa calls (3 answers + 1 analysis), ~$0.005 each, ~$0.02/report. Against
+ * $10/month of free Exa credit that's ~500 reports/month; 15/day is
+ * ~450/month — safely inside the free allotment — and still roughly 15x
+ * the traffic this tool actually expects. (A same-day task briefly raised
+ * this to 25 reasoning from Resend's email cap instead; that was reverted
+ * — Exa credit is the binding constraint here, not Resend. Do not change
+ * this number again without checking both budgets.)
  */
-const DAILY_REPORT_CAP = 25;
+const DAILY_REPORT_CAP = 15;
 
 const MAX_LENGTHS = {
   business_name: 120,
@@ -524,10 +524,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   // Fires the visitor email, the owner alert, and the Sheet mirror AFTER
   // this response is already on its way — the visitor has already waited
   // for three Exa calls plus an analysis call, they must not wait a
-  // millisecond longer for an email or a spreadsheet write. Only for a
-  // real answer: a no-answer result gives Ritik no usable lead, same
-  // reasoning as skipping the usage_counters increment above.
-  if (!isAllEmpty) {
+  // millisecond longer for an email or a spreadsheet write.
+  //
+  // The owner alert fires EVEN on a no-answer result: someone who submitted
+  // the form is a real lead with a real email address regardless of
+  // whether Exa returned an answer, and Ritik should hear about them. The
+  // visitor email and the Sheet mirror still only fire for a real answer —
+  // there's no report to send the visitor, and no answer-derived data
+  // worth mirroring (see sendLeadNotifications's own `hasAnswer` branch).
+  {
     const bestAnswer = bestFirstIndex !== null && bestAnswerText !== null ? { firstIndex: bestFirstIndex, answer: bestAnswerText } : null;
     after(() =>
       sendLeadNotifications({
@@ -546,6 +551,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         competitors,
         recommendations: generated?.recommendations ?? null,
         bestAnswer,
+        hasAnswer: !isAllEmpty,
       })
     );
   }
