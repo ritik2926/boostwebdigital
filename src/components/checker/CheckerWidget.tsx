@@ -8,7 +8,7 @@ import { trackCheckerEvent } from "./analytics";
 import type { BlockReason, CheckerReport as CheckerReportData, HistoryReport } from "./types";
 import { buildQueries, type BuiltQuery } from "@/lib/checker/queryBuilder";
 import { countriesForSelect, INDIA_CITIES, INDIA_STATES } from "@/lib/checker/locations";
-import { INDUSTRY_OPTIONS } from "@/lib/checker/industries";
+import { INDUSTRIES } from "@/lib/checker/industries";
 
 /**
  * Talks to the checker exclusively over fetch() to these three existing
@@ -669,9 +669,9 @@ export function CheckerWidget() {
             <option value="" disabled>
               Select industry
             </option>
-            {INDUSTRY_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>
-                {o.label}
+            {INDUSTRIES.map((label) => (
+              <option key={label} value={label}>
+                {label}
               </option>
             ))}
           </select>

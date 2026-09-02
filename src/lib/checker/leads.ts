@@ -2,7 +2,7 @@ import { Resend } from "resend";
 import { renderEmail, escapeHtml } from "@/lib/email/template";
 import { buildVerdict } from "./reportCopy";
 import { buildLocationString } from "./queryBuilder";
-import { HEALTHCARE_INDUSTRY } from "./industries";
+import { HEALTHCARE_INDUSTRY, shortIndustryLabel } from "./industries";
 
 /**
  * Everything that happens AFTER a checker report is saved and the visitor
@@ -201,8 +201,11 @@ async function sendOwnerAlert(data: LeadReportData): Promise<void> {
   // bare double dash.
   const citySlot = data.city.trim() || data.country;
   // PART 4 (2026-09-02, "open to all") — the industry prefix so the inbox
-  // sorts at a glance without opening every message.
-  const industryPrefix = `[Checker · ${data.industry}]`;
+  // sorts at a glance without opening every message. SHORT form only, via
+  // the explicit map (shortIndustryLabel) — data.industry itself holds the
+  // FULL label (that's what's stored in the DB/Sheet and shown in the WHO
+  // block below); the subject is the one place that gets abbreviated.
+  const industryPrefix = `[Checker · ${shortIndustryLabel(data.industry)}]`;
   const subject = !data.hasAnswer
     ? `${industryPrefix} ${data.businessName} — ${citySlot} — NO ANSWER RETURNED`
     : data.namedCount > 0
