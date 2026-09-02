@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { sql } from "@/lib/db";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { isDisposableEmail } from "@/lib/email/disposable";
-import { buildQuery, DEFAULT_ENGINE_ID, getEngine } from "@/lib/checker/engines";
+import { buildQueries, DEFAULT_ENGINE_ID, getEngine, type BuiltQuery, type VisibilityEngine } from "@/lib/checker/engines";
 import {
   ExaAuthError,
   ExaCreditsExhaustedError,
@@ -10,7 +10,14 @@ import {
   ExaRateLimitError,
   ExaServerError,
 } from "@/lib/checker/engines/exa";
-import { findMentions, scoreVisibility } from "@/lib/checker/parse";
+import {
+  aggregateSources,
+  countCompetitorAppearances,
+  findMentions,
+  scoreVisibility,
+  type QueryMentionResult,
+  type RankedSource,
+} from "@/lib/checker/parse";
 import { analyse } from "@/lib/checker/analyse";
 import {
   VISITOR_COOKIE_MAX_AGE_SECONDS,
@@ -71,6 +78,25 @@ export const maxDuration = 60;
  *
  * Still no column for the score breakdown array — that exists in the JSON
  * response this route returns to the caller, it's just not persisted.
+ *
+ * THREE-QUERY REWORK (2026-09-02): no column was added or altered for this.
+ * The single-query columns below are wide enough (text/jsonb) to carry the
+ * three-query shape by serialising it, so nothing here required a schema
+ * change:
+ *   - query_sent  now holds JSON.stringify(the 3 {label, query} pairs)
+ *   - raw_answer  now holds JSON.stringify(the 3 per-query results: label,
+ *                 ok, answer, matched, variantMatched, firstIndex,
+ *                 mentionCount, sources)
+ *   - grounding_sources (jsonb) now holds the ranked, deduplicated source
+ *     list aggregated across all successful answers (RankedSource[])
+ *   - variant_matched now holds a comma-joined list of which query labels
+ *     matched (e.g. "Q1,Q3"), or null if none did
+ *   - mentioned / mention_index / mention_count / competitors / status keep
+ *     their original meaning, aggregated across the up-to-three answers
+ *     (see saveRow below for exactly how)
+ * See this task's report for the full reasoning — this was a deliberate
+ * choice to serialise into existing flexible columns rather than request a
+ * migration.
  */
 
 const RATE_LIMIT_MAX = 10;
@@ -84,8 +110,15 @@ const IP_REPORTS_24H_LIMIT = 5;
  * one person; it does nothing against fifty people, or one person with
  * fifty cookies. This is what actually protects the Exa credit balance.
  * Change this number, not the query below, if the limit needs to move.
+ *
+ * FIX B (2026-09-02) — lowered from 50 to 15. A report now costs FOUR Exa
+ * calls (3 answers + 1 analysis), not one. At ~$0.005/call that's ~$0.02 per
+ * report. Against $10/month of free Exa credit that's ~500 reports/month;
+ * 50/day (the old cap) would allow up to ~1,500/month and could blow past
+ * the free tier. 15/day is ~450/month — safely inside the free allotment —
+ * and still roughly 15x the traffic this tool actually expects.
  */
-const DAILY_REPORT_CAP = 50;
+const DAILY_REPORT_CAP = 15;
 
 const MAX_LENGTHS = {
   business_name: 120,
@@ -256,11 +289,18 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ ok: false, message: "Please use a permanent email address." }, { status: 400 });
   }
 
-  // 7. Free-report limit — 2 per visitor, lifetime. Runs before any Exa
-  // call. Fails OPEN on a lookup error (same philosophy as rate-limit.ts):
-  // a broken counter must never block a genuine visitor, and the cost of
-  // failing open here is bounded by the abuse rate limit and the daily cap
-  // above either way.
+  // 7. Free-report + IP limits — FIX A (2026-09-02). Previously the IP check
+  // only ran inside the cookie check's `else` branch, and used `>` instead
+  // of `>=`, which together meant a cleared cookie could reach 6 reports
+  // per IP before the 7th attempt was refused, and reset every 24h with no
+  // lifetime backstop at all — "unlimited" in the sense that a visitor
+  // willing to wait a day between cookie clears was never actually stopped.
+  // Both checks now run every time, independently of each other and of
+  // which branch the other one takes, and the IP check uses `>=` so the
+  // 6th report from one IP within 24h (not the 7th) is the one refused.
+  // Both still fail OPEN on a lookup error — a broken counter must never
+  // block a genuine visitor, and the abuse rate limit + daily cap above
+  // bound the cost of that either way.
   const existingVisitorId = verifyVisitorCookie(request.cookies.get(VISITOR_COOKIE_NAME)?.value);
   const visitorId = existingVisitorId ?? newVisitorId();
   const ipHash = hashIp(ip);
@@ -271,22 +311,24 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const usage = (await sql`SELECT count FROM usage_counters WHERE visitor_id = ${visitorId}`) as Array<{
       count: number;
     }>;
-    if ((usage[0]?.count ?? 0) >= FREE_REPORTS_LIMIT) {
+    const cookieBlocked = (usage[0]?.count ?? 0) >= FREE_REPORTS_LIMIT;
+
+    const ipReports = (await sql`
+      SELECT count(*)::int AS n FROM reports
+      WHERE ip_hash = ${ipHash} AND created_at > now() - interval '24 hours'
+    `) as Array<{ n: number }>;
+    const ipBlocked = (ipReports[0]?.n ?? 0) >= IP_REPORTS_24H_LIMIT;
+
+    if (cookieBlocked || ipBlocked) {
       blocked = true;
       previousReports = (await sql`
         SELECT id, created_at, business_name, keyword, visibility_score
         FROM reports WHERE visitor_id = ${visitorId}
         ORDER BY created_at DESC
       `) as ReportRow[];
-    } else {
-      const ipReports = (await sql`
-        SELECT count(*)::int AS n FROM reports
-        WHERE ip_hash = ${ipHash} AND created_at > now() - interval '24 hours'
-      `) as Array<{ n: number }>;
-      if ((ipReports[0]?.n ?? 0) > IP_REPORTS_24H_LIMIT) blocked = true;
     }
   } catch (err) {
-    console.warn("[checker/run] Free-report limit lookup failed — failing open:", err instanceof Error ? err.message : String(err));
+    console.warn("[checker/run] Free-report/IP limit lookup failed — failing open:", err instanceof Error ? err.message : String(err));
   }
 
   if (blocked) {
@@ -295,56 +337,88 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return response;
   }
 
-  // 8. Run call 1 (Exa) → parse → call 2 (Exa).
+  // 8. Build the three query variants and run all three against Exa in
+  // parallel — the visitor is already waiting, and one unlucky phrasing
+  // must not stand in for the whole verdict (see this task's report).
   const engine = getEngine(DEFAULT_ENGINE_ID);
   if (!engine) {
     return NextResponse.json({ ok: false, message: "Visibility checker is not configured." }, { status: 503 });
   }
 
-  const query = buildQuery({ keyword, city, region: region || null, country });
+  const queries = buildQueries({ keyword, city, region: region || null, country });
+  const queryResults = await Promise.all(queries.map((q) => runOneQuery(engine, q)));
 
-  let answer: string;
-  let sources: string[];
-  let model: string;
-  try {
-    const result = await engine.run(query);
-    answer = result.answer;
-    sources = result.sources;
-    model = result.model;
-  } catch (err) {
-    // None of Exa's error codes are the visitor's fault — no row saved, no
-    // counter incremented, for any of them.
-    if (err instanceof ExaAuthError) {
-      // exa.ts already logged the env var NAME (never its value) for a 401.
-      return NextResponse.json({ ok: false, message: "Visibility checker is not configured correctly." }, { status: 503 });
-    }
-    if (err instanceof ExaCreditsExhaustedError) {
-      return NextResponse.json({ ok: false, message: "The checker is temporarily out of capacity. Please try again later." }, { status: 503 });
-    }
-    if (err instanceof ExaQueryError) {
-      console.error("[checker/run] Exa could not process the query:", err.message);
-      return NextResponse.json({ ok: false, message: "That combination couldn't be checked. Please try different details." }, { status: 422 });
-    }
-    if (err instanceof ExaRateLimitError) {
-      return NextResponse.json({ ok: false, message: "The checker is busy right now. Please try again in a moment." }, { status: 503 });
-    }
-    if (err instanceof ExaServerError) {
-      return NextResponse.json({ ok: false, message: "The check failed. Please try again in a moment." }, { status: 503 });
-    }
-    console.error("[checker/run] Call 1 failed:", err instanceof Error ? err.message : String(err));
-    return NextResponse.json({ ok: false, message: "Something went wrong running the check. Please try again." }, { status: 503 });
+  const successResults = queryResults.filter((r): r is QueryRunSuccess => r.ok);
+  if (successResults.length === 0) {
+    // Total failure of all three — the only case that's a real error. No
+    // row saved, no counter incremented, no fabricated data.
+    const firstFailure = queryResults[0];
+    const status = firstFailure && !firstFailure.ok ? firstFailure.status : 503;
+    const message = firstFailure && !firstFailure.ok ? firstFailure.message : "Something went wrong running the check. Please try again.";
+    console.error("[checker/run] All three queries failed.");
+    return NextResponse.json({ ok: false, message }, { status });
   }
 
-  // Exa 501 surfaces here as a real, empty answer (see engines/exa.ts) —
-  // not a crash. It flows through the exact same scoring path as any other
-  // answer: no mention, score 0, real evidence, never a fabricated report.
-  const isEmptyAnswer = answer.trim().length === 0;
-  const mentions = findMentions(answer, businessName, keyword);
-  const { score, breakdown } = scoreVisibility({ answer, mentions, sources, website: website || null });
+  const model = successResults[0]!.model;
+  const failedLabels = queryResults.filter((r) => !r.ok).map((r) => r.label);
 
-  // Call 2 — prose only, never influences the measured score above. Not
-  // worth running (and not worth the extra Exa cost) on an empty answer.
-  const generated = isEmptyAnswer ? null : await analyse({ answer, businessName, matched: mentions.matched, score });
+  // Exa 501 surfaces as a real, empty answer per query (see engines/exa.ts)
+  // — not a crash. Every successful query flows through the exact same
+  // scoring path: no mention, no points from it, real evidence, never a
+  // fabricated report.
+  const mentionResults: QueryMentionResult[] = successResults.map((r) => ({
+    label: r.label,
+    answer: r.answer,
+    mentions: findMentions(r.answer, businessName, keyword),
+  }));
+
+  const isAllEmpty = successResults.every((r) => r.answer.trim().length === 0);
+  const namedCount = mentionResults.filter((r) => r.mentions.matched).length;
+  const matchedLabels = mentionResults.filter((r) => r.mentions.matched).map((r) => r.label);
+  const totalMentionCount = mentionResults.reduce((sum, r) => sum + r.mentions.count, 0);
+
+  // The firstIndex of whichever matched answer has the earliest (best)
+  // relative position — same "which third" logic as scoreVisibility, kept
+  // in step with it deliberately so the persisted mention_index always
+  // corresponds to the answer that actually earned the position bonus.
+  let bestFirstIndex: number | null = null;
+  let bestPosition = Infinity;
+  for (const r of mentionResults) {
+    if (!r.mentions.matched || r.mentions.firstIndex === null) continue;
+    const position = r.mentions.firstIndex / Math.max(r.answer.length, 1);
+    if (position < bestPosition) {
+      bestPosition = position;
+      bestFirstIndex = r.mentions.firstIndex;
+    }
+  }
+
+  const sources: RankedSource[] = aggregateSources(
+    successResults.map((r) => ({ label: r.label, sources: r.sources })),
+    website || null
+  );
+  const flatSourceUrls = sources.map((s) => s.url);
+  const { score, breakdown } = scoreVisibility({ results: mentionResults, sources: flatSourceUrls, website: website || null });
+
+  // Call 2 — prose only, never influences the measured score above. Runs
+  // over every successful, non-empty answer combined. Not worth running
+  // (or worth the extra Exa cost) when every answer that came back was
+  // empty.
+  const nonEmptyAnswers = successResults.filter((r) => r.answer.trim().length > 0);
+  const generated = isAllEmpty
+    ? null
+    : await analyse({
+        answers: nonEmptyAnswers.map((r) => ({ label: r.label, query: r.query, answer: r.answer })),
+        businessName,
+        namedCount,
+        totalQueries: queries.length,
+        score,
+      });
+  const competitors = generated
+    ? countCompetitorAppearances(
+        generated.competitors,
+        nonEmptyAnswers.map((r) => r.answer)
+      )
+    : [];
 
   const row = await saveRow({
     visitorId,
@@ -356,29 +430,30 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     country,
     website,
     email,
-    query,
+    queries,
     engine: engine.id,
     model,
-    answer,
+    queryResults,
+    mentionResults,
     sources,
-    matched: mentions.matched,
-    variantMatched: mentions.variantMatched,
-    firstIndex: mentions.firstIndex,
-    mentionCount: mentions.count,
+    matchedLabels,
+    bestFirstIndex,
+    totalMentionCount,
+    namedCount,
     score,
-    competitors: generated?.competitors ?? [],
+    competitors,
     strengths: generated?.strengths ?? null,
     weaknesses: generated?.weaknesses ?? null,
     recommendations: generated?.recommendations ?? null,
     userAgent: request.headers.get("user-agent"),
     referrer: request.headers.get("referer"),
-    status: isEmptyAnswer ? "no-answer" : "ok",
+    status: isAllEmpty ? "no-answer" : "ok",
   });
 
-  // Increment only for a real answer — a 501/empty answer is real evidence
+  // Increment only for a real answer — an all-empty result is real evidence
   // (saved above) but not a report the visitor actually got value from, so
   // it must not cost them one of their two free reports.
-  if (!isEmptyAnswer) {
+  if (!isAllEmpty) {
     try {
       await sql`
         INSERT INTO usage_counters (visitor_id, ip_hash, count, first_seen, last_seen)
@@ -394,26 +469,109 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     ok: true,
     report: {
       id: row?.id ?? null,
-      status: isEmptyAnswer ? "no-answer" : "ok",
-      message: isEmptyAnswer ? "No answer was returned for this query. This did not use one of your free reports." : undefined,
-      query,
+      status: isAllEmpty ? "no-answer" : "ok",
+      message: isAllEmpty ? "No answer was returned for any of the three questions. This did not use one of your free reports." : undefined,
       model,
-      answer,
+      queries,
+      answers: queryResults.map((r) => {
+        if (r.ok) {
+          const mention = mentionResults.find((m) => m.label === r.label)!;
+          return {
+            label: r.label,
+            query: r.query,
+            ok: true,
+            answer: r.answer,
+            matched: mention.mentions.matched,
+            variantMatched: mention.mentions.variantMatched,
+            firstIndex: mention.mentions.firstIndex,
+            mentionCount: mention.mentions.count,
+            sources: r.sources,
+          };
+        }
+        return {
+          label: r.label,
+          query: r.query,
+          ok: false,
+          answer: "",
+          matched: false,
+          variantMatched: null,
+          firstIndex: null,
+          mentionCount: 0,
+          sources: [],
+          error: r.message,
+        };
+      }),
+      namedCount,
+      totalQueries: queries.length,
       sources,
-      matched: mentions.matched,
-      variantMatched: mentions.variantMatched,
-      firstIndex: mentions.firstIndex,
-      mentionCount: mentions.count,
       score,
       breakdown,
-      competitors: generated?.competitors ?? null,
+      competitors: generated ? competitors : null,
       strengths: generated?.strengths ?? null,
       weaknesses: generated?.weaknesses ?? null,
       recommendations: generated?.recommendations ?? null,
+      partialFailure: failedLabels.length > 0,
+      failedQueries: failedLabels,
     },
   });
   setVisitorCookie(response, visitorId);
   return response;
+}
+
+/** One classification point for every Exa error this route treats
+ * specially — used both per-query (when running the three in parallel) and
+ * for the all-three-failed response, so the two paths can't drift apart. */
+function classifyExaError(err: unknown): { status: number; message: string } {
+  if (err instanceof ExaAuthError) {
+    // exa.ts already logged the env var NAME (never its value) for a 401.
+    return { status: 503, message: "Visibility checker is not configured correctly." };
+  }
+  if (err instanceof ExaCreditsExhaustedError) {
+    return { status: 503, message: "The checker is temporarily out of capacity. Please try again later." };
+  }
+  if (err instanceof ExaQueryError) {
+    return { status: 422, message: "That combination couldn't be checked. Please try different details." };
+  }
+  if (err instanceof ExaRateLimitError) {
+    return { status: 503, message: "The checker is busy right now. Please try again in a moment." };
+  }
+  if (err instanceof ExaServerError) {
+    return { status: 503, message: "The check failed. Please try again in a moment." };
+  }
+  return { status: 503, message: "Something went wrong running the check. Please try again." };
+}
+
+interface QueryRunSuccess {
+  label: string;
+  query: string;
+  ok: true;
+  answer: string;
+  sources: string[];
+  model: string;
+}
+
+interface QueryRunFailure {
+  label: string;
+  query: string;
+  ok: false;
+  status: number;
+  message: string;
+}
+
+type QueryRunResult = QueryRunSuccess | QueryRunFailure;
+
+/** Never throws — a single query's failure must not take the other two
+ * down with it. Promise.all over three calls to this is what makes "one
+ * fails, the other two still render" possible. */
+async function runOneQuery(engine: VisibilityEngine, built: BuiltQuery): Promise<QueryRunResult> {
+  try {
+    const result = await engine.run(built.query);
+    return { label: built.label, query: built.query, ok: true, answer: result.answer, sources: result.sources, model: result.model };
+  } catch (err) {
+    console.error(`[checker/run] ${built.label} failed:`, err instanceof Error ? err.message : String(err));
+    const classified = classifyExaError(err);
+    return { label: built.label, query: built.query, ok: false, status: classified.status, message: classified.message };
+  }
 }
 
 interface SaveRowInput {
@@ -426,17 +584,18 @@ interface SaveRowInput {
   country: string;
   website: string;
   email: string;
-  query: string;
+  queries: BuiltQuery[];
   engine: string;
   model: string;
-  answer: string;
-  sources: string[];
-  matched: boolean;
-  variantMatched: string | null;
-  firstIndex: number | null;
-  mentionCount: number;
+  queryResults: QueryRunResult[];
+  mentionResults: QueryMentionResult[];
+  sources: RankedSource[];
+  matchedLabels: string[];
+  bestFirstIndex: number | null;
+  totalMentionCount: number;
+  namedCount: number;
   score: number;
-  competitors: string[];
+  competitors: Array<{ name: string; appearedIn: number }>;
   strengths?: string[] | null;
   weaknesses?: string[] | null;
   recommendations?: unknown;
@@ -447,8 +606,27 @@ interface SaveRowInput {
 
 /** A database write failure must never lose the report the caller is about
  * to receive — this only ever logs and returns null on failure, it never
- * throws. */
+ * throws. Serialises the three-query shape into the existing single-query
+ * columns — see this file's schema comment above for exactly what each
+ * column now holds. */
 async function saveRow(input: SaveRowInput): Promise<{ id: string } | null> {
+  const rawAnswer = input.queryResults.map((r) => {
+    if (r.ok) {
+      const mention = input.mentionResults.find((m) => m.label === r.label);
+      return {
+        label: r.label,
+        ok: true,
+        answer: r.answer,
+        matched: mention?.mentions.matched ?? false,
+        variantMatched: mention?.mentions.variantMatched ?? null,
+        firstIndex: mention?.mentions.firstIndex ?? null,
+        mentionCount: mention?.mentions.count ?? 0,
+        sources: r.sources,
+      };
+    }
+    return { label: r.label, ok: false, answer: "", matched: false, variantMatched: null, firstIndex: null, mentionCount: 0, sources: [] };
+  });
+
   try {
     const rows = (await sql`
       INSERT INTO reports (
@@ -459,9 +637,10 @@ async function saveRow(input: SaveRowInput): Promise<{ id: string } | null> {
         visitor_id, ip_hash, user_agent, referrer, status
       ) VALUES (
         ${input.businessName}, ${input.website || null}, ${input.email}, ${input.keyword}, ${input.city},
-        ${input.region || null}, ${input.country}, ${input.engine}, ${input.model}, ${input.query},
-        ${input.answer}, ${JSON.stringify(input.sources)}, ${input.matched}, ${input.variantMatched}, ${input.firstIndex},
-        ${input.mentionCount}, ${JSON.stringify(input.competitors)}, ${input.score},
+        ${input.region || null}, ${input.country}, ${input.engine}, ${input.model},
+        ${JSON.stringify(input.queries)}, ${JSON.stringify(rawAnswer)}, ${JSON.stringify(input.sources)},
+        ${input.namedCount > 0}, ${input.matchedLabels.length > 0 ? input.matchedLabels.join(",") : null}, ${input.bestFirstIndex},
+        ${input.totalMentionCount}, ${JSON.stringify(input.competitors)}, ${input.score},
         ${input.strengths ? JSON.stringify(input.strengths) : null},
         ${input.weaknesses ? JSON.stringify(input.weaknesses) : null},
         ${input.recommendations ? JSON.stringify(input.recommendations) : null},

@@ -19,7 +19,30 @@ export const runtime = "nodejs";
  * Column allowlist is deliberate and explicit: never ip_hash, email,
  * user_agent, or referrer — none of those are selected below at all, so
  * there's nothing to accidentally leak by widening this query later.
+ *
+ * THREE-QUERY REWORK (2026-09-02): query_sent and raw_answer are now JSON
+ * text (see run/route.ts's schema comment for exactly what each holds) —
+ * parsed back out below rather than treated as plain strings. grounding_sources
+ * (jsonb) already round-trips as a parsed value via the neon driver.
  */
+interface RawAnswerEntry {
+  label: string;
+  ok: boolean;
+  answer: string;
+  matched: boolean;
+  variantMatched: string | null;
+  firstIndex: number | null;
+  mentionCount: number;
+  sources: string[];
+}
+
+interface RankedSourceRow {
+  url: string;
+  citedByCount: number;
+  citedIn: string[];
+  isOwnDomain: boolean;
+}
+
 interface HistoryRow {
   id: string;
   created_at: string;
@@ -32,17 +55,30 @@ interface HistoryRow {
   model: string;
   query_sent: string;
   raw_answer: string | null;
-  grounding_sources: string[] | null;
+  grounding_sources: RankedSourceRow[] | null;
   mentioned: boolean;
   variant_matched: string | null;
   mention_index: number | null;
   mention_count: number;
-  competitors: string[] | null;
+  competitors: Array<{ name: string; appearedIn: number }> | null;
   visibility_score: number;
   strengths: string[] | null;
   weaknesses: string[] | null;
   recommendations: unknown;
   status: string;
+}
+
+/** query_sent/raw_answer are JSON stored in text columns — a row saved
+ * before this rework (or a corrupted value) must degrade to an empty list
+ * rather than throw and break the whole history endpoint for one visitor. */
+function safeParseArray<T>(value: string | null): T[] {
+  if (!value) return [];
+  try {
+    const parsed: unknown = JSON.parse(value);
+    return Array.isArray(parsed) ? (parsed as T[]) : [];
+  } catch {
+    return [];
+  }
 }
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
@@ -68,29 +104,32 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   }
 
   return NextResponse.json({
-    reports: rows.map((row) => ({
-      id: row.id,
-      createdAt: row.created_at,
-      businessName: row.business_name,
-      website: row.website,
-      keyword: row.keyword,
-      city: row.city,
-      region: row.region,
-      country: row.country,
-      model: row.model,
-      query: row.query_sent,
-      answer: row.raw_answer ?? "",
-      sources: row.grounding_sources ?? [],
-      matched: row.mentioned,
-      variantMatched: row.variant_matched,
-      firstIndex: row.mention_index,
-      mentionCount: row.mention_count,
-      score: row.visibility_score,
-      competitors: row.competitors ?? [],
-      strengths: row.strengths,
-      weaknesses: row.weaknesses,
-      recommendations: row.recommendations,
-      status: row.status,
-    })),
+    reports: rows.map((row) => {
+      const queries = safeParseArray<{ label: string; query: string }>(row.query_sent);
+      const rawAnswers = safeParseArray<RawAnswerEntry>(row.raw_answer);
+
+      return {
+        id: row.id,
+        createdAt: row.created_at,
+        businessName: row.business_name,
+        website: row.website,
+        keyword: row.keyword,
+        city: row.city,
+        region: row.region,
+        country: row.country,
+        model: row.model,
+        queries,
+        answers: rawAnswers.map((a) => ({ ...a, error: a.ok ? undefined : "This query did not return a result." })),
+        namedCount: rawAnswers.filter((a) => a.matched).length,
+        totalQueries: queries.length,
+        sources: row.grounding_sources ?? [],
+        score: row.visibility_score,
+        competitors: row.competitors ?? [],
+        strengths: row.strengths,
+        weaknesses: row.weaknesses,
+        recommendations: row.recommendations,
+        status: row.status,
+      };
+    }),
   });
 }

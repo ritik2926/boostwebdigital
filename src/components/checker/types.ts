@@ -18,24 +18,49 @@ export interface Recommendation {
   effort: "low" | "medium" | "high";
 }
 
-export interface CheckerReport {
-  id: string | null;
-  status: "ok" | "no-answer";
-  message?: string;
+export interface QueryAnswer {
+  label: string;
   query: string;
-  model: string;
+  ok: boolean;
   answer: string;
-  sources: string[];
   matched: boolean;
   variantMatched: string | null;
   firstIndex: number | null;
   mentionCount: number;
+  sources: string[];
+  error?: string;
+}
+
+export interface RankedSource {
+  url: string;
+  citedByCount: number;
+  citedIn: string[];
+  isOwnDomain: boolean;
+}
+
+export interface Competitor {
+  name: string;
+  appearedIn: number;
+}
+
+export interface CheckerReport {
+  id: string | null;
+  status: "ok" | "no-answer";
+  message?: string;
+  model: string;
+  queries: Array<{ label: string; query: string }>;
+  answers: QueryAnswer[];
+  namedCount: number;
+  totalQueries: number;
+  sources: RankedSource[];
   score: number;
   breakdown: ScoreBreakdownRow[];
-  competitors: string[] | null;
+  competitors: Competitor[] | null;
   strengths: string[] | null;
   weaknesses: string[] | null;
   recommendations: Recommendation[] | null;
+  partialFailure: boolean;
+  failedQueries: string[];
 }
 
 export interface HistoryReport {
@@ -48,15 +73,13 @@ export interface HistoryReport {
   region: string | null;
   country: string;
   model: string;
-  query: string;
-  answer: string;
-  sources: string[];
-  matched: boolean;
-  variantMatched: string | null;
-  firstIndex: number | null;
-  mentionCount: number;
+  queries: Array<{ label: string; query: string }>;
+  answers: QueryAnswer[];
+  namedCount: number;
+  totalQueries: number;
+  sources: RankedSource[];
   score: number;
-  competitors: string[];
+  competitors: Competitor[];
   strengths: string[] | null;
   weaknesses: string[] | null;
   recommendations: Recommendation[] | null;

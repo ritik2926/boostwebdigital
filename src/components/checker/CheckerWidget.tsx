@@ -21,7 +21,7 @@ const MIN_SUBMIT_DELAY_MS = 3000; // matches run/route.ts's own MIN_SUBMIT_DELAY
 const ABORT_MS = 75_000;
 
 const STAGES = [
-  { atMs: 0, label: "Searching the live web…" },
+  { atMs: 0, label: "Asking three real patient questions…" },
   { atMs: 8_000, label: "Reading what the AI said…" },
   { atMs: 20_000, label: "Measuring your visibility…" },
   { atMs: 30_000, label: "Writing your report…" },
@@ -63,7 +63,7 @@ type ViewState =
   | { kind: "idle" }
   | { kind: "running" }
   | { kind: "report"; report: CheckerReportData }
-  | { kind: "no-answer"; query: string; message: string }
+  | { kind: "no-answer"; queries: Array<{ label: string; query: string }>; message: string }
   | { kind: "blocked"; reason: BlockReason; message: string; history: HistoryReport[] | null }
   | { kind: "error"; message: string };
 
@@ -159,7 +159,7 @@ function RunningStages() {
       <p aria-live="polite" className="text-[15px] font-medium text-white">
         {STAGES[stageIndex]!.label}
       </p>
-      <p className="text-sm text-white/40">This takes about 30 seconds.</p>
+      <p className="text-sm text-white/40">This takes about a minute.</p>
     </div>
   );
 }
@@ -197,20 +197,20 @@ function HistoryList({ history }: { history: HistoryReport[] | null }) {
                   report={{
                     id: item.id,
                     status: item.status === "no-answer" ? "no-answer" : "ok",
-                    query: item.query,
                     model: item.model,
-                    answer: item.answer,
+                    queries: item.queries,
+                    answers: item.answers,
+                    namedCount: item.namedCount,
+                    totalQueries: item.totalQueries,
                     sources: item.sources,
-                    matched: item.matched,
-                    variantMatched: item.variantMatched,
-                    firstIndex: item.firstIndex,
-                    mentionCount: item.mentionCount,
                     score: item.score,
                     breakdown: [],
                     competitors: item.competitors,
                     strengths: item.strengths,
                     weaknesses: item.weaknesses,
                     recommendations: item.recommendations,
+                    partialFailure: false,
+                    failedQueries: [],
                   }}
                   onReset={() => setOpenId(null)}
                 />
@@ -346,8 +346,8 @@ export function CheckerWidget() {
         if (report.status === "no-answer") {
           setView({
             kind: "no-answer",
-            query: report.query,
-            message: report.message ?? "No answer was returned for this query. This did not use one of your free reports.",
+            queries: report.queries,
+            message: report.message ?? "No answer was returned for any of the three questions. This did not use one of your free reports.",
           });
           setQuota((prev) => prev); // unchanged — no-answer never consumes quota
         } else {
@@ -392,9 +392,16 @@ export function CheckerWidget() {
     return (
       <div className="flex flex-col items-start gap-4 rounded-xl border border-white/10 p-6">
         <h2 className="font-display text-xl font-semibold text-white">No AI answer came back</h2>
-        <p className="text-sm text-white/45">
-          Query sent: <span className="text-white/70">{view.query}</span>
-        </p>
+        <div className="text-sm text-white/45">
+          <p>Questions sent:</p>
+          <ul className="mt-1 flex flex-col gap-0.5">
+            {view.queries.map((q) => (
+              <li key={q.label} className="text-white/70">
+                <span className="font-mono text-white/40">{q.label}</span> — {q.query}
+              </li>
+            ))}
+          </ul>
+        </div>
         <p className="text-white/75">{view.message}</p>
         <button type="button" onClick={resetToForm} className="shiny-cta">
           <span>Try again</span>

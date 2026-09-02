@@ -182,54 +182,145 @@ export interface ScoreResult {
   breakdown: ScoreBreakdownRow[];
 }
 
-/**
- * Every row here is a measured fact, published on the report page as the
- * formula — it has to be auditable. "Which third" is firstIndex /
- * answer.length: deterministic, and it measures how early the AI brings the
- * business up, without ranking it against competitors (competitor names
- * are a call-2/generated value — see analyse.ts — and a measured score must
- * never depend on one).
- */
-export function scoreVisibility(input: {
+export interface QueryMentionResult {
+  label: string;
   answer: string;
   mentions: MentionResult;
+}
+
+/**
+ * Every row here is a measured fact, published on the report page as the
+ * formula — it has to be auditable. Weighted toward what's engine-independent
+ * (which pages get cited) over what's Exa-specific (whether Exa's own prose
+ * happens to say the business's name), since the citation sources are the
+ * one signal that would look the same if a different engine had answered
+ * these same three questions. `results` holds ONLY the queries that actually
+ * got a real answer back — a failed Exa call contributes nothing here, it's
+ * simply absent, which is why "named in all three" can only ever be earned
+ * when all three actually ran and all three matched.
+ */
+export function scoreVisibility(input: {
+  results: QueryMentionResult[];
   sources: string[];
   website: string | null;
 }): ScoreResult {
-  const { answer, mentions, sources, website } = input;
+  const { results, sources, website } = input;
   const breakdown: ScoreBreakdownRow[] = [];
-
-  if (!mentions.matched || mentions.firstIndex === null) {
-    breakdown.push({ signal: "Not named in the answer", points: 0 });
-    return { score: 0, breakdown };
-  }
-
   let score = 0;
 
-  breakdown.push({ signal: "Named in the answer", points: 50 });
-  score += 50;
+  if (website && sources.some((source) => sameDomain(source, website))) {
+    breakdown.push({ signal: "Own domain cited in the sources", points: 40 });
+    score += 40;
+  }
 
-  const position = mentions.firstIndex / Math.max(answer.length, 1);
-  if (position < 1 / 3) {
-    breakdown.push({ signal: "First mention in the first third of the answer", points: 25 });
-    score += 25;
-  } else if (position < 2 / 3) {
-    breakdown.push({ signal: "First mention in the middle third of the answer", points: 15 });
-    score += 15;
-  } else {
-    breakdown.push({ signal: "First mention in the last third of the answer", points: 10 });
+  const matched = results.filter((r) => r.mentions.matched && r.mentions.firstIndex !== null);
+
+  if (matched.length >= 3) {
+    breakdown.push({ signal: "Named in all three answers", points: 30 });
+    score += 30;
+  } else if (matched.length === 2) {
+    breakdown.push({ signal: "Named in two of three answers", points: 20 });
+    score += 20;
+  } else if (matched.length === 1) {
+    breakdown.push({ signal: "Named in one of three answers", points: 10 });
     score += 10;
   }
 
-  if (website && sources.some((source) => sameDomain(source, website))) {
-    breakdown.push({ signal: "Own domain appears in the citation sources", points: 15 });
-    score += 15;
+  if (matched.length > 0) {
+    let bestTier = 2; // 0 = first third, 1 = middle third, 2 = last third
+    for (const r of matched) {
+      const position = r.mentions.firstIndex! / Math.max(r.answer.length, 1);
+      const tier = position < 1 / 3 ? 0 : position < 2 / 3 ? 1 : 2;
+      if (tier < bestTier) bestTier = tier;
+    }
+    if (bestTier === 0) {
+      breakdown.push({ signal: "Best position in the first third of an answer", points: 20 });
+      score += 20;
+    } else if (bestTier === 1) {
+      breakdown.push({ signal: "Best position in the middle third of an answer", points: 12 });
+      score += 12;
+    } else {
+      breakdown.push({ signal: "Best position in the last third of an answer", points: 6 });
+      score += 6;
+    }
   }
 
-  if (mentions.count > 1) {
-    breakdown.push({ signal: "Named more than once", points: 10 });
+  if (matched.some((r) => r.mentions.count > 1)) {
+    breakdown.push({ signal: "Named more than once in a single answer", points: 10 });
     score += 10;
   }
 
   return { score: Math.min(score, 100), breakdown };
+}
+
+export interface RankedSource {
+  url: string;
+  citedByCount: number;
+  citedIn: string[];
+  isOwnDomain: boolean;
+}
+
+/**
+ * The new headline of the report (see this task's report, Part 2): the
+ * pages an AI answer engine actually read, deduplicated across the three
+ * answers and ranked by how many of them cited each one. This is the
+ * engine-independent claim — a different engine asked the same three
+ * questions would very likely read from a similar set of directories,
+ * listicles and review sites, even though its own written answer would
+ * differ.
+ */
+export function aggregateSources(results: Array<{ label: string; sources: string[] }>, website: string | null): RankedSource[] {
+  const byUrl = new Map<string, RankedSource>();
+  for (const r of results) {
+    for (const url of r.sources) {
+      const existing = byUrl.get(url);
+      if (existing) {
+        existing.citedByCount += 1;
+        existing.citedIn.push(r.label);
+      } else {
+        byUrl.set(url, {
+          url,
+          citedByCount: 1,
+          citedIn: [r.label],
+          isOwnDomain: website !== null && sameDomain(url, website),
+        });
+      }
+    }
+  }
+  return Array.from(byUrl.values()).sort((a, b) => b.citedByCount - a.citedByCount);
+}
+
+export interface CompetitorAppearance {
+  name: string;
+  appearedIn: number;
+}
+
+/**
+ * Call 2 (analyse.ts) returns competitor names as a flat, deduplicated
+ * list — extracting and deduplicating names across free text is exactly
+ * the kind of fuzzy work an AI is suited for. But "how many of the three
+ * answers actually named this competitor" is countable, so it's counted
+ * here in plain TypeScript rather than trusted from the model, matching
+ * this file's own rule that nothing measured may come from a generated
+ * value.
+ *
+ * Names with a verified count of zero are DROPPED, not kept with a
+ * fabricated "1" — confirmed live in testing that Exa's analysis call, its
+ * own instructions notwithstanding (see analyse.ts's SYSTEM_PROMPT and its
+ * header comment), can still return a business name that isn't literally
+ * present in any of the supplied answer texts, apparently surfaced from its
+ * own live search rather than the provided text. Showing "named in 1 of 3"
+ * for a name that appears in zero of them would itself be exactly the kind
+ * of overstated claim this whole rework exists to remove.
+ */
+export function countCompetitorAppearances(names: string[], answers: string[]): CompetitorAppearance[] {
+  const normalisedAnswers = answers.map((a) => normalise(a));
+  return names
+    .map((name) => {
+      const needle = normalise(name);
+      const count = needle ? normalisedAnswers.filter((a) => a.includes(needle)).length : 0;
+      return { name, appearedIn: count };
+    })
+    .filter((c) => c.appearedIn > 0)
+    .sort((a, b) => b.appearedIn - a.appearedIn);
 }

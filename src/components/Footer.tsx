@@ -42,8 +42,7 @@ import { EASE } from "@/lib/tokens";
 
 const FOOTER_NAV = {
   company: [
-    // AI Visibility Checker link deliberately removed while the three-query
-    // rework ships — see this task's report. Restored in the final commit.
+    { label: "AI Visibility Checker", href: "/tools/ai-visibility-checker/" },
     { label: "Blog", href: "/blogs/" },
     { label: "About", href: "/about/" },
     { label: "Services", href: "/services/" },
