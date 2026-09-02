@@ -2,6 +2,7 @@ import { Resend } from "resend";
 import { renderEmail, escapeHtml } from "@/lib/email/template";
 import { buildVerdict } from "./reportCopy";
 import { buildLocationString } from "./queryBuilder";
+import { HEALTHCARE_INDUSTRY } from "./industries";
 
 /**
  * Everything that happens AFTER a checker report is saved and the visitor
@@ -52,6 +53,7 @@ export interface LeadReportData {
   city: string;
   region: string | null;
   country: string;
+  industry: string;
   namedCount: number;
   totalQueries: number;
   score: number;
@@ -198,29 +200,39 @@ async function sendOwnerAlert(data: LeadReportData): Promise<void> {
   // single city) falls back to the country here, never to "undefined" or a
   // bare double dash.
   const citySlot = data.city.trim() || data.country;
+  // PART 4 (2026-09-02, "open to all") — the industry prefix so the inbox
+  // sorts at a glance without opening every message.
+  const industryPrefix = `[Checker · ${data.industry}]`;
   const subject = !data.hasAnswer
-    ? `[Checker] ${data.businessName} — ${citySlot} — NO ANSWER RETURNED`
+    ? `${industryPrefix} ${data.businessName} — ${citySlot} — NO ANSWER RETURNED`
     : data.namedCount > 0
-      ? `[Checker] ${data.businessName} — ${citySlot} — Score ${data.score} — NAMED IN ${data.namedCount} OF ${data.totalQueries}`
-      : `[Checker] ${data.businessName} — ${citySlot} — Score ${data.score} — NOT NAMED`;
+      ? `${industryPrefix} ${data.businessName} — ${citySlot} — Score ${data.score} — NAMED IN ${data.namedCount} OF ${data.totalQueries}`
+      : `${industryPrefix} ${data.businessName} — ${citySlot} — Score ${data.score} — NOT NAMED`;
 
   const textLines = [
     subject,
     "",
     "WHO",
     `  ${data.businessName} · ${buildLocationString(data.city, data.region, data.country)}`,
+    `  Industry: ${data.industry}`,
     `  Website: ${data.website ?? "none given"}`,
     `  Email:   ${data.email}`,
     `  Keyword: ${data.keyword}`,
     "",
   ];
 
+  // The agency stays healthcare-only even though the tool is now open to
+  // everyone — this is the one line in the whole pipeline that says so
+  // plainly to Ritik, since the visitor never sees it (PART 4).
+  const nicheLine =
+    data.industry === HEALTHCARE_INDUSTRY ? "IN YOUR NICHE — this is a real prospect." : "OUTSIDE YOUR NICHE — tool user, not a client fit.";
+
   if (data.hasAnswer) {
-    textLines.push("HOW HOT", `  ${buildHotness(data.score, Boolean(data.website))}`);
+    textLines.push("HOW HOT", `  ${nicheLine}`, `  ${buildHotness(data.score, Boolean(data.website))}`);
     if (!data.website) textLines.push("  No website given — whether this engine reads their site is untested, not scored against them.");
     textLines.push("");
   } else {
-    textLines.push("HOW HOT", "  No answer was returned for any of the three questions — still a real lead.", "");
+    textLines.push("HOW HOT", `  ${nicheLine}`, "  No answer was returned for any of the three questions — still a real lead.", "");
   }
 
   textLines.push("THE REPORT", `  ${reportUrl(data.reportId)}`);
@@ -277,6 +289,7 @@ async function mirrorToSheet(data: LeadReportData): Promise<void> {
         city: data.city,
         region: data.region,
         country: data.country,
+        industry: data.industry,
         mentioned: data.namedCount > 0,
         mention_index: data.bestAnswer?.firstIndex ?? null,
         score: data.score,

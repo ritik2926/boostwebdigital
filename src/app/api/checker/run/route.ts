@@ -21,6 +21,7 @@ import {
 import { analyse } from "@/lib/checker/analyse";
 import { sendLeadNotifications } from "@/lib/checker/leads";
 import { rescaleScore } from "@/lib/checker/scoreRows";
+import { isValidIndustry } from "@/lib/checker/industries";
 import {
   VISITOR_COOKIE_MAX_AGE_SECONDS,
   VISITOR_COOKIE_NAME,
@@ -71,6 +72,14 @@ export const maxDuration = 60;
  *     referrer           text,
  *     variant_matched    text,            -- nullable
  *     status             text not null default 'ok'  -- 'ok' | 'no-answer'
+ *     industry           text             -- nullable; hand-added ahead of
+ *                                          -- this task (PART 1, "open to
+ *                                          -- all"), confirmed via
+ *                                          -- information_schema.columns,
+ *                                          -- never created/altered here.
+ *                                          -- null only on rows saved before
+ *                                          -- this task — every new
+ *                                          -- submission requires it.
  *   )
  *
  *   usage_counters (
@@ -110,7 +119,7 @@ const MIN_SUBMIT_DELAY_MS = 3000;
 const FREE_REPORTS_LIMIT = 2;
 const IP_REPORTS_24H_LIMIT = 5;
 // PART 7 (2026-09-02) — lifetime, not rolling, unlike the IP check above.
-// A real practice has one email address, so this has no false positives
+// A real business has one email address, so this has no false positives
 // for a genuine customer; someone clearing cookies to get more free
 // reports now needs a fresh email address too, not just a fresh cookie.
 const EMAIL_REPORTS_LIMIT = 2;
@@ -140,6 +149,7 @@ const MAX_LENGTHS = {
   country: 80,
   website: 200,
   email: 200,
+  industry: 60,
 } as const;
 
 interface RunBody {
@@ -150,6 +160,7 @@ interface RunBody {
   country?: unknown;
   website?: unknown;
   email?: unknown;
+  industry?: unknown;
   "company-website"?: unknown;
   "rendered-at"?: unknown;
 }
@@ -292,9 +303,17 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   const region = optionalField(body.region, MAX_LENGTHS.region);
   const website = optionalField(body.website, MAX_LENGTHS.website);
   const emailRaw = requiredField(body.email, MAX_LENGTHS.email);
+  const industry = requiredField(body.industry, MAX_LENGTHS.industry);
 
-  if (!businessName || !keyword || city === null || !country || region === null || website === null || !emailRaw) {
+  if (!businessName || !keyword || city === null || !country || region === null || website === null || !emailRaw || !industry) {
     return NextResponse.json({ ok: false, message: "Please fill in every required field." }, { status: 400 });
+  }
+  // The native <select> can't submit anything outside its own options from
+  // a real browser, but a direct API call can — and the subject prefix, the
+  // report's conditional CTA, and the Sheet column all trust this value, so
+  // it's allowlist-checked here rather than just "present and short enough".
+  if (!isValidIndustry(industry)) {
+    return NextResponse.json({ ok: false, message: "Please choose a valid industry." }, { status: 400 });
   }
   const email = emailRaw.toLowerCase();
   if (!isValidEmail(email)) {
@@ -468,6 +487,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     country,
     website,
     email,
+    industry,
     queries,
     engine: engine.id,
     model,
@@ -544,6 +564,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       sources,
       score,
       breakdown,
+      industry,
       competitors: generated ? competitors : null,
       strengths: generated?.strengths ?? null,
       weaknesses: generated?.weaknesses ?? null,
@@ -577,6 +598,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         city,
         region: region || null,
         country,
+        industry,
         namedCount,
         totalQueries: queries.length,
         score,
@@ -657,6 +679,7 @@ interface SaveRowInput {
   country: string;
   website: string;
   email: string;
+  industry: string;
   queries: BuiltQuery[];
   engine: string;
   model: string;
@@ -707,7 +730,7 @@ async function saveRow(input: SaveRowInput): Promise<{ id: string } | null> {
         engine, model, query_sent, raw_answer, grounding_sources,
         mentioned, variant_matched, mention_index, mention_count, competitors,
         visibility_score, strengths, weaknesses, recommendations,
-        visitor_id, ip_hash, user_agent, referrer, status
+        visitor_id, ip_hash, user_agent, referrer, status, industry
       ) VALUES (
         ${input.businessName}, ${input.website || null}, ${input.email}, ${input.keyword}, ${input.city},
         ${input.region || null}, ${input.country}, ${input.engine}, ${input.model},
@@ -717,7 +740,7 @@ async function saveRow(input: SaveRowInput): Promise<{ id: string } | null> {
         ${input.strengths ? JSON.stringify(input.strengths) : null},
         ${input.weaknesses ? JSON.stringify(input.weaknesses) : null},
         ${input.recommendations ? JSON.stringify(input.recommendations) : null},
-        ${input.visitorId}, ${input.ipHash}, ${input.userAgent}, ${input.referrer}, ${input.status}
+        ${input.visitorId}, ${input.ipHash}, ${input.userAgent}, ${input.referrer}, ${input.status}, ${input.industry}
       )
       RETURNING id
     `) as Array<{ id: string }>;

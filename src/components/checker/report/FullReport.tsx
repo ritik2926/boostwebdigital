@@ -1,7 +1,8 @@
 import Image from "next/image";
+import Link from "next/link";
 import type { ReactNode } from "react";
 import type { FullReportAnswer, FullReportData } from "@/lib/checker/report";
-import { buildInterpretation, buildVerdict } from "@/lib/checker/reportCopy";
+import { buildClosingCta, buildInterpretation, buildVerdict } from "@/lib/checker/reportCopy";
 import { buildScoreRows } from "@/lib/checker/scoreRows";
 import { BarChart, BarChartEmptyState, type BarChartRow } from "./BarChart";
 import { ScoreArc } from "./ScoreArc";
@@ -99,6 +100,7 @@ const EFFORT_LABEL: Record<string, string> = { low: "Low effort", medium: "Mediu
 
 export function FullReport({ report }: { report: FullReportData }) {
   const ownDomainSource = report.sources.find((s) => s.isOwnDomain);
+  const cta = buildClosingCta(report.industry);
   const verdict = buildVerdict({ businessName: report.businessName, namedCount: report.namedCount, totalQueries: report.totalQueries });
   const interpretation = buildInterpretation({
     businessName: report.businessName,
@@ -303,7 +305,7 @@ export function FullReport({ report }: { report: FullReportData }) {
           <p className="font-semibold text-white">What this checks — and what it doesn&rsquo;t.</p>
           <p className="mt-2">
             We send three real questions to one AI answer engine and show you its exact answers and the sources it used. Different AI engines
-            search different indexes, so a practice named by one may not be named by another. This is a sample, not a full audit. What it
+            search different indexes, so a business named by one may not be named by another. This is a sample, not a full audit. What it
             reliably shows is which pages AI systems are reading to answer questions like these — and whether yours is one of them.
           </p>
         </div>
@@ -329,6 +331,18 @@ export function FullReport({ report }: { report: FullReportData }) {
             ))}
           </ol>
         )}
+      </section>
+
+      {/* CLOSING CTA — conditional on industry (PART 3, 2026-09-02, "open to
+          all"). Unnumbered, same convention as the inline widget's own
+          version of this block (CheckerReport.tsx) — a closing note, not
+          another numbered finding. Hidden in print: a pitch has no place on
+          a document someone prints to hand to their own team. */}
+      <section data-print-avoid-break className="border-t border-white/8 pt-8 print:hidden">
+        <p className="max-w-prose text-[15px] leading-relaxed text-white/85">{cta.paragraph}</p>
+        <Link href={cta.linkHref} className="mt-2 inline-block text-sm text-white/70 underline-offset-4 hover:text-accent hover:underline">
+          {cta.linkLabel}
+        </Link>
       </section>
 
       {/* 11 · FOUNDER BLOCK, 12 · FOOTER — grouped with a tighter gap than the

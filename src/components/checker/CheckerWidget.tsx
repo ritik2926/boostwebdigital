@@ -8,6 +8,7 @@ import { trackCheckerEvent } from "./analytics";
 import type { BlockReason, CheckerReport as CheckerReportData, HistoryReport } from "./types";
 import { buildQueries, type BuiltQuery } from "@/lib/checker/queryBuilder";
 import { countriesForSelect, INDIA_CITIES, INDIA_STATES } from "@/lib/checker/locations";
+import { INDUSTRY_OPTIONS } from "@/lib/checker/industries";
 
 /**
  * Talks to the checker exclusively over fetch() to these three existing
@@ -36,8 +37,18 @@ const ABORT_MS = 75_000;
  * call, then saves and responds — this timeline describes that real order
  * of work, but the MOMENT each stage below appears is an estimate, not a
  * server-reported checkpoint. Do not read `atMs` as telemetry.
+ *
+ * RECOMPRESSED (PART 5, 2026-09-02, "open to all" task) — measured 10 real,
+ * direct-to-engine end-to-end runs (bypassing the HTTP route, so no daily-
+ * cap slot or quota was spent measuring this): median 5.52s, range
+ * 4.97s–6.24s (min/max), split roughly 2.1s for the 3 parallel answers +
+ * 3.4s for the analysis call. The previous timings (0/7s/15s/23s/31s) were
+ * ~3x too slow — real runs only ever reached stage 2 before the report
+ * arrived. Recompressed so all five stages are actually seen inside a
+ * real run: stage 5 lands at 4.4s, comfortably before the 4.97s fastest
+ * observed completion.
  */
-const STAGE_TIMINGS_MS = [0, 7_000, 15_000, 23_000, 31_000] as const;
+const STAGE_TIMINGS_MS = [0, 1_200, 2_200, 3_400, 4_400] as const;
 
 function stageLabel(stage: number, businessName: string): string {
   switch (stage) {
@@ -62,10 +73,12 @@ const MAX_LENGTHS = {
   country: 80,
   website: 200,
   email: 200,
+  industry: 60,
 } as const;
 
 interface FormValues {
   business_name: string;
+  industry: string;
   website: string;
   email: string;
   keyword: string;
@@ -76,9 +89,12 @@ interface FormValues {
 
 // PART 1B (2026-09-02): no field may have a pre-selected value — a default
 // here would silently become most visitors' answer. Country starts blank;
-// the visitor must actually choose it.
+// the visitor must actually choose it. Industry (PART 1, "open to all"
+// task) follows the same rule — an unset default becomes the most common
+// answer and the industry breakdown becomes useless.
 const INITIAL_VALUES: FormValues = {
   business_name: "",
+  industry: "",
   website: "",
   email: "",
   keyword: "",
@@ -117,8 +133,10 @@ function looksLikeUrl(value: string): boolean {
 
 function validate(values: FormValues): FormErrors {
   const errors: FormErrors = {};
-  if (!values.business_name.trim()) errors.business_name = "Enter your practice or business name.";
+  if (!values.business_name.trim()) errors.business_name = "Enter your business name.";
   else if (values.business_name.length > MAX_LENGTHS.business_name) errors.business_name = "That name is too long.";
+
+  if (!values.industry) errors.industry = "Select an industry.";
 
   if (!values.email.trim()) errors.email = "Enter your email address.";
   else if (!isValidEmail(values.email)) errors.email = "Enter a valid email address.";
@@ -234,9 +252,7 @@ function RunningStages({ queries, businessName }: { queries: BuiltQuery[]; busin
         )}
       </div>
 
-      <p className="text-sm text-white/40">
-        This usually takes 30 to 45 seconds. {elapsedSeconds}s elapsed.
-      </p>
+      <p className="text-sm text-white/40">This usually takes about 10 seconds. {elapsedSeconds}s elapsed.</p>
     </div>
   );
 }
@@ -282,6 +298,7 @@ function HistoryList({ history }: { history: HistoryReport[] | null }) {
                     sources: item.sources,
                     score: item.score,
                     breakdown: [],
+                    industry: item.industry,
                     competitors: item.competitors,
                     strengths: item.strengths,
                     weaknesses: item.weaknesses,
@@ -434,6 +451,7 @@ export function CheckerWidget() {
         signal: controller.signal,
         body: JSON.stringify({
           business_name: businessName,
+          industry: values.industry,
           website: values.website.trim(),
           email: values.email.trim(),
           keyword: values.keyword.trim(),
@@ -629,10 +647,37 @@ export function CheckerWidget() {
           maxLength={MAX_LENGTHS.business_name}
           aria-invalid={Boolean(errors.business_name)}
           aria-describedby={errors.business_name ? "business-name-error" : undefined}
-          placeholder="Bright Smile Dental"
+          placeholder="Riverside Studio"
           className={cn("mt-3", UNDERLINE_INPUT)}
         />
         <FieldError id="business-name-error" message={errors.business_name} />
+      </div>
+
+      {/* PART 1 (2026-09-02, "open to all") — its own row even on mobile,
+          single-tap native select, no helper text beneath it per spec. */}
+      <div>
+        <FieldLabel htmlFor="checker-industry">Industry *</FieldLabel>
+        <div className="relative mt-3">
+          <select
+            id="checker-industry"
+            value={values.industry}
+            onChange={(e) => updateField("industry", e.target.value)}
+            aria-invalid={Boolean(errors.industry)}
+            aria-describedby={errors.industry ? "industry-error" : undefined}
+            className={UNDERLINE_SELECT}
+          >
+            <option value="" disabled>
+              Select industry
+            </option>
+            {INDUSTRY_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
+            ))}
+          </select>
+          <SelectChevron />
+        </div>
+        <FieldError id="industry-error" message={errors.industry} />
       </div>
 
       <div>
@@ -645,7 +690,7 @@ export function CheckerWidget() {
           maxLength={MAX_LENGTHS.website}
           aria-invalid={Boolean(errors.website)}
           aria-describedby={errors.website ? "website-error" : "website-help"}
-          placeholder="yourpractice.com"
+          placeholder="yourbusiness.com"
           className={cn("mt-3", UNDERLINE_INPUT)}
         />
         <p id="website-help" className="mt-1.5 text-[13px] text-white/40">
@@ -664,7 +709,7 @@ export function CheckerWidget() {
           maxLength={MAX_LENGTHS.email}
           aria-invalid={Boolean(errors.email)}
           aria-describedby={errors.email ? "email-error" : undefined}
-          placeholder="jane@yourpractice.com"
+          placeholder="jane@yourbusiness.com"
           className={cn("mt-3", UNDERLINE_INPUT)}
         />
         <FieldError id="email-error" message={errors.email} />

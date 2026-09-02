@@ -2,6 +2,10 @@ import { useEffect, useRef, type ReactNode } from "react";
 import Link from "next/link";
 import { trackCheckerEvent } from "./analytics";
 import type { CheckerReport as CheckerReportData, QueryAnswer, RankedSource } from "./types";
+// Zero-secret, string-only template (same as @/lib/checker/queryBuilder and
+// @/lib/checker/locations already imported by CheckerWidget.tsx) — safe in
+// this client-rendered tree.
+import { buildClosingCta } from "@/lib/checker/reportCopy";
 
 /**
  * Mirrors src/lib/checker/parse.ts's scoreVisibility() signal wording
@@ -78,7 +82,7 @@ function WhatThisChecksBox({ partialFailure, failedCount }: { partialFailure: bo
       <p className="font-semibold text-white">What this checks — and what it doesn&rsquo;t.</p>
       <p className="mt-2">
         We send three real questions to one AI answer engine and show you its exact answers and the sources it used.
-        Different AI engines search different indexes, so a practice named by one may not be named by another. This
+        Different AI engines search different indexes, so a business named by one may not be named by another. This
         is a sample, not a full audit. What it reliably shows is which pages AI systems are reading to answer
         questions like these — and whether yours is one of them.
       </p>
@@ -352,6 +356,7 @@ function RecommendationsSection({ recommendations }: { recommendations: CheckerR
 
 export function CheckerReport({ report, onReset }: { report: CheckerReportData; onReset: () => void }) {
   const headingRef = useRef<HTMLHeadingElement>(null);
+  const cta = buildClosingCta(report.industry);
 
   useEffect(() => {
     headingRef.current?.focus();
@@ -376,13 +381,13 @@ export function CheckerReport({ report, onReset }: { report: CheckerReportData; 
 
       <div className="flex flex-col items-start gap-4 border-t border-white/8 pt-8 print:hidden sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-white">This was one engine and three questions. Our full service runs many more, across the engines your patients actually use.</p>
+          <p className="text-white">{cta.paragraph}</p>
           <Link
-            href="/ai-visibility-geo/"
+            href={cta.linkHref}
             onClick={() => trackCheckerEvent("checker_cta_clicked")}
             className="mt-1 inline-block text-sm text-white/70 underline-offset-4 hover:text-accent hover:underline"
           >
-            See the full AI Search Visibility service
+            {cta.linkLabel}
           </Link>
         </div>
         <button

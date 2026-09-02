@@ -52,6 +52,7 @@ interface HistoryRow {
   city: string;
   region: string | null;
   country: string;
+  industry: string | null;
   model: string;
   query_sent: string;
   raw_answer: string | null;
@@ -92,7 +93,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     rows = (await sql`
       SELECT
         id, created_at, business_name, website, keyword, city, region, country,
-        model, query_sent, raw_answer, grounding_sources, mentioned,
+        industry, model, query_sent, raw_answer, grounding_sources, mentioned,
         variant_matched, mention_index, mention_count, competitors,
         visibility_score, strengths, weaknesses, recommendations, status
       FROM reports
@@ -117,6 +118,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         city: row.city,
         region: row.region,
         country: row.country,
+        industry: row.industry,
         model: row.model,
         queries,
         answers: rawAnswers.map((a) => ({ ...a, error: a.ok ? undefined : "This query did not return a result." })),

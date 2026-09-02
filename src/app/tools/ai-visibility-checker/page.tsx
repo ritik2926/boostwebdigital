@@ -14,7 +14,7 @@ const PAGE_URL = `${SITE_URL}/tools/ai-visibility-checker/`;
 
 const TITLE = "Free AI Visibility Checker | Boost Web Digital";
 const DESCRIPTION =
-  "Send three real patient questions to one live AI answer engine and see whether your practice gets named — and which pages it reads instead. Free, and it takes about a minute.";
+  "Send three real customer questions to one live AI answer engine and see whether your business gets named — and which pages it reads instead. Free, and it takes about a minute.";
 
 export const metadata: Metadata = {
   title: { absolute: TITLE },
@@ -74,10 +74,11 @@ export default function AiVisibilityCheckerPage() {
               AI Visibility Checker
             </h1>
             <p className={cn(STACK.headingToSub, "text-white/70")}>
-              We send three real patient questions to one live AI answer engine and show you its exact answers —
-              including whether your practice gets named, and which pages it read to answer them instead.
+              We send three real customer questions to one live AI answer engine and show you its exact answers —
+              including whether your business gets named, and which pages it read to answer them instead.
             </p>
             <p className="mt-2 text-white/70">It&rsquo;s free, and it takes about a minute.</p>
+            <p className="mt-2 text-sm text-white/45">Built by a healthcare marketing agency. Works for any local business.</p>
 
             <div className={STACK.subToContent}>
               <CheckerWidget />

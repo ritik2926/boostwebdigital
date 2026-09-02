@@ -4,7 +4,7 @@
  * regardless of the score value — this page never editorializes on
  * whether a score is "good" or "bad" beyond the plain number and the
  * templated interpretation in section 3; that framing is reserved for the
- * owner alert, which the practice owner never sees.
+ * owner alert, which the business owner never sees.
  */
 export function ScoreArc({ score }: { score: number }) {
   const size = 128;

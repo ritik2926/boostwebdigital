@@ -55,6 +55,11 @@ export interface CheckerReport {
   sources: RankedSource[];
   score: number;
   breakdown: ScoreBreakdownRow[];
+  // Drives the report's conditional CTA (PART 3, 2026-09-02) — null only
+  // for a HistoryList reconstruction of a pre-industry-field report; a
+  // live submission's response always has a real value (industry is a
+  // required field).
+  industry: string | null;
   competitors: Competitor[] | null;
   strengths: string[] | null;
   weaknesses: string[] | null;
@@ -72,6 +77,7 @@ export interface HistoryReport {
   city: string;
   region: string | null;
   country: string;
+  industry: string | null;
   model: string;
   queries: Array<{ label: string; query: string }>;
   answers: QueryAnswer[];

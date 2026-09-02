@@ -33,6 +33,9 @@ export interface FullReportData {
   city: string;
   region: string | null;
   country: string;
+  // Drives the report's conditional CTA (PART 3, 2026-09-02) — null on a
+  // report saved before the industry field existed (TEST 8).
+  industry: string | null;
   model: string;
   queries: Array<{ label: string; query: string }>;
   answers: FullReportAnswer[];
@@ -57,6 +60,7 @@ interface ReportDbRow {
   city: string;
   region: string | null;
   country: string;
+  industry: string | null;
   model: string;
   query_sent: string;
   raw_answer: string | null;
@@ -96,7 +100,7 @@ export async function getReportById(id: string): Promise<FullReportData | null> 
     rows = (await sql`
       SELECT
         id, created_at, business_name, website, keyword, city, region, country,
-        model, query_sent, raw_answer, grounding_sources, competitors,
+        industry, model, query_sent, raw_answer, grounding_sources, competitors,
         visibility_score, strengths, weaknesses, recommendations, status
       FROM reports
       WHERE id = ${id}
@@ -140,6 +144,7 @@ export async function getReportById(id: string): Promise<FullReportData | null> 
     city: row.city,
     region: row.region,
     country: row.country,
+    industry: row.industry,
     model: row.model,
     queries,
     answers,
