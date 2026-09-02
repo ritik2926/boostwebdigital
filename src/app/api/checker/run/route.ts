@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { sql } from "@/lib/db";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { isDisposableEmail } from "@/lib/email/disposable";
@@ -19,6 +19,7 @@ import {
   type RankedSource,
 } from "@/lib/checker/parse";
 import { analyse } from "@/lib/checker/analyse";
+import { sendLeadNotifications } from "@/lib/checker/leads";
 import {
   VISITOR_COOKIE_MAX_AGE_SECONDS,
   VISITOR_COOKIE_NAME,
@@ -111,14 +112,16 @@ const IP_REPORTS_24H_LIMIT = 5;
  * fifty cookies. This is what actually protects the Exa credit balance.
  * Change this number, not the query below, if the limit needs to move.
  *
- * FIX B (2026-09-02) — lowered from 50 to 15. A report now costs FOUR Exa
- * calls (3 answers + 1 analysis), not one. At ~$0.005/call that's ~$0.02 per
- * report. Against $10/month of free Exa credit that's ~500 reports/month;
- * 50/day (the old cap) would allow up to ~1,500/month and could blow past
- * the free tier. 15/day is ~450/month — safely inside the free allotment —
- * and still roughly 15x the traffic this tool actually expects.
+ * TASK 4 (2026-09-02) — now bounded by RESEND, not by Exa. Since the
+ * previous task's FIX B (which set this to 15 against Exa's $10/month free
+ * credit), each report also sends TWO emails (visitor + owner alert), and
+ * Resend's free tier is 100 emails/day shared across this entire site —
+ * contact form, its auto-reply, newsletter confirmations/broadcasts, and
+ * now this. 25 reports/day = 50 emails/day from the checker alone, leaving
+ * 50/day headroom for everything else this site sends. Expected real
+ * volume is ~30 reports/MONTH, so 25/day is a runaway guard, not a target.
  */
-const DAILY_REPORT_CAP = 15;
+const DAILY_REPORT_CAP = 25;
 
 const MAX_LENGTHS = {
   business_name: 120,
@@ -382,6 +385,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   // in step with it deliberately so the persisted mention_index always
   // corresponds to the answer that actually earned the position bonus.
   let bestFirstIndex: number | null = null;
+  let bestAnswerText: string | null = null;
   let bestPosition = Infinity;
   for (const r of mentionResults) {
     if (!r.mentions.matched || r.mentions.firstIndex === null) continue;
@@ -389,6 +393,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (position < bestPosition) {
       bestPosition = position;
       bestFirstIndex = r.mentions.firstIndex;
+      bestAnswerText = r.answer;
     }
   }
 
@@ -515,6 +520,36 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     },
   });
   setVisitorCookie(response, visitorId);
+
+  // Fires the visitor email, the owner alert, and the Sheet mirror AFTER
+  // this response is already on its way — the visitor has already waited
+  // for three Exa calls plus an analysis call, they must not wait a
+  // millisecond longer for an email or a spreadsheet write. Only for a
+  // real answer: a no-answer result gives Ritik no usable lead, same
+  // reasoning as skipping the usage_counters increment above.
+  if (!isAllEmpty) {
+    const bestAnswer = bestFirstIndex !== null && bestAnswerText !== null ? { firstIndex: bestFirstIndex, answer: bestAnswerText } : null;
+    after(() =>
+      sendLeadNotifications({
+        reportId: row?.id ?? null,
+        businessName,
+        email,
+        website: website || null,
+        keyword,
+        city,
+        region: region || null,
+        country,
+        namedCount,
+        totalQueries: queries.length,
+        score,
+        breakdown,
+        competitors,
+        recommendations: generated?.recommendations ?? null,
+        bestAnswer,
+      })
+    );
+  }
+
   return response;
 }
 

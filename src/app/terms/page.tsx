@@ -12,7 +12,7 @@ const DESCRIPTION =
   "The terms governing use of boostwebdigital.com and any marketing services agreement with Boost Web Digital, for clients in India and internationally.";
 
 export const metadata: Metadata = {
-  title: TITLE,
+  title: { absolute: TITLE },
   description: DESCRIPTION,
   alternates: { canonical: "/terms/" },
   openGraph: { title: TITLE, description: DESCRIPTION, url: "/terms/", type: "website" },

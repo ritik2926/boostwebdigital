@@ -11,7 +11,7 @@ const DESCRIPTION =
   "Payment, cancellation, and refund terms for Boost Web Digital engagements, including the conditional results-based refund and third-party cost handling.";
 
 export const metadata: Metadata = {
-  title: TITLE,
+  title: { absolute: TITLE },
   description: DESCRIPTION,
   alternates: { canonical: "/refund-policy/" },
   openGraph: { title: TITLE, description: DESCRIPTION, url: "/refund-policy/", type: "website" },

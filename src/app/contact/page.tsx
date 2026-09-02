@@ -33,7 +33,7 @@ const DESCRIPTION =
   "Tell us about your practice and we'll respond within 12 hours. No account managers — you talk directly to the founder.";
 
 export const metadata: Metadata = {
-  title: TITLE,
+  title: { absolute: TITLE },
   description: DESCRIPTION,
   alternates: { canonical: "/contact/" },
   openGraph: { title: TITLE, description: DESCRIPTION, url: "/contact/", type: "website" },

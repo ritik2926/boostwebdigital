@@ -11,7 +11,7 @@ const DESCRIPTION =
   "How Boost Web Digital collects, uses, and protects personal data, including analytics tools used, international transfers, and your rights under India's DPDP Act, GDPR, and U.S. state privacy laws.";
 
 export const metadata: Metadata = {
-  title: TITLE,
+  title: { absolute: TITLE },
   description: DESCRIPTION,
   alternates: { canonical: "/privacy/" },
   openGraph: { title: TITLE, description: DESCRIPTION, url: "/privacy/", type: "website" },

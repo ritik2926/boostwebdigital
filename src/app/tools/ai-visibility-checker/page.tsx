@@ -17,7 +17,7 @@ const DESCRIPTION =
   "Send three real patient questions to one live AI answer engine and see whether your practice gets named — and which pages it reads instead. Free, and it takes about a minute.";
 
 export const metadata: Metadata = {
-  title: TITLE,
+  title: { absolute: TITLE },
   description: DESCRIPTION,
   alternates: { canonical: "/tools/ai-visibility-checker/" },
   openGraph: { title: TITLE, description: DESCRIPTION, url: "/tools/ai-visibility-checker/", type: "website" },

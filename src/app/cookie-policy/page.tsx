@@ -11,7 +11,7 @@ const DESCRIPTION =
   "The cookies and tracking tools boostwebdigital.com uses, why, and how to control them under GDPR opt-in and US opt-out/GPC rules.";
 
 export const metadata: Metadata = {
-  title: TITLE,
+  title: { absolute: TITLE },
   description: DESCRIPTION,
   alternates: { canonical: "/cookie-policy/" },
   openGraph: { title: TITLE, description: DESCRIPTION, url: "/cookie-policy/", type: "website" },

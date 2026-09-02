@@ -23,7 +23,7 @@ const DESCRIPTION =
   "Published pricing for healthcare marketing and AI visibility — $1,500 to $7,500/mo. Month to month, no contract, 90-day guarantee.";
 
 export const metadata: Metadata = {
-  title: TITLE,
+  title: { absolute: TITLE },
   description: DESCRIPTION,
   alternates: { canonical: "/pricing/" },
   openGraph: { title: TITLE, description: DESCRIPTION, url: "/pricing/", type: "website" },

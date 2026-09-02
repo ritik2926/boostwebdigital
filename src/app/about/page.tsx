@@ -35,7 +35,7 @@ const DESCRIPTION =
   "Ritik Malhotra founded Boost Web Digital because ranking stopped meaning found — a healthcare-only agency built for the AI-answer era.";
 
 export const metadata: Metadata = {
-  title: TITLE,
+  title: { absolute: TITLE },
   description: DESCRIPTION,
   alternates: { canonical: "/about/" },
   openGraph: {

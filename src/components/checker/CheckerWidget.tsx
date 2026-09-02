@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { cn } from "@/lib/utils";
 import { CheckerReport } from "./CheckerReport";
+import { trackCheckerEvent } from "./analytics";
 import type { BlockReason, CheckerReport as CheckerReportData, HistoryReport } from "./types";
 
 /**
@@ -231,6 +232,13 @@ export function CheckerWidget() {
   const [quota, setQuota] = useState<{ used: number; remaining: number } | null>(null);
   const [view, setView] = useState<ViewState>({ kind: "idle" });
   const submittingRef = useRef(false);
+  const startedTrackedRef = useRef(false);
+
+  function handleFirstFocus() {
+    if (startedTrackedRef.current) return;
+    startedTrackedRef.current = true;
+    trackCheckerEvent("checker_started");
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -295,6 +303,7 @@ export function CheckerWidget() {
     }
 
     submittingRef.current = true;
+    trackCheckerEvent("checker_submitted");
     setView({ kind: "running" });
 
     const controller = new AbortController();
@@ -321,12 +330,14 @@ export function CheckerWidget() {
       const data = await res.json().catch(() => null);
 
       if (!data) {
+        trackCheckerEvent("checker_error", { state: "error" });
         setView({ kind: "error", message: "Something went wrong. Please try again. This did not use one of your free reports." });
         return;
       }
 
       if (data.blocked) {
         const reason: BlockReason = data.reason === "daily-cap" ? "daily-cap" : "visitor-limit";
+        trackCheckerEvent("checker_limit_hit", { reason });
         if (reason === "visitor-limit") {
           const history = await fetchHistory();
           setView({ kind: "blocked", reason, message: "You've used both free reports.", history });
@@ -344,6 +355,7 @@ export function CheckerWidget() {
       if (data.ok && data.report) {
         const report = data.report as CheckerReportData;
         if (report.status === "no-answer") {
+          trackCheckerEvent("checker_error", { state: "no-answer" });
           setView({
             kind: "no-answer",
             queries: report.queries,
@@ -351,17 +363,20 @@ export function CheckerWidget() {
           });
           setQuota((prev) => prev); // unchanged — no-answer never consumes quota
         } else {
+          trackCheckerEvent("checker_completed", { score: report.score, mentioned: report.namedCount > 0 });
           setView({ kind: "report", report });
           setQuota((prev) => (prev ? { used: prev.used + 1, remaining: Math.max(0, prev.remaining - 1) } : prev));
         }
         return;
       }
 
+      trackCheckerEvent("checker_error", { state: "error" });
       setView({
         kind: "error",
         message: (data.message as string | undefined) ?? "Something went wrong. This did not use one of your free reports.",
       });
     } catch (err) {
+      trackCheckerEvent("checker_error", { state: "error" });
       if (err instanceof Error && err.name === "AbortError") {
         setView({
           kind: "error",
@@ -447,7 +462,7 @@ export function CheckerWidget() {
   }
 
   return (
-    <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-6 print:hidden">
+    <form onSubmit={handleSubmit} onFocus={handleFirstFocus} noValidate className="flex flex-col gap-6 print:hidden">
       {/* Honeypot — hidden from sighted users and screen readers, never disabled, no autocomplete */}
       <div aria-hidden="true" className="absolute -left-[9999px] h-0 w-0 overflow-hidden">
         <label htmlFor="checker-company-website">Leave this field blank</label>

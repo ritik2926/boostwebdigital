@@ -1,5 +1,6 @@
 import { useEffect, useRef, type ReactNode } from "react";
 import Link from "next/link";
+import { trackCheckerEvent } from "./analytics";
 import type { CheckerReport as CheckerReportData, QueryAnswer, RankedSource } from "./types";
 
 /**
@@ -376,7 +377,11 @@ export function CheckerReport({ report, onReset }: { report: CheckerReportData; 
       <div className="flex flex-col items-start gap-4 border-t border-white/8 pt-8 print:hidden sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-white">This was one engine and three questions. Our full service runs many more, across the engines your patients actually use.</p>
-          <Link href="/ai-visibility-geo/" className="mt-1 inline-block text-sm text-white/70 underline-offset-4 hover:text-accent hover:underline">
+          <Link
+            href="/ai-visibility-geo/"
+            onClick={() => trackCheckerEvent("checker_cta_clicked")}
+            className="mt-1 inline-block text-sm text-white/70 underline-offset-4 hover:text-accent hover:underline"
+          >
             See the full AI Search Visibility service
           </Link>
         </div>

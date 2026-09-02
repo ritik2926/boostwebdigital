@@ -11,7 +11,7 @@ const DESCRIPTION =
   "Disclaimers covering results, testimonials, and third-party platform dependency for Boost Web Digital's healthcare marketing services.";
 
 export const metadata: Metadata = {
-  title: TITLE,
+  title: { absolute: TITLE },
   description: DESCRIPTION,
   alternates: { canonical: "/disclaimer/" },
   openGraph: { title: TITLE, description: DESCRIPTION, url: "/disclaimer/", type: "website" },
