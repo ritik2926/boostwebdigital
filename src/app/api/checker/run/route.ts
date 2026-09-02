@@ -46,7 +46,10 @@ export const maxDuration = 60;
  *     website            text,
  *     email              text not null,
  *     keyword            text not null,
- *     city               text not null,
+ *     city               text not null,  -- '' for "no city given" (PART 1,
+ *                                        -- 2026-09-02) — NOT NULL was never
+ *                                        -- altered; blank is stored as an
+ *                                        -- empty string, never null
  *     region             text,
  *     country            text not null,
  *     engine             text not null,   -- e.g. "exa"
@@ -278,16 +281,19 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     });
   }
 
-  // 6. Validate input.
+  // 6. Validate input. City is optional (PART 1, 2026-09-02) — a national
+  // or online-only business has no single city to check visibility "in".
+  // Country stays required: the location string always needs something to
+  // fall back to when city is blank (see buildLocationString).
   const businessName = requiredField(body.business_name, MAX_LENGTHS.business_name);
   const keyword = requiredField(body.keyword, MAX_LENGTHS.keyword);
-  const city = requiredField(body.city, MAX_LENGTHS.city);
+  const city = optionalField(body.city, MAX_LENGTHS.city);
   const country = requiredField(body.country, MAX_LENGTHS.country);
   const region = optionalField(body.region, MAX_LENGTHS.region);
   const website = optionalField(body.website, MAX_LENGTHS.website);
   const emailRaw = requiredField(body.email, MAX_LENGTHS.email);
 
-  if (!businessName || !keyword || !city || !country || region === null || website === null || !emailRaw) {
+  if (!businessName || !keyword || city === null || !country || region === null || website === null || !emailRaw) {
     return NextResponse.json({ ok: false, message: "Please fill in every required field." }, { status: 400 });
   }
   const email = emailRaw.toLowerCase();

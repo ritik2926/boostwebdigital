@@ -1,6 +1,7 @@
 import { Resend } from "resend";
 import { renderEmail, escapeHtml } from "@/lib/email/template";
 import { buildVerdict } from "./reportCopy";
+import { buildLocationString } from "./queryBuilder";
 
 /**
  * Everything that happens AFTER a checker report is saved and the visitor
@@ -193,17 +194,21 @@ async function sendOwnerAlert(data: LeadReportData): Promise<void> {
     return;
   }
 
+  // A blank city (PART 1, 2026-09-02 — national/online businesses have no
+  // single city) falls back to the country here, never to "undefined" or a
+  // bare double dash.
+  const citySlot = data.city.trim() || data.country;
   const subject = !data.hasAnswer
-    ? `[Checker] ${data.businessName} — ${data.city} — NO ANSWER RETURNED`
+    ? `[Checker] ${data.businessName} — ${citySlot} — NO ANSWER RETURNED`
     : data.namedCount > 0
-      ? `[Checker] ${data.businessName} — ${data.city} — Score ${data.score} — NAMED IN ${data.namedCount} OF ${data.totalQueries}`
-      : `[Checker] ${data.businessName} — ${data.city} — Score ${data.score} — NOT NAMED`;
+      ? `[Checker] ${data.businessName} — ${citySlot} — Score ${data.score} — NAMED IN ${data.namedCount} OF ${data.totalQueries}`
+      : `[Checker] ${data.businessName} — ${citySlot} — Score ${data.score} — NOT NAMED`;
 
   const textLines = [
     subject,
     "",
     "WHO",
-    `  ${data.businessName} · ${data.city}${data.region ? ", " + data.region : ""}, ${data.country}`,
+    `  ${data.businessName} · ${buildLocationString(data.city, data.region, data.country)}`,
     `  Website: ${data.website ?? "none given"}`,
     `  Email:   ${data.email}`,
     `  Keyword: ${data.keyword}`,

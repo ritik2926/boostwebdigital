@@ -2,9 +2,12 @@
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { cn } from "@/lib/utils";
+import { usePrefersReducedMotion } from "@/components/Reveal";
 import { CheckerReport } from "./CheckerReport";
 import { trackCheckerEvent } from "./analytics";
 import type { BlockReason, CheckerReport as CheckerReportData, HistoryReport } from "./types";
+import { buildQueries, type BuiltQuery } from "@/lib/checker/queryBuilder";
+import { countriesForSelect, INDIA_CITIES, INDIA_STATES } from "@/lib/checker/locations";
 
 /**
  * Talks to the checker exclusively over fetch() to these three existing
@@ -13,6 +16,12 @@ import type { BlockReason, CheckerReport as CheckerReportData, HistoryReport } f
  * VISITOR_COOKIE_SECRET/IP_HASH_SALT into this "use client" module. See
  * this task's report for the grep that confirms none of the five reach the
  * built client bundle.
+ *
+ * The one exception is @/lib/checker/queryBuilder — a zero-import, secret-
+ * free sibling of engines/index.ts (never engines/ itself) — imported so
+ * the running-state display below can show the visitor the exact three
+ * query strings the server is about to send, built from the same source
+ * instead of a hand-duplicated copy that could drift from it.
  */
 const RUN_URL = "/api/checker/run/";
 const QUOTA_URL = "/api/checker/quota/";
@@ -21,12 +30,29 @@ const HISTORY_URL = "/api/checker/history/";
 const MIN_SUBMIT_DELAY_MS = 3000; // matches run/route.ts's own MIN_SUBMIT_DELAY_MS
 const ABORT_MS = 75_000;
 
-const STAGES = [
-  { atMs: 0, label: "Asking three real patient questions…" },
-  { atMs: 8_000, label: "Reading what the AI said…" },
-  { atMs: 20_000, label: "Measuring your visibility…" },
-  { atMs: 30_000, label: "Writing your report…" },
-] as const;
+/**
+ * PART 2 (2026-09-02) — five stages, TIME-BASED, not driven by real backend
+ * events. The route runs all three queries in parallel, then one analysis
+ * call, then saves and responds — this timeline describes that real order
+ * of work, but the MOMENT each stage below appears is an estimate, not a
+ * server-reported checkpoint. Do not read `atMs` as telemetry.
+ */
+const STAGE_TIMINGS_MS = [0, 7_000, 15_000, 23_000, 31_000] as const;
+
+function stageLabel(stage: number, businessName: string): string {
+  switch (stage) {
+    case 0:
+      return "Asking three questions";
+    case 1:
+      return "Reading the answers";
+    case 2:
+      return `Looking for “${businessName}”`;
+    case 3:
+      return "Checking which pages were cited";
+    default:
+      return "Writing your report";
+  }
+}
 
 const MAX_LENGTHS = {
   business_name: 120,
@@ -48,6 +74,9 @@ interface FormValues {
   country: string;
 }
 
+// PART 1B (2026-09-02): no field may have a pre-selected value — a default
+// here would silently become most visitors' answer. Country starts blank;
+// the visitor must actually choose it.
 const INITIAL_VALUES: FormValues = {
   business_name: "",
   website: "",
@@ -55,14 +84,16 @@ const INITIAL_VALUES: FormValues = {
   keyword: "",
   city: "",
   region: "",
-  country: "India",
+  country: "",
 };
+
+const OTHER_CITY_VALUE = "__OTHER__";
 
 type FormErrors = Partial<Record<keyof FormValues, string>>;
 
 type ViewState =
   | { kind: "idle" }
-  | { kind: "running" }
+  | { kind: "running"; queries: BuiltQuery[]; businessName: string }
   | { kind: "report"; report: CheckerReportData }
   | { kind: "no-answer"; queries: Array<{ label: string; query: string }>; message: string }
   | { kind: "blocked"; reason: BlockReason; message: string; history: HistoryReport[] | null }
@@ -95,10 +126,11 @@ function validate(values: FormValues): FormErrors {
   if (!values.keyword.trim()) errors.keyword = 'Enter a keyword, e.g. "best dentist".';
   else if (values.keyword.length > MAX_LENGTHS.keyword) errors.keyword = "That keyword is too long.";
 
-  if (!values.city.trim()) errors.city = "Enter a city.";
-  else if (values.city.length > MAX_LENGTHS.city) errors.city = "That city name is too long.";
+  // City is optional (PART 1, 2026-09-02) — a national or online-only
+  // business has no single city to check visibility "in".
+  if (values.city.length > MAX_LENGTHS.city) errors.city = "That city name is too long.";
 
-  if (!values.country.trim()) errors.country = "Enter a country.";
+  if (!values.country.trim()) errors.country = "Select a country.";
   else if (values.country.length > MAX_LENGTHS.country) errors.country = "That country name is too long.";
 
   if (values.website.trim() && !looksLikeUrl(values.website.trim())) errors.website = "Enter a valid website address, or leave this blank.";
@@ -108,6 +140,19 @@ function validate(values: FormValues): FormErrors {
 
 const UNDERLINE_INPUT =
   "w-full border-0 border-b border-white/15 bg-transparent pb-2.5 text-[15px] text-white outline-none transition-[border-color,border-width] duration-200 placeholder:text-white/40 focus-visible:border-b-2 focus-visible:border-accent";
+
+const UNDERLINE_SELECT = cn(UNDERLINE_INPUT, "cursor-pointer appearance-none pr-6 [&_option]:bg-[#0c0b0f] [&_option]:text-white");
+
+/** Native selects get their own chevron since `appearance-none` removes the
+ * OS-drawn one — kept purely decorative (aria-hidden) since the select
+ * itself already communicates its own state to assistive tech. */
+function SelectChevron() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 12 8" className="pointer-events-none absolute right-0 bottom-3 h-2 w-3 text-white/40">
+      <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
 
 function FieldLabel({ htmlFor, children }: { htmlFor: string; children: React.ReactNode }) {
   return (
@@ -135,32 +180,63 @@ function QuotaLine({ quota }: { quota: { used: number; remaining: number } | nul
   return <p className="text-sm text-white/50">{text}</p>;
 }
 
-function RunningStages() {
-  const [stageIndex, setStageIndex] = useState(0);
+/**
+ * PART 2 (2026-09-02) — shows the visitor their own real request in
+ * progress instead of generic copy: the exact three query strings while
+ * they're "in flight" (stage 0 — all three run in parallel, never one
+ * after another, so they're shown together, not as a 1-2-3 sequence) and
+ * their own business name once the tool is "looking" for it. No percentage,
+ * no filling progress bar — the client has no real knowledge of server
+ * progress to justify either. The elapsed-seconds counter below IS real
+ * (Date.now() each tick); the stage advances on STAGE_TIMINGS_MS above,
+ * which are NOT — see that constant's own comment.
+ */
+function RunningStages({ queries, businessName }: { queries: BuiltQuery[]; businessName: string }) {
+  const reducedMotion = usePrefersReducedMotion();
+  const [stage, setStage] = useState(0);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
   useEffect(() => {
     const start = Date.now();
     const timer = setInterval(() => {
       const elapsed = Date.now() - start;
       let next = 0;
-      for (let i = 0; i < STAGES.length; i++) {
-        if (elapsed >= STAGES[i]!.atMs) next = i;
+      for (let i = 0; i < STAGE_TIMINGS_MS.length; i++) {
+        if (elapsed >= STAGE_TIMINGS_MS[i]!) next = i;
       }
-      setStageIndex(next);
+      setStage(next);
+      setElapsedSeconds(Math.floor(elapsed / 1000));
     }, 500);
     return () => clearInterval(timer);
   }, []);
 
   return (
-    <div className="flex flex-col items-center gap-3 py-10 text-center">
-      <svg className="h-6 w-6 animate-spin text-white/50" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <div className="flex flex-col items-center gap-4 py-10 text-center">
+      <svg className={cn("h-6 w-6 text-white/50", !reducedMotion && "animate-spin")} viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.5" strokeOpacity="0.25" />
         <path d="M21 12a9 9 0 00-9-9" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
       </svg>
-      <p aria-live="polite" className="text-[15px] font-medium text-white">
-        {STAGES[stageIndex]!.label}
+
+      {/* No transition/animation on this container between stage changes —
+          prefers-reduced-motion or not, the label just swaps; the only
+          thing that ever animates here is the spinner above, and only
+          without reduced motion. */}
+      <div aria-live="polite" className="flex w-full max-w-md flex-col items-center gap-3 px-4">
+        <p className="text-[15px] font-medium text-white">{stageLabel(stage, businessName)}</p>
+        {stage === 0 && (
+          <ul className="flex w-full flex-col gap-1.5 text-sm text-white/60">
+            {queries.map((q) => (
+              <li key={q.label} className="wrap-break-word">
+                <span className="mr-1.5 font-mono text-xs text-white/35">{q.label}</span>“{q.query}”
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      <p className="text-sm text-white/40">
+        This usually takes 30 to 45 seconds. {elapsedSeconds}s elapsed.
       </p>
-      <p className="text-sm text-white/40">This takes about a minute.</p>
     </div>
   );
 }
@@ -231,6 +307,11 @@ export function CheckerWidget() {
   const [renderedAt] = useState(() => Date.now());
   const [quota, setQuota] = useState<{ used: number; remaining: number } | null>(null);
   const [view, setView] = useState<ViewState>({ kind: "idle" });
+  // PART 1B — true once the visitor picks "Other — type it" in the city
+  // dropdown; swaps City to a text input for the rest of this render
+  // session. Reset whenever Country or State changes, since the dropdown
+  // it was standing in for may no longer even apply.
+  const [cityOther, setCityOther] = useState(false);
   const submittingRef = useRef(false);
   const startedTrackedRef = useRef(false);
 
@@ -286,6 +367,33 @@ export function CheckerWidget() {
     setErrors((prev) => ({ ...prev, [key]: undefined }));
   }
 
+  // PART 1B — Country determines whether State is a dropdown, and State
+  // (when it's India) determines whether City is a dropdown. Changing
+  // either one upstream invalidates whatever was chosen downstream, so both
+  // reset State+City (on a Country change) or just City (on a State
+  // change) rather than leaving a stale value from a list that no longer
+  // applies.
+  function handleCountryChange(nextCountry: string) {
+    setValues((prev) => ({ ...prev, country: nextCountry, region: "", city: "" }));
+    setErrors((prev) => ({ ...prev, country: undefined, region: undefined, city: undefined }));
+    setCityOther(false);
+  }
+
+  function handleRegionSelectChange(nextRegion: string) {
+    setValues((prev) => ({ ...prev, region: nextRegion, city: "" }));
+    setErrors((prev) => ({ ...prev, region: undefined, city: undefined }));
+    setCityOther(false);
+  }
+
+  function handleCitySelectChange(next: string) {
+    if (next === OTHER_CITY_VALUE) {
+      setCityOther(true);
+      setValues((prev) => ({ ...prev, city: "" }));
+      return;
+    }
+    updateField("city", next);
+  }
+
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (submittingRef.current) return; // double-click guard, checked synchronously
@@ -304,7 +412,17 @@ export function CheckerWidget() {
 
     submittingRef.current = true;
     trackCheckerEvent("checker_submitted");
-    setView({ kind: "running" });
+
+    const businessName = values.business_name.trim();
+    const city = values.city.trim();
+    const region = values.region.trim();
+    const country = values.country.trim();
+    // Built from the same source run/route.ts uses server-side
+    // (@/lib/checker/queryBuilder) — the running-state display below shows
+    // these as "the exact three query strings", so they must actually be
+    // exact, not a hand-copied approximation of the real template.
+    const queries = buildQueries({ keyword: values.keyword.trim(), city, region: region || null, country });
+    setView({ kind: "running", queries, businessName });
 
     const controller = new AbortController();
     const abortTimer = setTimeout(() => controller.abort(), ABORT_MS);
@@ -315,13 +433,13 @@ export function CheckerWidget() {
         headers: { "Content-Type": "application/json" },
         signal: controller.signal,
         body: JSON.stringify({
-          business_name: values.business_name.trim(),
+          business_name: businessName,
           website: values.website.trim(),
           email: values.email.trim(),
           keyword: values.keyword.trim(),
-          city: values.city.trim(),
-          region: values.region.trim(),
-          country: values.country.trim(),
+          city,
+          region,
+          country,
           "company-website": honeypot,
           "rendered-at": renderedAt,
         }),
@@ -396,7 +514,7 @@ export function CheckerWidget() {
   }
 
   if (view.kind === "running") {
-    return <RunningStages />;
+    return <RunningStages queries={view.queries} businessName={view.businessName} />;
   }
 
   if (view.kind === "report") {
@@ -474,6 +592,16 @@ export function CheckerWidget() {
       </div>
     );
   }
+
+  // PART 1B — India is the only country with a bundled state list (see
+  // src/lib/checker/locations/index.ts's own comment on why: no other
+  // list was already available to bundle without a new dependency or an
+  // external geocoding call). City only ever becomes a dropdown one level
+  // further in, when a bundled India state has its own city list AND the
+  // visitor hasn't already asked to type it themselves.
+  const isIndiaSelected = values.country === "India";
+  const citiesForState = isIndiaSelected ? INDIA_CITIES[values.region] : undefined;
+  const showCityDropdown = Boolean(citiesForState) && !cityOther;
 
   return (
     <form onSubmit={handleSubmit} onFocus={handleFirstFocus} noValidate className="flex flex-col gap-6 print:hidden">
@@ -558,47 +686,112 @@ export function CheckerWidget() {
         <FieldError id="keyword-error" message={errors.keyword} />
       </div>
 
+      {/* PART 1B — Country first: State's control type (dropdown vs text)
+          and City's (dropdown vs text) both cascade from it, so a visitor
+          who filled City or State before Country would just be redone by
+          this order — Country goes first so the cascade is never wasted
+          work. Every control starts on its own placeholder; nothing here
+          is pre-selected. */}
       <div className="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-3">
         <div>
-          <FieldLabel htmlFor="checker-city">City *</FieldLabel>
-          <input
-            id="checker-city"
-            type="text"
-            value={values.city}
-            onChange={(e) => updateField("city", e.target.value)}
-            maxLength={MAX_LENGTHS.city}
-            aria-invalid={Boolean(errors.city)}
-            aria-describedby={errors.city ? "city-error" : undefined}
-            placeholder="Amritsar"
-            className={cn("mt-3", UNDERLINE_INPUT)}
-          />
-          <FieldError id="city-error" message={errors.city} />
+          <FieldLabel htmlFor="checker-country">Country *</FieldLabel>
+          <div className="relative mt-3">
+            <select
+              id="checker-country"
+              value={values.country}
+              onChange={(e) => handleCountryChange(e.target.value)}
+              aria-invalid={Boolean(errors.country)}
+              aria-describedby={errors.country ? "country-error" : undefined}
+              className={UNDERLINE_SELECT}
+            >
+              <option value="" disabled>
+                Select country
+              </option>
+              {countriesForSelect().map((c) => (
+                <option key={c.code} value={c.name}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+            <SelectChevron />
+          </div>
+          <FieldError id="country-error" message={errors.country} />
         </div>
+
         <div>
           <FieldLabel htmlFor="checker-region">State / region (optional)</FieldLabel>
-          <input
-            id="checker-region"
-            type="text"
-            value={values.region}
-            onChange={(e) => updateField("region", e.target.value)}
-            maxLength={MAX_LENGTHS.region}
-            placeholder="Punjab"
-            className={cn("mt-3", UNDERLINE_INPUT)}
-          />
+          {isIndiaSelected ? (
+            <div className="relative mt-3">
+              <select
+                id="checker-region"
+                value={values.region}
+                onChange={(e) => handleRegionSelectChange(e.target.value)}
+                className={UNDERLINE_SELECT}
+              >
+                <option value="" disabled>
+                  Select state or region
+                </option>
+                {INDIA_STATES.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </select>
+              <SelectChevron />
+            </div>
+          ) : (
+            <input
+              id="checker-region"
+              type="text"
+              value={values.region}
+              onChange={(e) => updateField("region", e.target.value)}
+              maxLength={MAX_LENGTHS.region}
+              placeholder="Punjab"
+              className={cn("mt-3", UNDERLINE_INPUT)}
+            />
+          )}
         </div>
+
         <div>
-          <FieldLabel htmlFor="checker-country">Country *</FieldLabel>
-          <input
-            id="checker-country"
-            type="text"
-            value={values.country}
-            onChange={(e) => updateField("country", e.target.value)}
-            maxLength={MAX_LENGTHS.country}
-            aria-invalid={Boolean(errors.country)}
-            aria-describedby={errors.country ? "country-error" : undefined}
-            className={cn("mt-3", UNDERLINE_INPUT)}
-          />
-          <FieldError id="country-error" message={errors.country} />
+          <FieldLabel htmlFor="checker-city">City (optional)</FieldLabel>
+          {showCityDropdown ? (
+            <div className="relative mt-3">
+              <select
+                id="checker-city"
+                value={values.city}
+                onChange={(e) => handleCitySelectChange(e.target.value)}
+                aria-describedby="city-help"
+                className={UNDERLINE_SELECT}
+              >
+                <option value="" disabled>
+                  Select city
+                </option>
+                {citiesForState!.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+                <option value={OTHER_CITY_VALUE}>Other — type it</option>
+              </select>
+              <SelectChevron />
+            </div>
+          ) : (
+            <input
+              id="checker-city"
+              type="text"
+              value={values.city}
+              onChange={(e) => updateField("city", e.target.value)}
+              maxLength={MAX_LENGTHS.city}
+              aria-invalid={Boolean(errors.city)}
+              aria-describedby={errors.city ? "city-error" : "city-help"}
+              placeholder="Amritsar"
+              className={cn("mt-3", UNDERLINE_INPUT)}
+            />
+          )}
+          <p id="city-help" className="mt-1.5 text-[13px] text-white/40">
+            Leave blank if you serve the whole country or sell online.
+          </p>
+          <FieldError id="city-error" message={errors.city} />
         </div>
       </div>
 
