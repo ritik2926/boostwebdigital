@@ -158,7 +158,21 @@ async function sendVisitorEmail(data: LeadReportData): Promise<void> {
   }
 }
 
-function buildHotness(score: number): string {
+/**
+ * Score measures visibility, not fit — a high score earned with no
+ * website of their own is a STRONG lead regardless of the number, not a
+ * WEAK FIT: their visibility rests entirely on pages they don't control,
+ * which is a fragile position and exactly what this agency fixes. Without
+ * this override a no-website business scoring well would read as low
+ * urgency in the sales brief while the report itself (correctly) tells
+ * that same prospect their position is fragile — the two must not
+ * contradict each other. Applies regardless of the score value; the four
+ * ordinary tiers below only ever apply when a website WAS given.
+ */
+function buildHotness(score: number, hasWebsite: boolean): string {
+  if (!hasWebsite) {
+    return "STRONG — visible, but owns no website. Their visibility rests entirely on other people's pages. Fragile position, and exactly what we fix.";
+  }
   if (score === 0) return "STRONG — they have just discovered they are invisible. Best possible moment to reply.";
   if (score < 40) return "GOOD — barely visible. Clear gap to sell against.";
   if (score < 70) return "MEDIUM — partially visible. Sell improvement, not rescue.";
@@ -197,7 +211,7 @@ async function sendOwnerAlert(data: LeadReportData): Promise<void> {
   ];
 
   if (data.hasAnswer) {
-    textLines.push("HOW HOT", `  ${buildHotness(data.score)}`);
+    textLines.push("HOW HOT", `  ${buildHotness(data.score, Boolean(data.website))}`);
     if (!data.website) textLines.push("  No website given — whether this engine reads their site is untested, not scored against them.");
     textLines.push("");
   } else {
