@@ -108,3 +108,21 @@ looks empty, boring, or broken → fix it → screenshot again. At least twice.
 
 Never tell me a design task is complete without showing me the screenshot.
 Read docs/DESIGN-CRAFT.md before building any page.
+
+
+## Privacy Security
+ENVIRONMENT VARIABLES — MECHANISM, NOT JUST A RULE
+
+Never write an ad-hoc script that parses .env.local. This has leaked the
+database password twice.
+
+To check a variable is set, use Node's built-in loader and print only a
+boolean:
+
+    process.loadEnvFile('.env.local');
+    console.log('DATABASE_URL set:', !!process.env.DATABASE_URL);
+
+Never console.log, template-interpolate, or throw an Error containing a
+value from process.env. Before running any script that touches process.env,
+re-read every log and error path in it and confirm no value can escape —
+including inside a stack trace.
