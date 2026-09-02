@@ -20,6 +20,7 @@ import {
 } from "@/lib/checker/parse";
 import { analyse } from "@/lib/checker/analyse";
 import { sendLeadNotifications } from "@/lib/checker/leads";
+import { rescaleScore } from "@/lib/checker/scoreRows";
 import {
   VISITOR_COOKIE_MAX_AGE_SECONDS,
   VISITOR_COOKIE_NAME,
@@ -420,7 +421,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     website || null
   );
   const flatSourceUrls = sources.map((s) => s.url);
-  const { score, breakdown } = scoreVisibility({ results: mentionResults, sources: flatSourceUrls, website: website || null });
+  const { score: rawScore, breakdown } = scoreVisibility({ results: mentionResults, sources: flatSourceUrls, website: website || null });
+  // Rescaled onto only the points that were actually possible to earn — see
+  // scoreRows.ts's own header comment. A no-op when a website was given.
+  // This IS "the score" from here on: persisted, returned, and emailed —
+  // the breakdown table's individual row weights stay at their original
+  // (unrescaled) values, which is what makes the table itself an honest,
+  // auditable record of the raw formula even though the headline number
+  // above it is normalised.
+  const score = rescaleScore(rawScore, Boolean(website));
 
   // Call 2 — prose only, never influences the measured score above. Runs
   // over every successful, non-empty answer combined. Not worth running

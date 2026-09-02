@@ -16,6 +16,33 @@ export interface ScoreRow {
   reason?: string;
 }
 
+/**
+ * "Own domain cited in the sources" is worth 40 of the 100-point formula,
+ * and is structurally unwinnable without a website — sameDomain() in
+ * parse.ts has nothing to compare against. Scoring a business against a
+ * maximum it was never able to reach reads as a failure for a signal it
+ * was never possible to earn (a business named in all three answers with
+ * no website submitted scored 42/100 before this fix — the exact false-
+ * low-score problem the three-query rework existed to remove, in a
+ * different shape). This rescales parse.ts's raw, measured score onto only
+ * the points that were actually possible to earn given what the visitor
+ * submitted — the formula and its weights in parse.ts are completely
+ * untouched; this is a presentation-layer normalisation of its output, not
+ * a new way of earning points, and it's a no-op (rawScore unchanged) once
+ * a website IS given, since maxPossible is then the full 100.
+ */
+const OWN_DOMAIN_POINTS = 40;
+const MAX_SCORE = 100;
+
+export function computeMaxPossibleScore(hasWebsite: boolean): number {
+  return hasWebsite ? MAX_SCORE : MAX_SCORE - OWN_DOMAIN_POINTS;
+}
+
+export function rescaleScore(rawScore: number, hasWebsite: boolean): number {
+  const maxPossible = computeMaxPossibleScore(hasWebsite);
+  return Math.min(MAX_SCORE, Math.round((rawScore / maxPossible) * MAX_SCORE));
+}
+
 export function buildScoreRows(input: {
   answers: FullReportAnswer[];
   namedCount: number;
@@ -40,7 +67,11 @@ export function buildScoreRows(input: {
     signal: "Own domain cited in the sources",
     points: 40,
     earned: ownDomainCited,
-    reason: ownDomainCited ? undefined : hasWebsite ? "not scored — your site wasn't among the cited pages" : "not scored — no website provided",
+    reason: ownDomainCited
+      ? undefined
+      : hasWebsite
+        ? "not scored — your site wasn't among the cited pages"
+        : "not scored — no website provided (excluded, not counted against you)",
   });
 
   const namedTier = namedCount >= 3 ? "all" : namedCount === 2 ? "two" : namedCount === 1 ? "one" : null;

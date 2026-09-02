@@ -516,10 +516,13 @@ export function CheckerWidget() {
           onChange={(e) => updateField("website", e.target.value)}
           maxLength={MAX_LENGTHS.website}
           aria-invalid={Boolean(errors.website)}
-          aria-describedby={errors.website ? "website-error" : undefined}
+          aria-describedby={errors.website ? "website-error" : "website-help"}
           placeholder="yourpractice.com"
           className={cn("mt-3", UNDERLINE_INPUT)}
         />
+        <p id="website-help" className="mt-1.5 text-[13px] text-white/40">
+          Leave blank only if you don&rsquo;t have one — without it we can&rsquo;t check whether the engine reads your site.
+        </p>
         <FieldError id="website-error" message={errors.website} />
       </div>
 

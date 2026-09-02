@@ -198,7 +198,7 @@ async function sendOwnerAlert(data: LeadReportData): Promise<void> {
 
   if (data.hasAnswer) {
     textLines.push("HOW HOT", `  ${buildHotness(data.score)}`);
-    if (!data.website) textLines.push("  No website given — score understated.");
+    if (!data.website) textLines.push("  No website given — whether this engine reads their site is untested, not scored against them.");
     textLines.push("");
   } else {
     textLines.push("HOW HOT", "  No answer was returned for any of the three questions — still a real lead.", "");

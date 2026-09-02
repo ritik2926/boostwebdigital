@@ -204,6 +204,12 @@ export function FullReport({ report }: { report: FullReportData }) {
             </tbody>
           </table>
         </div>
+        {!report.website && (
+          <p className="mt-3 text-sm text-white/50">
+            Scored on the {scoreRows.length - 1} measures we could check. No website was given, so whether this engine reads your site could not be
+            tested.
+          </p>
+        )}
       </section>
 
       {/* 5 · THE THREE QUESTIONS */}
@@ -325,19 +331,24 @@ export function FullReport({ report }: { report: FullReportData }) {
         )}
       </section>
 
-      {/* 11 · FOUNDER BLOCK */}
-      <FounderBlock />
+      {/* 11 · FOUNDER BLOCK, 12 · FOOTER — grouped with a tighter gap than the
+          rest of the document's rhythm (not individually forced to stay
+          together, each keeps its own avoid-break) so the short footer has
+          the best chance of actually fitting on the founder block's page
+          in print, instead of spilling alone onto an otherwise-blank page. */}
+      <div className="flex flex-col gap-6">
+        <FounderBlock />
 
-      {/* 12 · FOOTER */}
-      <footer data-print-avoid-break className="border-t border-white/8 pt-6 text-sm text-white/45">
-        <p>Boost Web Digital &middot; {SITE_URL.replace("https://", "")}</p>
-        <p className="mt-1">
-          <a href={`mailto:${CONTACT_EMAIL}`} className="underline-offset-4 hover:text-white hover:underline">
-            {CONTACT_EMAIL}
-          </a>
-        </p>
-        <p className="mt-1">Generated {formatDate(report.createdAt)}</p>
-      </footer>
+        <footer data-print-avoid-break className="border-t border-white/8 pt-6 text-sm text-white/45">
+          <p>Boost Web Digital &middot; {SITE_URL.replace("https://", "")}</p>
+          <p className="mt-1">
+            <a href={`mailto:${CONTACT_EMAIL}`} className="underline-offset-4 hover:text-white hover:underline">
+              {CONTACT_EMAIL}
+            </a>
+          </p>
+          <p className="mt-1">Generated {formatDate(report.createdAt)}</p>
+        </footer>
+      </div>
     </div>
   );
 }
