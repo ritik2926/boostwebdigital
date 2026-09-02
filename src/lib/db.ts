@@ -6,16 +6,21 @@ import { neon } from "@neondatabase/serverless";
  * is its own stateless HTTPS call.
  *
  * Import boundary: this file may ONLY be imported from files under
- * src/app/api/, or from src/lib/newsletter/notify.ts — which is itself
- * only ever imported from src/app/api/revalidate/route.ts and
- * src/app/api/newsletter/test-send/route.ts (notify.ts's own queries are
- * specified directly by the blog-publish-notification task, not layered
- * behind the API routes). A page/layout/client component importing this
- * file would bundle (or attempt to run) a database client outside a
- * request handler, and a client component importing it would try to ship
- * DATABASE_URL to the browser. Verified via
- * `grep -rL "app/api\|lib/newsletter/notify" $(grep -rl "lib/db" src)` —
- * see the newsletter task reports.
+ * src/app/api/, or from src/lib/newsletter/notify.ts (itself only ever
+ * imported from src/app/api/revalidate/route.ts and
+ * src/app/api/newsletter/test-send/route.ts), or from
+ * src/lib/checker/report.ts (itself only ever imported from the report
+ * page's own server component, src/app/tools/ai-visibility-checker/
+ * report/[id]/page.tsx — a genuine Server Component, never a "use client"
+ * file, never a component consumed across a client boundary; Server
+ * Components run exclusively on the server the same as a route handler
+ * does, so this is not the leak case the rule below describes). A page/
+ * layout/client component importing this file DIRECTLY would bundle (or
+ * attempt to run) a database client outside a request handler, and a
+ * client component importing it would try to ship DATABASE_URL to the
+ * browser — that's what this boundary actually guards against. Verified
+ * via `grep -rL "app/api\|lib/newsletter/notify\|lib/checker/report" $(grep -rl "lib/db" src)` —
+ * see the newsletter task reports and this task's own report.
  *
  * Lazily constructed — `neon()` throws immediately if DATABASE_URL is
  * unset, and Next collects page data for every route module at build time

@@ -400,7 +400,21 @@ export function CheckerWidget() {
   }
 
   if (view.kind === "report") {
-    return <CheckerReport report={view.report} onReset={resetToForm} />;
+    return (
+      <div className="flex flex-col gap-6">
+        {view.report.id && (
+          <a
+            href={`/tools/ai-visibility-checker/report/${view.report.id}/`}
+            target="_blank"
+            rel="noopener"
+            className="shiny-cta w-fit print:hidden"
+          >
+            <span>Open your full report</span>
+          </a>
+        )}
+        <CheckerReport report={view.report} onReset={resetToForm} />
+      </div>
+    );
   }
 
   if (view.kind === "no-answer") {

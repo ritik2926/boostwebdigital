@@ -105,6 +105,11 @@ const RATE_LIMIT_WINDOW_SECONDS = 60 * 60; // 1 hour
 const MIN_SUBMIT_DELAY_MS = 3000;
 const FREE_REPORTS_LIMIT = 2;
 const IP_REPORTS_24H_LIMIT = 5;
+// PART 7 (2026-09-02) — lifetime, not rolling, unlike the IP check above.
+// A real practice has one email address, so this has no false positives
+// for a genuine customer; someone clearing cookies to get more free
+// reports now needs a fresh email address too, not just a fresh cookie.
+const EMAIL_REPORTS_LIMIT = 2;
 
 /**
  * FIX 3 — the only cap fully under our control. The per-visitor limit stops
@@ -292,18 +297,22 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ ok: false, message: "Please use a permanent email address." }, { status: 400 });
   }
 
-  // 7. Free-report + IP limits — FIX A (2026-09-02). Previously the IP check
-  // only ran inside the cookie check's `else` branch, and used `>` instead
-  // of `>=`, which together meant a cleared cookie could reach 6 reports
-  // per IP before the 7th attempt was refused, and reset every 24h with no
+  // 7. Free-report + IP + EMAIL limits — FIX A (2026-09-02) plus PART 7
+  // (same day, shareable-report task). Previously the IP check only ran
+  // inside the cookie check's `else` branch, and used `>` instead of `>=`,
+  // which together meant a cleared cookie could reach 6 reports per IP
+  // before the 7th attempt was refused, and reset every 24h with no
   // lifetime backstop at all — "unlimited" in the sense that a visitor
-  // willing to wait a day between cookie clears was never actually stopped.
-  // Both checks now run every time, independently of each other and of
-  // which branch the other one takes, and the IP check uses `>=` so the
-  // 6th report from one IP within 24h (not the 7th) is the one refused.
-  // Both still fail OPEN on a lookup error — a broken counter must never
-  // block a genuine visitor, and the abuse rate limit + daily cap above
-  // bound the cost of that either way.
+  // willing to wait a day between cookie clears was never actually
+  // stopped. All three checks now run every time, independently of each
+  // other. The IP check uses `>=` so the 6th report from one IP within 24h
+  // (not the 7th) is the one refused; it stays at 5 (never lower — offices
+  // and mobile carriers share IPs). The email check is LIFETIME, not
+  // rolling, and keyed on the already-lowercased/trimmed `email` — a real
+  // practice has one email address, so clearing cookies now needs a fresh
+  // email too. All three fail OPEN on a lookup error — a broken counter
+  // must never block a genuine visitor, and the abuse rate limit + daily
+  // cap above bound the cost of that either way.
   const existingVisitorId = verifyVisitorCookie(request.cookies.get(VISITOR_COOKIE_NAME)?.value);
   const visitorId = existingVisitorId ?? newVisitorId();
   const ipHash = hashIp(ip);
@@ -322,7 +331,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     `) as Array<{ n: number }>;
     const ipBlocked = (ipReports[0]?.n ?? 0) >= IP_REPORTS_24H_LIMIT;
 
-    if (cookieBlocked || ipBlocked) {
+    const emailReports = (await sql`
+      SELECT count(*)::int AS n FROM reports WHERE email = ${email}
+    `) as Array<{ n: number }>;
+    const emailBlocked = (emailReports[0]?.n ?? 0) >= EMAIL_REPORTS_LIMIT;
+
+    if (cookieBlocked || ipBlocked || emailBlocked) {
       blocked = true;
       previousReports = (await sql`
         SELECT id, created_at, business_name, keyword, visibility_score
@@ -331,10 +345,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       `) as ReportRow[];
     }
   } catch (err) {
-    console.warn("[checker/run] Free-report/IP limit lookup failed — failing open:", err instanceof Error ? err.message : String(err));
+    console.warn("[checker/run] Free-report/IP/email limit lookup failed — failing open:", err instanceof Error ? err.message : String(err));
   }
 
   if (blocked) {
+    // Reason is always "visitor-limit" on the wire regardless of which of
+    // the three checks actually triggered — an email-specific reason value
+    // would let someone probe which addresses have already used the tool.
+    // Same response shape, same message, in every case.
     const response = NextResponse.json({ ok: true, blocked: true, reason: "visitor-limit", reports: previousReports });
     setVisitorCookie(response, visitorId);
     return response;
@@ -547,9 +565,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         namedCount,
         totalQueries: queries.length,
         score,
-        breakdown,
+        ownDomainCited: sources.some((s) => s.isOwnDomain),
         competitors,
-        recommendations: generated?.recommendations ?? null,
         bestAnswer,
         hasAnswer: !isAllEmpty,
       })

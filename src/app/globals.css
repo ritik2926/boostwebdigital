@@ -754,6 +754,83 @@ body {
 }
 
 /*
+  Shareable AI Visibility Report page (src/app/tools/ai-visibility-checker/
+  report/[id]/page.tsx and src/components/checker/report/*) — the six-colour
+  validated chart palette, PART 3 of this task. Scoped to
+  .checker-report-chart so the permanent dark theme is untouched everywhere
+  else on the site. Screen = dark-mode values (this site has no light-mode
+  toggle — see CLAUDE.md); print = light-mode values, matching the same
+  screen→print colour-swap precedent as .checker-print-doc/.legal-print-doc
+  above. Do not substitute these hex values — validated for colour-vision
+  deficiency separation and surface contrast in both contexts.
+*/
+.checker-report-chart {
+  --chart-brand: #7d7cf5;
+  --chart-good: #2f9e6b;
+  --chart-gap: #f0603f;
+}
+@media print {
+  .checker-report-chart {
+    --chart-brand: #2221ee;
+    --chart-good: #0a7a52;
+    --chart-gap: #b8430f;
+  }
+}
+
+/*
+  Same light-background/dark-text print override as .checker-print-doc
+  above, plus the report page's own additional print requirements: expand
+  every collapsed <details> (the printed document must be complete, not
+  interactive), and never split a chart row, a score-table row, or the
+  founder block across a page boundary. Screen chrome (Navbar/Footer/the
+  Download PDF button) is dropped via Tailwind's `print:hidden` at each
+  call site, same convention as every other printable page on this site.
+*/
+@media print {
+  .checker-report-print-doc {
+    background: #ffffff !important;
+    color: #111111 !important;
+  }
+  .checker-report-print-doc * {
+    color: #111111 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+  .checker-report-print-doc h1,
+  .checker-report-print-doc h2,
+  .checker-report-print-doc h3,
+  .checker-report-print-doc strong {
+    color: #000000 !important;
+  }
+  .checker-report-print-doc mark {
+    background: #fef08a !important;
+    color: #000000 !important;
+  }
+  .checker-report-print-doc a {
+    color: #1627c6 !important;
+    text-decoration: underline !important;
+  }
+  .checker-report-print-doc details {
+    display: block !important;
+  }
+  .checker-report-print-doc details > summary {
+    display: none !important;
+  }
+  .checker-report-print-doc details > summary + * {
+    display: block !important;
+  }
+  .checker-report-print-doc [data-print-avoid-break] {
+    break-inside: avoid;
+  }
+  /* A numbered section heading must never be the last line on a page,
+     orphaned from the content it introduces. */
+  .checker-report-print-doc h2 {
+    break-after: avoid-page;
+  }
+}
+
+/*
   Blog post body — headless-WordPress content swap (2026-08-22).
   src/app/blog/[slug]/page.tsx now renders WordPress's real HTML via
   dangerouslySetInnerHTML instead of MDX, so the old per-tag MDX component

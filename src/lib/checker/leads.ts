@@ -1,5 +1,6 @@
 import { Resend } from "resend";
 import { renderEmail, escapeHtml } from "@/lib/email/template";
+import { buildVerdict } from "./reportCopy";
 
 /**
  * Everything that happens AFTER a checker report is saved and the visitor
@@ -9,25 +10,31 @@ import { renderEmail, escapeHtml } from "@/lib/email/template";
  * block or fail the HTTP response.
  *
  * Every sink below is independently try/caught and logs exactly one
- * ok/failed line, by design (see this task's report) — one sink failing
- * must never take another down with it, and the visitor already has their
- * report regardless of what happens here.
+ * ok/failed line, by design — one sink failing must never take another
+ * down with it, and the visitor already has their report regardless of
+ * what happens here.
+ *
+ * REWORK (2026-09-02, shareable-report task): both emails are now
+ * doorways/briefs, not copies of the report — the report itself lives at
+ * a permanent, shareable URL (src/app/tools/ai-visibility-checker/
+ * report/[id]/page.tsx). Neither email needs the score breakdown,
+ * competitors, or recommendations any more; both just link to the report
+ * page instead of restating it.
  */
 
 const FROM_EMAIL = "Boost Web Digital <hello@boostwebdigital.com>";
 const OWNER_EMAIL = "ritik@boostwebdigital.com";
-const CHECKER_PAGE_URL = "https://boostwebdigital.com/tools/ai-visibility-checker/";
+const SITE_URL = "https://boostwebdigital.com";
+const CHECKER_PAGE_URL = `${SITE_URL}/tools/ai-visibility-checker/`;
+const FOUNDER_PHOTO_URL = `${SITE_URL}/founder/ritik.jpg`;
 const SHEET_WEBHOOK_TIMEOUT_MS = 10_000;
+
+const FOUNDER_NOTE =
+  "I read every report that comes through here. If anything above doesn't make sense, or you want to know what it would take to fix it, reply to this email and you'll get me — not a form.";
 
 export interface LeadCompetitor {
   name: string;
   appearedIn: number;
-}
-
-export interface LeadRecommendation {
-  title: string;
-  why: string;
-  effort: string;
 }
 
 export interface LeadBestAnswer {
@@ -47,14 +54,11 @@ export interface LeadReportData {
   namedCount: number;
   totalQueries: number;
   score: number;
-  breakdown: Array<{ signal: string; points: number }>;
-  competitors: LeadCompetitor[];
-  recommendations: LeadRecommendation[] | null;
+  ownDomainCited: boolean;
+  competitors: LeadCompetitor[]; // still needed for the Sheet mirror's payload
   // The matched answer with the earliest (best) relative position, or null
-  // if the business wasn't named in any answer — same "best" answer
-  // run/route.ts already tracks for the score's position bonus. Still used
-  // for the Sheet mirror's mention_index; no longer for a subject line —
-  // see CORRECTIONS below.
+  // if the business wasn't named in any answer — still needed for the
+  // Sheet mirror's mention_index; no longer used by either email.
   bestAnswer: LeadBestAnswer | null;
   // False for a "no-answer" report (Exa returned nothing for any of the
   // three questions) — the owner alert still fires either way, but the
@@ -62,20 +66,32 @@ export interface LeadReportData {
   hasAnswer: boolean;
 }
 
-/**
- * CORRECTIONS (2026-09-02, same day): a bare "#2" in a subject line
- * overstated a three-query sample as a ranking, and a certain two-word
- * phrase (engine name + "search") is banned sitewide. Every subject/
- * heading below now states a fraction out of `totalQueries` instead of a
- * rank, and never uses that phrase — see the sitewide grep in this task's
- * report, which this file must pass with zero matches.
- */
+function reportUrl(reportId: string | null): string {
+  return reportId ? `${SITE_URL}/tools/ai-visibility-checker/report/${reportId}/` : CHECKER_PAGE_URL;
+}
 
 /**
- * SINK 1 — the report email to the VISITOR who submitted the form.
- * Transactional (they asked for this by submitting), so no unsubscribe
- * link and, deliberately, no newsletter signup — consent to receive a
- * report is not consent to receive a newsletter (see this task's report).
+ * The one-line version of section 3's interpretation, for the visitor
+ * email only — the email is a doorway to the report, not a copy of it, so
+ * this is deliberately shorter than reportCopy.ts's buildInterpretation()
+ * and does not repeat every measured number. Same branch logic (named vs
+ * not) × (own domain cited vs not), same governing rules: never more
+ * certainty than the data supports, never an engine name not queried.
+ */
+function buildOneLineTakeaway(input: { businessName: string; namedCount: number; ownDomainCited: boolean }): string {
+  const { businessName, namedCount, ownDomainCited } = input;
+  if (namedCount === 0 && !ownDomainCited) return `Right now, this engine doesn't mention ${businessName} at all.`;
+  if (namedCount === 0 && ownDomainCited) return `This engine reads your site, but never names ${businessName} as the answer.`;
+  if (namedCount > 0 && !ownDomainCited) return `${businessName} was named, but not because of your own website.`;
+  return `${businessName} is both named and cited as a source — the strongest position to be in.`;
+}
+
+/**
+ * SINK 1 — the report email to the VISITOR who submitted the form. Short —
+ * a doorway to the report page, not a copy of it. Transactional (they
+ * asked for this by submitting), so no unsubscribe link and, deliberately,
+ * no newsletter signup — consent to receive a report is not consent to
+ * receive a newsletter.
  */
 async function sendVisitorEmail(data: LeadReportData): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY;
@@ -84,53 +100,46 @@ async function sendVisitorEmail(data: LeadReportData): Promise<void> {
     return;
   }
 
-  const heading =
-    data.namedCount > 0 ? `${data.businessName} was named in ${data.namedCount} of ${data.totalQueries} answers` : `${data.businessName} was not named`;
+  const verdict = buildVerdict({ businessName: data.businessName, namedCount: data.namedCount, totalQueries: data.totalQueries });
   const subject =
     data.namedCount > 0
       ? `${data.businessName} was named in ${data.namedCount} of ${data.totalQueries} answers for '${data.keyword}'`
       : `${data.businessName} was not named in any of ${data.totalQueries} answers for '${data.keyword}'`;
 
-  const verdictLine =
-    data.namedCount > 0
-      ? `In our check for &ldquo;${escapeHtml(data.keyword)}&rdquo; near ${escapeHtml(data.city)}, ${escapeHtml(data.businessName)} was named in ${data.namedCount} of ${data.totalQueries} answers.`
-      : `In our check for &ldquo;${escapeHtml(data.keyword)}&rdquo; near ${escapeHtml(data.city)}, ${escapeHtml(data.businessName)} was not named in any of the ${data.totalQueries} answers.`;
+  const oneLiner = buildOneLineTakeaway({ businessName: data.businessName, namedCount: data.namedCount, ownDomainCited: data.ownDomainCited });
+  const url = reportUrl(data.reportId);
 
-  const topCompetitors = data.competitors.slice(0, 3);
-  const competitorsLine =
-    topCompetitors.length > 0
-      ? `<p style="margin: 0 0 16px 0;"><strong>Named instead:</strong> ${escapeHtml(topCompetitors.map((c) => c.name).join(", "))}</p>`
-      : "";
-
-  const topRecommendation = data.recommendations?.[0] ?? null;
-  const recommendationHtml = topRecommendation
-    ? `<p style="margin: 0 0 4px 0;"><strong>Top recommendation:</strong> ${escapeHtml(topRecommendation.title)}</p>` +
-      `<p style="margin: 0 0 16px 0;">${escapeHtml(topRecommendation.why)}</p>`
-    : "";
-
+  // `heading` below already renders the verdict as the email's own H1 (and
+  // renderEmail's text version already prepends `heading` before
+  // `bodyText`) — the body must not repeat it, or the verdict appears
+  // twice in a row.
   const bodyHtml =
-    `<p style="margin: 0 0 16px 0;">${verdictLine}</p>` +
-    `<p style="margin: 0 0 16px 0;"><strong>Visibility score:</strong> ${data.score}/100</p>` +
-    competitorsLine +
-    recommendationHtml +
-    `<p style="margin: 0;">This was three questions, on one engine. Different AI engines search different indexes.</p>`;
+    `<p style="margin: 0 0 16px 0;"><strong>Visibility score:</strong> ${data.score}/100</p>` + `<p style="margin: 0;">${escapeHtml(oneLiner)}</p>`;
 
-  const bodyTextLines = [
-    verdictLine.replace(/&ldquo;|&rdquo;/g, '"'),
-    "",
-    `Visibility score: ${data.score}/100`,
-  ];
-  if (topCompetitors.length > 0) bodyTextLines.push("", `Named instead: ${topCompetitors.map((c) => c.name).join(", ")}`);
-  if (topRecommendation) bodyTextLines.push("", `Top recommendation: ${topRecommendation.title}`, topRecommendation.why);
-  bodyTextLines.push("", "This was three questions, on one engine. Different AI engines search different indexes.");
+  const bodyTextLines = [`Visibility score: ${data.score}/100`, "", oneLiner];
+
+  // Founder block — HTML email, so it's a table (Outlook-safe), not flexbox.
+  const founderHtml = `
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top: 28px; padding-top: 24px; border-top: 1px solid #e4e4e7; width: 100%;">
+      <tr>
+        <td style="width: 72px; vertical-align: top;">
+          <img src="${FOUNDER_PHOTO_URL}" width="64" height="64" alt="Ritik Malhotra" style="display: block; border: 0; border-radius: 9999px; width: 64px; height: 64px;" />
+        </td>
+        <td style="vertical-align: top; padding-left: 16px; font-family: -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+          <p style="margin: 0; font-size: 15px; font-weight: 700; color: #0c0b0b;">Ritik Malhotra</p>
+          <p style="margin: 2px 0 0 0; font-size: 13px; color: #71717a;">Founder, Boost Web Digital</p>
+          <p style="margin: 8px 0 0 0; font-size: 14px; line-height: 1.6; color: #3f3f46;">&ldquo;${escapeHtml(FOUNDER_NOTE)}&rdquo;</p>
+        </td>
+      </tr>
+    </table>`;
 
   const { html, text } = renderEmail({
     preheader: subject,
-    heading,
-    bodyHtml,
-    bodyText: bodyTextLines.join("\n"),
-    cta: { label: "See your full report", url: CHECKER_PAGE_URL },
-    showSignature: true,
+    heading: verdict,
+    bodyHtml: bodyHtml + founderHtml,
+    bodyText: [...bodyTextLines, "", "Ritik Malhotra, Founder, Boost Web Digital:", `"${FOUNDER_NOTE}"`].join("\n"),
+    cta: { label: "Open your full report", url },
+    showSignature: false,
   });
 
   try {
@@ -149,11 +158,19 @@ async function sendVisitorEmail(data: LeadReportData): Promise<void> {
   }
 }
 
+function buildHotness(score: number): string {
+  if (score === 0) return "STRONG — they have just discovered they are invisible. Best possible moment to reply.";
+  if (score < 40) return "GOOD — barely visible. Clear gap to sell against.";
+  if (score < 70) return "MEDIUM — partially visible. Sell improvement, not rescue.";
+  return "WEAK FIT — already visible. Low urgency.";
+}
+
 /**
- * SINK 2 — the internal alert to Ritik. Deliberately NOT renderEmail() —
- * no branding, no logo, dense and scannable, built to be searched/sorted in
- * Gmail by subject line rather than read as a polished document. Reply-To
- * is the PROSPECT's address so replying in Gmail goes straight to the lead.
+ * SINK 2 — the internal alert to Ritik. A SALES BRIEF ABOUT A PERSON, not
+ * a copy of the AI report — no source list, no answers, no competitor
+ * list. Deliberately NOT renderEmail() — no branding, no logo, dense and
+ * scannable, built to be searched/sorted in Gmail by subject line. Reply-
+ * To is the PROSPECT's address so replying in Gmail goes straight to them.
  */
 async function sendOwnerAlert(data: LeadReportData): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY;
@@ -162,46 +179,32 @@ async function sendOwnerAlert(data: LeadReportData): Promise<void> {
     return;
   }
 
-  // Three distinct subjects, not two — a no-answer submission is neither
-  // "named" nor honestly "not named" (Exa gave nothing to check), so it
-  // gets its own clearly-labeled subject rather than being folded into
-  // NOT NAMED, which would misstate what actually happened.
   const subject = !data.hasAnswer
     ? `[Checker] ${data.businessName} — ${data.city} — NO ANSWER RETURNED`
     : data.namedCount > 0
       ? `[Checker] ${data.businessName} — ${data.city} — Score ${data.score} — NAMED IN ${data.namedCount} OF ${data.totalQueries}`
       : `[Checker] ${data.businessName} — ${data.city} — Score ${data.score} — NOT NAMED`;
 
-  const breakdownLines = data.breakdown.length > 0 ? data.breakdown.map((row) => `  +${row.points}  ${row.signal}`) : ["  (no signals earned)"];
-  const competitorLines =
-    data.competitors.length > 0 ? data.competitors.map((c) => `  ${c.name} — named in ${c.appearedIn} of ${data.totalQueries}`) : ["  (none named)"];
-
   const textLines = [
     subject,
     "",
-    `Business:    ${data.businessName}`,
-    `Website:     ${data.website ?? "(not provided)"}`,
-    `Email:       ${data.email}`,
-    `Keyword:     ${data.keyword}`,
-    `Location:    ${data.city}${data.region ? ", " + data.region : ""}, ${data.country}`,
+    "WHO",
+    `  ${data.businessName} · ${data.city}${data.region ? ", " + data.region : ""}, ${data.country}`,
+    `  Website: ${data.website ?? "none given"}`,
+    `  Email:   ${data.email}`,
+    `  Keyword: ${data.keyword}`,
+    "",
   ];
 
   if (data.hasAnswer) {
-    textLines.push(
-      `Named in:    ${data.namedCount} of ${data.totalQueries} answers`,
-      `Score:       ${data.score}/100`,
-      "",
-      "Score breakdown:",
-      ...breakdownLines,
-      "",
-      "Named instead:",
-      ...competitorLines
-    );
+    textLines.push("HOW HOT", `  ${buildHotness(data.score)}`);
+    if (!data.website) textLines.push("  No website given — score understated.");
+    textLines.push("");
   } else {
-    textLines.push("", "STATUS: No answer was returned for any of the three questions. This is still a real lead — the fields above are what they submitted.");
+    textLines.push("HOW HOT", "  No answer was returned for any of the three questions — still a real lead.", "");
   }
 
-  textLines.push("", `Report ID (Neon "reports" table): ${data.reportId ?? "(not saved)"}`);
+  textLines.push("THE REPORT", `  ${reportUrl(data.reportId)}`);
   const text = textLines.join("\n");
   const html = `<pre style="font-family: ui-monospace, monospace; font-size: 13px; white-space: pre-wrap;">${escapeHtml(text)}</pre>`;
 
