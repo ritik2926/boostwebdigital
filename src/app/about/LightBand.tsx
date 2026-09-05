@@ -223,6 +223,17 @@ export function LightBand() {
               </RevealItem>
             ))}
           </RevealGroup>
+
+          {/* Company structure — factual, not a fourth "who we are" pillar,
+              so it stays a plain paragraph rather than a fourth card. */}
+          <RevealGroup as="div" trigger="viewport" className="mt-10 flex justify-center">
+            <RevealItem>
+              <p className="mx-auto max-w-xl text-center text-sm leading-relaxed text-[#08080a]/60">
+                Boost Web Digital also owns Glow Sign Creations, an outdoor advertising company operating in
+                Amritsar.
+              </p>
+            </RevealItem>
+          </RevealGroup>
         </Container>
 
         <Container className="mt-28 lg:mt-36">

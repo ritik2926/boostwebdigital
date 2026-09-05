@@ -339,6 +339,17 @@ export function Footer() {
 
         <div className="flex flex-col gap-4 border-t border-white/8 py-8 text-xs text-white/40 sm:flex-row sm:items-center sm:justify-between">
           <span>© {new Date().getFullYear()} Boost Web Digital. All rights reserved.</span>
+          <span>
+            <a
+              href="https://glowsigncreations.in/"
+              target="_blank"
+              rel="noopener"
+              className="text-white/50 underline-offset-2 hover:text-white/80 hover:underline"
+            >
+              Glow Sign Creations
+            </a>{" "}
+            — outdoor advertising, Amritsar — is a Boost Web Digital company.
+          </span>
         </div>
       </Container>
     </footer>
