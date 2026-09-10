@@ -43,6 +43,28 @@ function ServiceBlock({ service, isLast }: { service: (typeof SERVICES)[number];
               </Link>
             </RevealItem>
           )}
+          {service.id === "healthcare-seo" && (
+            <RevealItem className={cn(STACK.headingToSub, "flex flex-col gap-2")}>
+              <Link
+                href="/dermatology-marketing/"
+                className="group inline-flex items-center gap-2 font-medium text-white/70 underline-offset-4 hover:text-accent hover:underline"
+              >
+                See how we approach dermatology marketing
+                <span aria-hidden className="inline-block transition-transform duration-200 group-hover:translate-x-1">
+                  →
+                </span>
+              </Link>
+              <Link
+                href="/dental-marketing/"
+                className="group inline-flex items-center gap-2 font-medium text-white/70 underline-offset-4 hover:text-accent hover:underline"
+              >
+                See how we approach dental marketing
+                <span aria-hidden className="inline-block transition-transform duration-200 group-hover:translate-x-1">
+                  →
+                </span>
+              </Link>
+            </RevealItem>
+          )}
         </RevealGroup>
       </div>
 

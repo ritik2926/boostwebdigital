@@ -27,6 +27,8 @@ const NAV_LINKS = [
 const SERVICES_SUBLINKS: Array<{ label: string; href: string }> = [
   { label: "All Services", href: "/services/" },
   { label: "AI Search Visibility", href: "/ai-visibility-geo/" },
+  { label: "Dermatology Marketing", href: "/dermatology-marketing/" },
+  { label: "Dental Marketing", href: "/dental-marketing/" },
 ];
 
 // Grouped under the "Other" dropdown. `href: null` means the page doesn't
@@ -131,7 +133,7 @@ function ServicesDropdown({ active, onHover }: { active: boolean; onHover: (labe
         transition={{ duration: 0.2, ease: EASE.primary }}
         style={{ pointerEvents: open ? "auto" : "none" }}
         aria-hidden={!open}
-        className="absolute left-1/2 top-full z-(--z-raised) w-52 -translate-x-1/2 pt-3"
+        className="absolute left-1/2 top-full z-(--z-raised) w-56 -translate-x-1/2 pt-3"
       >
         <div className="overflow-hidden rounded-2xl border border-white/8 bg-[#0b0b0f]/95 py-2 shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-xl">
           {SERVICES_SUBLINKS.map((item) => (

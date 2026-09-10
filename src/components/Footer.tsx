@@ -48,6 +48,10 @@ const FOOTER_NAV = {
     { label: "Services", href: "/services/" },
     { label: "Pricing", href: "/pricing/" },
   ],
+  specialties: [
+    { label: "Dermatology Marketing", href: "/dermatology-marketing/" },
+    { label: "Dental Marketing", href: "/dental-marketing/" },
+  ],
   legal: [
     { label: "Terms & Conditions", href: "/terms/" },
     { label: "Privacy Policy", href: "/privacy/" },
@@ -264,7 +268,7 @@ export function Footer() {
           </RevealItem>
         </RevealGroup>
 
-        <RevealGroup as="div" className="grid gap-10 border-t border-white/8 py-14 sm:grid-cols-2 lg:grid-cols-5">
+        <RevealGroup as="div" className="grid gap-10 border-t border-white/8 py-14 sm:grid-cols-2 lg:grid-cols-6">
           <RevealItem>
             <span className="font-display text-lg font-semibold text-white">Boost Web Digital</span>
             <p className="mt-3 max-w-xs text-sm text-white/50">
@@ -277,6 +281,19 @@ export function Footer() {
             <span className="font-mono text-xs uppercase tracking-[0.14em] text-white/40">Company</span>
             <ul className="mt-4 flex flex-col gap-3">
               {FOOTER_NAV.company.map((link) => (
+                <li key={link.href}>
+                  <Link href={link.href} className="text-sm text-white/70 transition-colors hover:text-white">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </RevealItem>
+
+          <RevealItem>
+            <span className="font-mono text-xs uppercase tracking-[0.14em] text-white/40">Specialties</span>
+            <ul className="mt-4 flex flex-col gap-3">
+              {FOOTER_NAV.specialties.map((link) => (
                 <li key={link.href}>
                   <Link href={link.href} className="text-sm text-white/70 transition-colors hover:text-white">
                     {link.label}

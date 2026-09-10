@@ -6,7 +6,7 @@
 
 export type SpecialtyId = "hair-restoration" | "dental" | "med-spa" | "dermatology" | "plastic-surgery" | "orthodontist";
 
-export const SPECIALTIES: Array<{ id: SpecialtyId; name: string; desc: string; href: string }> = [
+export const SPECIALTIES: Array<{ id: SpecialtyId; name: string; desc: string; href: string; built?: boolean }> = [
   {
     id: "hair-restoration",
     name: "Hair Transplant & Restoration Clinics",
@@ -18,6 +18,7 @@ export const SPECIALTIES: Array<{ id: SpecialtyId; name: string; desc: string; h
     name: "Dental Practices",
     desc: "High-value implant and cosmetic cases are won long before the first call, in comparison searches most practices never see.",
     href: "/dental-marketing/",
+    built: true,
   },
   {
     id: "med-spa",
@@ -30,6 +31,7 @@ export const SPECIALTIES: Array<{ id: SpecialtyId; name: string; desc: string; h
     name: "Dermatology Clinics",
     desc: "A mix of insurance-based and cash-pay demand that needs two different search strategies running at once.",
     href: "/dermatology-marketing/",
+    built: true,
   },
   {
     id: "plastic-surgery",

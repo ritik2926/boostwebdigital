@@ -954,14 +954,17 @@ function useInView<T extends HTMLElement>(margin = "200px") {
   return { ref, inView };
 }
 
+const SpecialtyMotionLink = motion.create(Link);
+
 /**
- * A plain motion.div, not a link — these six specialty pages
- * (/hair-restoration-marketing/ etc.) don't exist yet, and a card that
- * looks clickable and 404s is worse than a card that's plainly not
- * clickable. Was `motion.create(Link)` wrapping `specialty.href`; keep the
- * class name "group" for the hover-driven video/label states, they don't
- * depend on the element being a link. Do not re-add navigation here without
- * building the destination page first.
+ * A plain motion.div for the four specialty pages that don't exist yet —
+ * a card that looks clickable and 404s is worse than one that's plainly
+ * not clickable. Renders as a real `motion.create(Link)` instead
+ * (`specialty.built: true` in src/lib/specialties.ts) for the two that now
+ * do: dermatology and dental. Keep the class name "group" either way for
+ * the hover-driven video/label states, which don't depend on the element
+ * being a link. Do not flip `built: true` for the remaining four without
+ * building their destination page first.
  */
 function SpecialtyCard({
   specialty,
@@ -980,20 +983,22 @@ function SpecialtyCard({
   const siblingHovered = hoveredIndex !== null && !isHovered;
   const { ref, inView } = useInView<HTMLDivElement>();
 
-  return (
-    <motion.div
-      onHoverStart={onHover}
-      onHoverEnd={onLeave}
-      animate={{
-        opacity: isHovered ? OPACITY.full : siblingHovered ? OPACITY.muted : OPACITY.visible,
-        y: isHovered ? -4 : 0,
-      }}
-      transition={{ duration: DURATION.reveal, ease: EASE.primary }}
-      className={cn(
-        "group block overflow-hidden rounded-2xl border border-white/8 bg-white/3 shadow-[0_8px_30px_rgba(0,0,0,0.35)] backdrop-blur-xl transition-shadow duration-300",
-        isHovered && "border-white/20 shadow-[0_0_20px_rgba(255,255,255,0.15)]"
-      )}
-    >
+  const sharedProps = {
+    onHoverStart: onHover,
+    onHoverEnd: onLeave,
+    animate: {
+      opacity: isHovered ? OPACITY.full : siblingHovered ? OPACITY.muted : OPACITY.visible,
+      y: isHovered ? -4 : 0,
+    },
+    transition: { duration: DURATION.reveal, ease: EASE.primary },
+    className: cn(
+      "group block overflow-hidden rounded-2xl border border-white/8 bg-white/3 shadow-[0_8px_30px_rgba(0,0,0,0.35)] backdrop-blur-xl transition-shadow duration-300",
+      isHovered && "border-white/20 shadow-[0_0_20px_rgba(255,255,255,0.15)]"
+    ),
+  };
+
+  const content = (
+    <>
       <div ref={ref} className="relative m-3 aspect-video overflow-hidden rounded-xl bg-white/5">
         {inView && (
           <video
@@ -1012,8 +1017,18 @@ function SpecialtyCard({
         <h3 className="font-display text-xl font-semibold text-white">{specialty.name}</h3>
         <p className="mt-2 text-sm leading-relaxed text-white/60">{specialty.desc}</p>
       </div>
-    </motion.div>
+    </>
   );
+
+  if (specialty.built) {
+    return (
+      <SpecialtyMotionLink href={specialty.href} {...sharedProps}>
+        {content}
+      </SpecialtyMotionLink>
+    );
+  }
+
+  return <motion.div {...sharedProps}>{content}</motion.div>;
 }
 
 function WhoWeServe() {

@@ -28,13 +28,17 @@ const PAGE_DATES: Record<string, string> = {
   "/faq/": "2026-08-22",
   "/ai-visibility-geo/": "2026-08-25",
   "/tools/ai-visibility-checker/": "2026-09-01",
+  "/dermatology-marketing/": "2026-09-10",
+  "/dental-marketing/": "2026-09-10",
 };
 
 /**
  * Homepage, /about/, /contact/, /blogs/, /pricing/, /services/ (the
  * generic services hub — its child pillar pages below are still unbuilt
- * except /ai-visibility-geo/, now live), /faq/, /ai-visibility-geo/, and
- * /tools/ai-visibility-checker/ are live today. `/blog/` itself is a 301 redirect to /blogs/
+ * except /ai-visibility-geo/, now live), /faq/, /ai-visibility-geo/,
+ * /tools/ai-visibility-checker/, /dermatology-marketing/ and
+ * /dental-marketing/ (both live 2026-09-10 — the first two specialty hubs
+ * from the list below) are live today. `/blog/` itself is a 301 redirect to /blogs/
  * (next.config.ts) and is deliberately NOT listed here — a redirecting URL
  * in a sitemap is a Search Console warning. `/design-lab` is excluded from
  * production entirely (see its page.tsx), `/api/contact/` is a route
@@ -54,11 +58,12 @@ const PAGE_DATES: Record<string, string> = {
  *   healthcare-content-marketing,healthcare-social-media,
  *   healthcare-reputation-management}/ children
  * Specialty hubs + spokes: /hair-restoration-marketing/ (P1, real case
- *   study), /dermatology-marketing/, /plastic-surgery-marketing/,
- *   /med-spa-marketing/, /dental-marketing/, /orthodontist-marketing/,
- *   /chiropractic-marketing/, /mental-health-marketing/ — each with its own
- *   -seo/, google-ads-for-.../, -website-design/ spokes per the slug
- *   formulas table
+ *   study), /plastic-surgery-marketing/, /med-spa-marketing/,
+ *   /orthodontist-marketing/, /chiropractic-marketing/,
+ *   /mental-health-marketing/ — each with its own -seo/,
+ *   google-ads-for-.../, -website-design/ spokes per the slug formulas
+ *   table. (/dermatology-marketing/ and /dental-marketing/ are live — see
+ *   above.)
  * Generic services layer children (hub + /ai-visibility-geo/ are live —
  *   see above): seo/, web-design/, google-ads/, meta-ads/,
  *   social-media-marketing/, content-marketing/, ai-automation/,
@@ -84,6 +89,8 @@ export function getStaticPageEntries(): SitemapUrlEntry[] {
     { url: `${SITE_URL}/faq/`, lastModified: PAGE_DATES["/faq/"] },
     { url: `${SITE_URL}/ai-visibility-geo/`, lastModified: PAGE_DATES["/ai-visibility-geo/"] },
     { url: `${SITE_URL}/tools/ai-visibility-checker/`, lastModified: PAGE_DATES["/tools/ai-visibility-checker/"] },
+    { url: `${SITE_URL}/dermatology-marketing/`, lastModified: PAGE_DATES["/dermatology-marketing/"] },
+    { url: `${SITE_URL}/dental-marketing/`, lastModified: PAGE_DATES["/dental-marketing/"] },
   ];
 }
 
