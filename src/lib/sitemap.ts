@@ -20,7 +20,7 @@ export interface SitemapUrlEntry {
  */
 const PAGE_DATES: Record<string, string> = {
   "/": "2026-08-22",
-  "/about/": "2026-08-22",
+  "/about/": "2026-09-10",
   "/contact/": "2026-08-22",
   "/blogs/": "2026-08-22",
   "/pricing/": "2026-08-22",

@@ -9,7 +9,7 @@ import { SubscribeForm } from "@/components/newsletter/SubscribeForm";
 import { SECTION_PADDING, STACK } from "@/lib/tokens";
 import { cn } from "@/lib/utils";
 import JsonLd from "@/components/JsonLd";
-import { ORGANIZATION, PERSON, breadcrumb } from "@/lib/schema";
+import { ORGANIZATION, ORGANIZATION_LOGO_URL, PERSON, breadcrumb } from "@/lib/schema";
 import { getAllSlugs, getPostBySlug, getRelatedPosts } from "@/lib/blog/source";
 import { ReadingProgress } from "@/components/blog/ReadingProgress";
 import { PostHero } from "@/components/blog/PostHero";
@@ -41,7 +41,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   // at all.
   const ogImage = post.featuredImage.src
     ? { url: post.featuredImage.src, width: post.featuredImage.width, height: post.featuredImage.height, alt: post.featuredImage.alt }
-    : { url: ORGANIZATION.logo, width: 512, height: 512, alt: "Boost Web Digital" };
+    : { url: ORGANIZATION_LOGO_URL, width: 512, height: 512, alt: "Boost Web Digital" };
 
   return {
     title,
@@ -88,7 +88,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
     ? post.featuredImage.src.startsWith("http")
       ? post.featuredImage.src
       : `${SITE_URL}${post.featuredImage.src}`
-    : ORGANIZATION.logo;
+    : ORGANIZATION_LOGO_URL;
 
   const blogPosting = {
     "@type": "BlogPosting",

@@ -6,13 +6,25 @@
 
 const SITE_URL = "https://boostwebdigital.com";
 
+// Plain URL, exported separately so pages needing a bare image src (og:image
+// fallback, BlogPosting.image) don't have to unwrap ORGANIZATION.logo's
+// ImageObject.
+export const ORGANIZATION_LOGO_URL = `${SITE_URL}/logo/logo-email.png`;
+
 export const ORGANIZATION = {
   "@type": "Organization",
   "@id": `${SITE_URL}/#organization`,
   name: "Boost Web Digital",
   alternateName: "Boost Web Digital — Healthcare Marketing & AI Visibility",
   url: SITE_URL,
-  logo: `${SITE_URL}/logo/logo-dark.svg`,
+  // Google's logo guidance requires a raster image (min 112x112) wrapped
+  // in ImageObject — an SVG here fails rich-result validation.
+  logo: {
+    "@type": "ImageObject",
+    url: ORGANIZATION_LOGO_URL,
+    width: 720,
+    height: 162,
+  },
   description:
     "Boost Web Digital is a healthcare-only marketing agency that gets medical practices named by AI search engines like ChatGPT, Google AI Overviews, Perplexity and Gemini, alongside traditional healthcare SEO.",
   address: {

@@ -2173,8 +2173,9 @@ function Process() {
 // FAQ personality: "Plain-spoken — accordion only, zero blur/focus
 // effects." That's why answers fade on plain opacity/height, not the
 // blur-resolve Market Shift's own accordion uses — a deliberate difference,
-// not an oversight. FAQPage JSON-LD is generated straight from FAQ_ITEMS
-// (single source of truth) for AI Overview/GEO extraction, per the brief.
+// not an oversight. FAQPage JSON-LD for these questions is assembled once
+// in src/app/page.tsx (FAQ_FOR_SCHEMA, kept in sync with FAQ_ITEMS below) —
+// not duplicated here, to keep a single FAQPage block per page.
 // The CTA reuses the exact same free-scan offer Process's "Scan" step and
 // Pricing's own CTA already describe — one lead-magnet, not a new path.
 // ---------------------------------------------------------------------------
@@ -2281,20 +2282,9 @@ function FaqAccordionItem({
 function Faq() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
-  const faqSchema = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: FAQ_ITEMS.map((item) => ({
-      "@type": "Question",
-      name: item.question,
-      acceptedAnswer: { "@type": "Answer", text: item.answer },
-    })),
-  };
-
   return (
     <section id="faq" className={cn("relative overflow-hidden", SECTION_PADDING.compact)}>
       <AmbientGlow corner="bottom-left" duration={72} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
       <Container>
         <div className="lg:flex lg:items-start lg:gap-16">
           <div className="lg:sticky lg:top-32 lg:max-w-sm lg:shrink-0">

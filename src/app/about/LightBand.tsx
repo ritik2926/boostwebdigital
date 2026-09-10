@@ -36,8 +36,8 @@ const WHO_WE_ARE: Array<{ id: WhoWeAreId; title: string; role: string; body: str
   {
     id: "index",
     title: "The AI Visibility Index",
-    role: "Published research",
-    body: "We score real clinics on whether AI recommends them, and publish the whole table openly. Nothing we say about AI search is borrowed from someone else's blog post.",
+    role: "Research in progress",
+    body: "We're building the Index to score real clinics on whether AI recommends them, and we plan to publish the whole table openly. Nothing we say about AI search is borrowed from someone else's blog post.",
   },
 ];
 
