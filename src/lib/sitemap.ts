@@ -30,6 +30,7 @@ const PAGE_DATES: Record<string, string> = {
   "/tools/ai-visibility-checker/": "2026-09-01",
   "/dermatology-marketing/": "2026-09-10",
   "/dental-marketing/": "2026-09-11",
+  "/healthcare-seo/": "2026-09-11",
 };
 
 /**
@@ -38,7 +39,11 @@ const PAGE_DATES: Record<string, string> = {
  * except /ai-visibility-geo/, now live), /faq/, /ai-visibility-geo/,
  * /tools/ai-visibility-checker/, /dermatology-marketing/ and
  * /dental-marketing/ (both live 2026-09-10 — the first two specialty hubs
- * from the list below) are live today. `/blog/` itself is a 301 redirect to /blogs/
+ * from the list below), and /healthcare-seo/ (live 2026-09-11, a services
+ * axis method hub — see its own page.tsx for why it sits flat at root
+ * instead of docs/13-URL-ARCHITECTURE.md's planned
+ * /healthcare-marketing/healthcare-seo/ nested slug; that doc still needs a
+ * deliberate reconciliation pass) are live today. `/blog/` itself is a 301 redirect to /blogs/
  * (next.config.ts) and is deliberately NOT listed here — a redirecting URL
  * in a sitemap is a Search Console warning. `/design-lab` is excluded from
  * production entirely (see its page.tsx), `/api/contact/` is a route
@@ -91,6 +96,7 @@ export function getStaticPageEntries(): SitemapUrlEntry[] {
     { url: `${SITE_URL}/tools/ai-visibility-checker/`, lastModified: PAGE_DATES["/tools/ai-visibility-checker/"] },
     { url: `${SITE_URL}/dermatology-marketing/`, lastModified: PAGE_DATES["/dermatology-marketing/"] },
     { url: `${SITE_URL}/dental-marketing/`, lastModified: PAGE_DATES["/dental-marketing/"] },
+    { url: `${SITE_URL}/healthcare-seo/`, lastModified: PAGE_DATES["/healthcare-seo/"] },
   ];
 }
 
