@@ -29,7 +29,7 @@ const PAGE_DATES: Record<string, string> = {
   "/ai-visibility-geo/": "2026-08-25",
   "/tools/ai-visibility-checker/": "2026-09-01",
   "/dermatology-marketing/": "2026-09-10",
-  "/dental-marketing/": "2026-09-10",
+  "/dental-marketing/": "2026-09-11",
 };
 
 /**

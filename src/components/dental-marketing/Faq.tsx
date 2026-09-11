@@ -16,7 +16,7 @@ export const DENTAL_FAQ_ITEMS: Array<{ q: string; a: string }> = [
   },
   {
     q: "We're part of a DSO. Who do you actually talk to?",
-    a: "Whoever your organization designates — typically a regional or clinical director for day-to-day work. We'll provide whatever documentation a corporate approver needs to sign off. The person evaluating this and the person approving it are often not the same one, and we plan for that from the start.",
+    a: "Whoever your practice designates — typically a regional or clinical director for day-to-day work. We'll provide whatever paperwork your approver needs to sign off. The person evaluating this and the person approving it are often different people, and we plan for that.",
   },
   {
     q: "How is this different from what our current SEO company already does?",

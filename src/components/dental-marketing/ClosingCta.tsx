@@ -16,15 +16,15 @@ export function DentalClosingCta() {
         <div className="mx-auto flex max-w-2xl flex-col items-center text-center">
           <h2 className={H2}>See What AI Says About Your Practice</h2>
           <p className="mt-6 max-w-2xl text-white/70">
-            Fifteen questions, run against your emergency query set and your elective query set separately, one
-            free report. No call required. You&apos;ll see both sides of your practice, not one blended score
-            that hides which one needs the work.
+            We send three real questions to a live AI answer engine and show you the exact answers it gives — who
+            gets named, and who doesn&apos;t. No call required, and the report is yours either way.
           </p>
           <div className="mt-10">
             <PrimaryCta href="/tools/ai-visibility-checker/" dataCta="dental-closing">
-              Get My Free Report
+              Check My Practice&rsquo;s AI Visibility
             </PrimaryCta>
           </div>
+          <p className="mt-4 text-sm text-white/45">Free. No card. About 40 seconds.</p>
           <p className="mt-8 max-w-xl text-sm text-white/45">
             Run a multi-specialty group that also includes a dermatology practice? The same split-query logic
             applies there — different domain, same reason it works. Medical and cosmetic instead of emergency and

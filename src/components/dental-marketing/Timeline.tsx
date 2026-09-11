@@ -12,7 +12,7 @@ const PHASES = [
   },
   {
     name: "Months 2–3",
-    body: "Emergency-page architecture gets rebuilt around speed and availability signals. Elective procedure pages get rebuilt for depth instead of a generic services list. Your review response system goes live in the same window.",
+    body: "The emergency page gets rebuilt around speed and open hours. Elective procedure pages get rebuilt for depth instead of a generic services list. Your review response system goes live in the same window.",
   },
   {
     name: "Ongoing",

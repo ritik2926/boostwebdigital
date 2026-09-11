@@ -13,7 +13,7 @@ const REASONS = [
   { name: "Looking for the cheapest option", body: "There are agencies charging far less. They aren't running two separate query sets, and the price difference is usually exactly that missing work." },
   {
     name: "Already at capacity",
-    body: "If your practice isn't taking new patients right now, more visibility just means more calls you can't answer. Fix capacity first. There's no version of this work that helps a practice that can't book the patients it already gets — come back when that changes.",
+    body: "If your practice isn't taking new patients right now, more visibility just means more calls you can't answer. Fix capacity first, then come back.",
   },
 ] as const;
 
@@ -25,11 +25,9 @@ export function DentalNotFor() {
         <h2 className={cn(H2, STACK.kickerToHeading, "max-w-2xl")}>We Turn Down More Practices Than We Take On</h2>
 
         <ul className={cn(STACK.subToContent, "flex flex-col divide-y divide-white/8 border-y border-white/8")}>
-          {REASONS.map((reason, i) => (
+          {REASONS.map((reason) => (
             <li key={reason.name} className="flex flex-col gap-2 py-7 sm:flex-row sm:items-baseline sm:gap-8">
-              <span aria-hidden className="font-display text-3xl font-extrabold tabular-nums text-white/25 sm:w-14 sm:shrink-0">
-                {String(i + 1).padStart(2, "0")}
-              </span>
+              <span aria-hidden className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-white/25 sm:mt-2.5" />
               <div>
                 <h3 className="font-display text-lg font-semibold text-white">{reason.name}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-white/60">{reason.body}</p>
