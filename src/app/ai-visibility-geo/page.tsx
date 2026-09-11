@@ -7,7 +7,7 @@ import JsonLd from "@/components/JsonLd";
 import { Container } from "@/components/Container";
 import { Kicker } from "@/components/Kicker";
 import { Reveal, RevealGroup, RevealItem } from "@/components/Reveal";
-import { MagneticButton, GhostButton } from "@/components/Buttons";
+import { SecondaryCta } from "@/components/StaticCta";
 import { StatCounter } from "@/components/services/StatCounter";
 import { AmbientGlow } from "@/components/AmbientGlow";
 import { Sparkles } from "@/components/services/Sparkles";
@@ -283,12 +283,12 @@ export default function AiVisibilityGeoPage() {
                 </p>
               </RevealItem>
               <RevealItem className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:gap-6">
-                <MagneticButton href={CTA_HREF} dataCta="hero-primary">
-                  Check my practice&rsquo;s AI visibility
-                </MagneticButton>
-                <GhostButton href="#measurement" className="inline-flex">
+                <Link href={CTA_HREF} data-cta="hero-primary" className="btn-primary inline-flex">
+                  <span>Check my practice&rsquo;s AI visibility</span>
+                </Link>
+                <SecondaryCta href="#measurement" className="inline-flex">
                   See how we measure it
-                </GhostButton>
+                </SecondaryCta>
               </RevealItem>
               <RevealItem className="mt-4">
                 <p className="text-sm text-white/45">Free. All we need is your practice name.</p>
@@ -426,9 +426,9 @@ export default function AiVisibilityGeoPage() {
                   <p className="text-white">We run all four checks on your practice before you pay anything.</p>
                   <p className="mt-1 text-sm text-white/45">Fifteen questions, four engines, three specific fixes. Free.</p>
                 </div>
-                <MagneticButton href={CTA_HREF} dataCta="levers-band">
-                  See where my practice stands
-                </MagneticButton>
+                <Link href={CTA_HREF} data-cta="levers-band" className="btn-primary inline-flex">
+                  <span>See where my practice stands</span>
+                </Link>
               </div>
             </Reveal>
           </Container>
@@ -610,9 +610,9 @@ export default function AiVisibilityGeoPage() {
                 </p>
               </RevealItem>
               <RevealItem className="mt-10">
-                <MagneticButton href={CTA_HREF} dataCta="closing">
-                  Get my free report
-                </MagneticButton>
+                <Link href={CTA_HREF} data-cta="closing" className="btn-primary inline-flex">
+                  <span>Get my free report</span>
+                </Link>
               </RevealItem>
               <RevealItem className="mt-4">
                 <p className="text-sm text-white/45">No credit card. No call. Nothing gated.</p>

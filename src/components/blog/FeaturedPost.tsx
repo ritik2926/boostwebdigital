@@ -23,7 +23,7 @@ export function FeaturedPost({ post, categoryOrder, solo = false }: { post: Blog
           categoryOrder={categoryOrder}
           priority
           sizes="(min-width: 1024px) 780px, 100vw"
-          className="aspect-16/9 h-auto w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+          className="aspect-16/9 h-auto w-full object-cover"
         />
       </div>
 

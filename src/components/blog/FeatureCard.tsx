@@ -12,7 +12,7 @@ export function FeatureCard({ post, categoryOrder, priority = false }: { post: B
     <Link
       href={`/blog/${post.slug}/`}
       className={cn(
-        "group grid grid-cols-1 overflow-hidden border border-white/8 bg-white/[0.02] transition-all duration-300 hover:border-white/20 hover:bg-white/4 hover:shadow-[0_20px_60px_rgba(0,0,0,0.45)] md:grid-cols-[55%_1fr]",
+        "group grid grid-cols-1 overflow-hidden border border-white/8 bg-white/[0.02] transition-[border-color,background-color] duration-200 ease-(--ease-signature) hover:border-white/20 hover:bg-white/4 md:grid-cols-[55%_1fr]",
         CARD_RADIUS.feature
       )}
     >
@@ -22,7 +22,7 @@ export function FeatureCard({ post, categoryOrder, priority = false }: { post: B
           categoryOrder={categoryOrder}
           priority={priority}
           sizes="(min-width: 1024px) 55vw, 100vw"
-          className="aspect-4/3 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          className="aspect-4/3 h-full w-full object-cover"
         />
       </div>
       <div className={cn("flex flex-col justify-center", CARD_PADDING.feature)}>

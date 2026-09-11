@@ -74,7 +74,7 @@ export function StickyMobileBar({
         href={href}
         data-cta="sticky-mobile"
         tabIndex={visible ? 0 : -1}
-        className="shiny-cta flex w-full items-center justify-center"
+        className="btn-primary w-full justify-center"
       >
         <span>{label}</span>
       </Link>

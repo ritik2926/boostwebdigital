@@ -2,7 +2,7 @@ import { Container } from "@/components/Container";
 import { Reveal, RevealGroup, RevealItem } from "@/components/Reveal";
 import { HeroBackground } from "@/components/contact/HeroBackground";
 import { ContactForm } from "@/components/contact/ContactForm";
-import { GhostButton } from "@/components/Buttons";
+import { SecondaryCta } from "@/components/StaticCta";
 import { cn } from "@/lib/utils";
 import { CARD_PADDING, CARD_RADIUS, STACK } from "@/lib/tokens";
 
@@ -83,9 +83,9 @@ export function ContactHero() {
                 <RevealItem>
                   <p className="mt-6 max-w-65 text-sm text-white/50">Prefer to pick a time instead?</p>
 
-                  <GhostButton href="mailto:contact@boostwebdigital.com" className="mt-4 inline-flex h-10 w-fit">
+                  <SecondaryCta href="mailto:contact@boostwebdigital.com" className="mt-4 inline-flex h-10 w-fit">
                     Book a free call
-                  </GhostButton>
+                  </SecondaryCta>
                 </RevealItem>
               </RevealGroup>
 

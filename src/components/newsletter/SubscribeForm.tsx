@@ -1,8 +1,6 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { MagneticButton } from "@/components/Buttons";
-import { cn } from "@/lib/utils";
 
 type State = "idle" | "submitting" | "success" | "error";
 
@@ -100,9 +98,13 @@ export function SubscribeForm({ source, className }: { source: "footer" | "blog-
             className={UNDERLINE_INPUT}
           />
         </div>
-        <MagneticButton type="submit" disabled={state === "submitting"} className="shrink-0 disabled:cursor-not-allowed disabled:opacity-60">
-          {state === "submitting" ? "Sending…" : "Subscribe"}
-        </MagneticButton>
+        <button
+          type="submit"
+          disabled={state === "submitting"}
+          className="btn-primary inline-flex shrink-0 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          <span>{state === "submitting" ? "Sending…" : "Subscribe"}</span>
+        </button>
       </div>
 
       {state === "error" && <p className="mt-3 text-sm text-white/50">{message}</p>}

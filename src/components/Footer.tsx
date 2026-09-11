@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { Container } from "@/components/Container";
 import { Reveal, RevealGroup, RevealItem, usePrefersReducedMotion } from "@/components/Reveal";
-import { GhostButton } from "@/components/Buttons";
+import { SecondaryCta } from "@/components/StaticCta";
 import { SubscribeForm } from "@/components/newsletter/SubscribeForm";
 import { cn, seeded } from "@/lib/utils";
 import { EASE } from "@/lib/tokens";
@@ -262,9 +262,9 @@ export function Footer() {
             </h2>
           </RevealItem>
           <RevealItem>
-            <GhostButton href="mailto:contact@boostwebdigital.com" className="inline-flex">
+            <SecondaryCta href="mailto:contact@boostwebdigital.com" className="inline-flex">
               Start a Conversation
-            </GhostButton>
+            </SecondaryCta>
           </RevealItem>
         </RevealGroup>
 

@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 import { Container } from "@/components/Container";
 import { RevealGroup, RevealItem } from "@/components/Reveal";
-import { MagneticButton } from "@/components/Buttons";
 import { AmbientGlow } from "@/components/AmbientGlow";
 import { SECTION_PADDING } from "@/lib/tokens";
 import { cn } from "@/lib/utils";
@@ -97,7 +96,9 @@ export function FinalCTA({
         </RevealItem>
 
         <RevealItem className="mt-10 flex justify-center">
-          <MagneticButton>{ctaLabel}</MagneticButton>
+          <button type="button" className="btn-primary inline-flex">
+            <span>{ctaLabel}</span>
+          </button>
         </RevealItem>
       </Container>
     </section>

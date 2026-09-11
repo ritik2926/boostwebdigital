@@ -3,7 +3,6 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Container } from "@/components/Container";
 import { RevealGroup, RevealItem } from "@/components/Reveal";
-import { MagneticButton } from "@/components/Buttons";
 import { AmbientGlow } from "@/components/AmbientGlow";
 import { StatementFade } from "./StatementFade";
 import { LightBand } from "./LightBand";
@@ -261,12 +260,12 @@ export default function AboutPage() {
                   <RevealItem as="li" key={stat.id} className={cn(i === 1 && "lg:-mt-6 lg:mb-6")}>
                     <div
                       className={cn(
-                        "group flex min-h-95 flex-col overflow-hidden border transition-all duration-300 hover:-translate-y-1.5 hover:border-white/20 hover:bg-white/4 hover:shadow-[0_20px_60px_rgba(0,0,0,0.45)]",
+                        "group flex min-h-95 flex-col overflow-hidden border transition-colors duration-200 ease-(--ease-signature) hover:border-white/20 hover:bg-white/4",
                         CARD_RADIUS.standard,
                         i === 1 ? "border-white/15 bg-white/3 shadow-[0_20px_60px_rgba(0,0,0,0.35)]" : "border-white/8 bg-white/2"
                       )}
                     >
-                      <div className="h-38 shrink-0 border-b border-white/8 transition-transform duration-300 group-hover:scale-105">
+                      <div className="h-38 shrink-0 border-b border-white/8">
                         <Graphic />
                       </div>
                       <div className={cn("flex flex-1 flex-col", CARD_PADDING.standard)}>
@@ -365,7 +364,9 @@ export default function AboutPage() {
             </RevealItem>
 
             <RevealItem className={cn("flex justify-center", STACK.contentToCta)}>
-              <MagneticButton>Get My Free AI Visibility Report</MagneticButton>
+              <button type="button" className="btn-primary inline-flex">
+                <span>Get My Free AI Visibility Report</span>
+              </button>
             </RevealItem>
           </Container>
         </section>

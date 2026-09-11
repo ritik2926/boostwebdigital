@@ -53,7 +53,7 @@ function LatestPostRow({ post, categoryOrder }: { post: BlogPost; categoryOrder:
           post={post}
           categoryOrder={categoryOrder}
           sizes="112px"
-          className="aspect-16/10 h-auto w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+          className="aspect-16/10 h-auto w-full object-cover"
         />
       </div>
 

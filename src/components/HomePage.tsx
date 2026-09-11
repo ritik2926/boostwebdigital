@@ -21,7 +21,6 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Pricing } from "@/components/Pricing";
 import { Founder } from "@/components/Founder";
-import { MagneticButton } from "@/components/Buttons";
 import { Kicker } from "@/components/Kicker";
 import { AmbientGlow } from "@/components/AmbientGlow";
 import { GrainOverlay } from "@/components/GrainOverlay";
@@ -405,7 +404,9 @@ function Hero() {
               </p>
             </HeroReveal>
             <HeroReveal className="mt-10">
-              <MagneticButton>Check My Practice&apos;s AI Visibility →</MagneticButton>
+              <button type="button" className="btn-primary inline-flex">
+                <span>Check My Practice&apos;s AI Visibility →</span>
+              </button>
             </HeroReveal>
           </motion.div>
         </Container>
@@ -2319,7 +2320,9 @@ function Faq() {
                 </p>
               </RevealItem>
               <RevealItem className="mt-8">
-                <MagneticButton>Get Your Free AI Visibility Scan</MagneticButton>
+                <button type="button" className="btn-primary inline-flex">
+                  <span>Get Your Free AI Visibility Scan</span>
+                </button>
               </RevealItem>
             </RevealGroup>
           </div>

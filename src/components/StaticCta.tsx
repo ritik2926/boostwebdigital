@@ -2,20 +2,13 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 /**
- * Plain, framer-motion-free stand-ins for MagneticButton/GhostButton
- * (src/components/Buttons.tsx), for the same reason as StaticGlow.tsx:
- * MagneticButton is a "use client" component built on framer-motion's
- * useMotionValue/useSpring for its cursor-follow physics, which is exactly
- * the dependency /dermatology-marketing/ and /dental-marketing/ must not
- * pull in. Both `.shiny-cta`/`.ghost-cta` CSS classes in globals.css already
- * carry the full visual treatment (gradient border, dot texture, shimmer
- * sweep, icon reveal) as plain CSS — the magnetic mouse-follow offset and
- * whileTap scale are the only things this drops, and `.shiny-cta` already
- * disables its own continuous animation on coarse pointers regardless.
+ * Plain, framer-motion-free CTA components — no cursor-follow physics, no
+ * "use client". PrimaryCta wears the sitewide `.btn-primary` skin (2026-09-11
+ * button-system consolidation); SecondaryCta wears `.ghost-cta`, unchanged.
  */
 export function PrimaryCta({ href, children, className, dataCta }: { href: string; children: React.ReactNode; className?: string; dataCta?: string }) {
   return (
-    <Link href={href} className={cn("shiny-cta", className)} data-cta={dataCta}>
+    <Link href={href} className={cn("btn-primary inline-flex", className)} data-cta={dataCta}>
       <span>{children}</span>
     </Link>
   );

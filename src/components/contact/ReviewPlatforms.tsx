@@ -40,11 +40,11 @@ export function ReviewPlatforms() {
             <RevealItem as="li" key={item.platform}>
               <div
                 className={cn(
-                  "relative flex h-45 flex-col items-center justify-center gap-3 overflow-hidden border px-6 text-center transition-transform duration-300",
+                  "relative flex h-45 flex-col items-center justify-center gap-3 overflow-hidden border px-6 text-center transition-colors duration-200 ease-(--ease-signature)",
                   CARD_RADIUS.standard,
                   item.elevated
                     ? "-translate-y-2 border-accent/40 bg-white/[0.05] shadow-[0_20px_50px_rgba(var(--accent-rgb),0.15)]"
-                    : "border-white/8 bg-white/[0.02] hover:-translate-y-1"
+                    : "border-white/8 bg-white/[0.02] hover:border-white/20"
                 )}
               >
                 {item.elevated && (

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { MagneticButton } from "@/components/Buttons";
 
 type State = "idle" | "submitting" | "success" | "error";
 
@@ -34,13 +33,14 @@ export function UnsubscribeButton({ token }: { token: string }) {
 
   return (
     <div className="flex flex-col items-center gap-3">
-      <MagneticButton
+      <button
+        type="button"
         onClick={handleClick}
         disabled={state === "submitting"}
-        className="disabled:cursor-not-allowed disabled:opacity-60"
+        className="btn-primary inline-flex disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {state === "submitting" ? "Unsubscribing…" : "Unsubscribe"}
-      </MagneticButton>
+        <span>{state === "submitting" ? "Unsubscribing…" : "Unsubscribe"}</span>
+      </button>
       {state === "error" && <p className="text-sm text-white/50">Something went wrong. Try again.</p>}
     </div>
   );

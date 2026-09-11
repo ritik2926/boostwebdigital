@@ -4,7 +4,7 @@ import { Footer } from "@/components/Footer";
 import { Container } from "@/components/Container";
 import { Kicker } from "@/components/Kicker";
 import { RevealGroup, RevealItem } from "@/components/Reveal";
-import { MagneticButton } from "@/components/Buttons";
+import { PrimaryCta } from "@/components/StaticCta";
 import { Sparkles } from "@/components/services/Sparkles";
 import JsonLd from "@/components/JsonLd";
 import { ORGANIZATION, breadcrumb, faqPage } from "@/lib/schema";
@@ -214,7 +214,7 @@ export default function FaqPage() {
                 </p>
               </RevealItem>
               <RevealItem className={STACK.contentToCta}>
-                <MagneticButton href="/contact/">Get My Free Visibility Report</MagneticButton>
+                <PrimaryCta href="/contact/">Get My Free Visibility Report</PrimaryCta>
               </RevealItem>
             </RevealGroup>
           </Container>

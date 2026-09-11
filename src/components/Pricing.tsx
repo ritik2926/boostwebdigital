@@ -7,7 +7,6 @@ import { Container } from "@/components/Container";
 import { RevealGroup, RevealItem, usePrefersReducedMotion } from "@/components/Reveal";
 import { Kicker } from "@/components/Kicker";
 import { AmbientGlow } from "@/components/AmbientGlow";
-import { MagneticButton } from "@/components/Buttons";
 import { cn } from "@/lib/utils";
 import { EASE, SECTION_PADDING, STACK } from "@/lib/tokens";
 
@@ -380,7 +379,9 @@ export function Pricing() {
                       </p>
                     </div>
 
-                    <MagneticButton className="mt-6 w-full">Get My Free AI Visibility Report</MagneticButton>
+                    <button type="button" className="btn-primary mt-6 flex w-full justify-center">
+                      <span>Get My Free AI Visibility Report</span>
+                    </button>
 
                     <p className="mt-3 text-center text-xs text-white/40">
                       No call required. You&apos;ll get three specific fixes even if you never hire us.

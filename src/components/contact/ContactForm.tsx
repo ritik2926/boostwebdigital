@@ -358,7 +358,7 @@ export function ContactForm() {
       <button
         type="submit"
         disabled={status === "submitting"}
-        className="group flex h-13 w-full items-center justify-center gap-2 rounded-full bg-white text-[15px] font-semibold text-[#08080a] transition-transform duration-200 hover:scale-[1.01] hover:shadow-[0_0_32px_rgba(var(--accent-rgb),0.35)] disabled:opacity-70 disabled:hover:scale-100"
+        className="btn-primary flex h-13 w-full justify-center text-[15px] disabled:opacity-70"
       >
         {status === "submitting" ? (
           <>
@@ -366,10 +366,10 @@ export function ContactForm() {
               <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.5" strokeOpacity="0.25" />
               <path d="M21 12a9 9 0 00-9-9" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
             </svg>
-            Sending...
+            <span>Sending...</span>
           </>
         ) : (
-          "Submit inquiry"
+          <span>Submit inquiry</span>
         )}
       </button>
     </form>

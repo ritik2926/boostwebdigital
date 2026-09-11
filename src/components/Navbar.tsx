@@ -6,7 +6,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Container } from "@/components/Container";
-import { MagneticButton } from "@/components/Buttons";
 import { cn } from "@/lib/utils";
 import { EASE } from "@/lib/tokens";
 
@@ -511,7 +510,9 @@ function MobileNav() {
                 transition={{ duration: 0.4, delay: 0.16 + 0.06 * 5, ease: EASE.primary }}
                 className="mx-auto mt-8 w-full max-w-xs px-2"
               >
-                <MagneticButton href="/contact/" className="flex w-full items-center justify-center">Book a consultation</MagneticButton>
+                <Link href="/contact/" className="btn-primary flex w-full justify-center">
+                  <span>Book a consultation</span>
+                </Link>
               </motion.div>
             </nav>
           </motion.div>
@@ -569,7 +570,9 @@ export function Navbar() {
             <DesktopNavLinks className="justify-self-center" />
 
             <div className="col-start-3 flex items-center justify-self-end gap-2 sm:gap-4">
-              <MagneticButton href="/contact/" className="hidden shrink-0 sm:inline-flex">Book a consultation</MagneticButton>
+              <Link href="/contact/" className="btn-primary hidden shrink-0 sm:inline-flex">
+                <span>Book a consultation</span>
+              </Link>
               <MobileNav />
             </div>
           </motion.div>

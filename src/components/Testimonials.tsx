@@ -6,7 +6,7 @@ import { Container } from "@/components/Container";
 import { Reveal, RevealGroup, RevealItem } from "@/components/Reveal";
 import { useSpotlight } from "@/lib/useSpotlight";
 import { cn } from "@/lib/utils";
-import { EASE, SPRING, REVEAL, SECTION_PADDING, blurPx } from "@/lib/tokens";
+import { SPRING, REVEAL, SECTION_PADDING, blurPx } from "@/lib/tokens";
 
 // ---------------------------------------------------------------------------
 // Testimonials — PLACEHOLDER CONTENT, explicitly authorized by Ritik for
@@ -219,11 +219,7 @@ function GradientTile({
 
 function TestimonialCard({ quote, name, brand, from, to }: { quote: string; name: string; brand: string; from: string; to: string }) {
   return (
-    <motion.div
-      whileHover={{ y: -6 }}
-      transition={{ duration: 0.3, ease: EASE.primary }}
-      className="group relative w-full overflow-hidden rounded-2xl border border-white/8 bg-white/3 p-6 shadow-[0_8px_30px_rgba(0,0,0,0.35)] backdrop-blur-xl transition-[border-color,box-shadow] duration-300 hover:border-white/20 hover:shadow-[0_0_20px_rgba(255,255,255,0.15)]"
-    >
+    <div className="group relative w-full overflow-hidden rounded-2xl border border-white/8 bg-white/3 p-6 shadow-[0_8px_30px_rgba(0,0,0,0.35)] backdrop-blur-xl transition-colors duration-200 ease-(--ease-signature) hover:border-white/20">
       <span aria-hidden className="pointer-events-none absolute -right-1 -top-4 font-display text-6xl text-white/10">
         &rdquo;
       </span>
@@ -235,7 +231,7 @@ function TestimonialCard({ quote, name, brand, from, to }: { quote: string; name
           <p className="font-mono text-[0.7rem] uppercase tracking-widest text-white/45">{brand}</p>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
 

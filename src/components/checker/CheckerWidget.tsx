@@ -543,7 +543,7 @@ export function CheckerWidget() {
             href={`/tools/ai-visibility-checker/report/${view.report.id}/`}
             target="_blank"
             rel="noopener"
-            className="shiny-cta w-fit print:hidden"
+            className="btn-primary inline-flex w-fit print:hidden"
           >
             <span>Open your full report</span>
           </a>
@@ -568,7 +568,7 @@ export function CheckerWidget() {
           </ul>
         </div>
         <p className="text-white/75">{view.message}</p>
-        <button type="button" onClick={resetToForm} className="shiny-cta">
+        <button type="button" onClick={resetToForm} className="btn-primary inline-flex">
           <span>Try again</span>
         </button>
       </div>
@@ -583,7 +583,7 @@ export function CheckerWidget() {
           <>
             <p className="text-white/70">Here are your two reports so far.</p>
             <HistoryList history={view.history} />
-            <a href="/contact/" className="shiny-cta">
+            <a href="/contact/" className="btn-primary inline-flex">
               <span>Talk to us about ongoing monitoring</span>
             </a>
           </>
@@ -604,7 +604,7 @@ export function CheckerWidget() {
       <div className="flex flex-col items-start gap-4 rounded-xl border border-white/10 p-6">
         <h2 className="font-display text-xl font-semibold text-white">That didn&rsquo;t work</h2>
         <p className="text-white/75">{view.message}</p>
-        <button type="button" onClick={resetToForm} className="shiny-cta">
+        <button type="button" onClick={resetToForm} className="btn-primary inline-flex">
           <span>Try again</span>
         </button>
       </div>
@@ -841,7 +841,7 @@ export function CheckerWidget() {
       </div>
 
       <div className="mt-2 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <button type="submit" className="shiny-cta w-full sm:w-auto">
+        <button type="submit" className="btn-primary flex w-full justify-center sm:inline-flex sm:w-auto">
           <span>Check my AI visibility</span>
         </button>
         <QuotaLine quota={quota} />

@@ -3,7 +3,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Container } from "@/components/Container";
 import { RevealGroup, RevealItem } from "@/components/Reveal";
-import { GhostButton } from "@/components/Buttons";
+import { SecondaryCta } from "@/components/StaticCta";
 import { SECTION_PADDING, STACK } from "@/lib/tokens";
 
 export const metadata: Metadata = {
@@ -39,9 +39,9 @@ export default async function NewsletterConfirmedPage({
                 </p>
               </RevealItem>
               <RevealItem className={STACK.contentToCta}>
-                <GhostButton href="/blogs/" className="inline-flex">
+                <SecondaryCta href="/blogs/" className="inline-flex">
                   {invalid ? "Back to the blog" : "Read the blog"}
-                </GhostButton>
+                </SecondaryCta>
               </RevealItem>
             </RevealGroup>
           </Container>

@@ -9,7 +9,7 @@
  */
 export function PrintButton() {
   return (
-    <button type="button" onClick={() => window.print()} className="shiny-cta print:hidden">
+    <button type="button" onClick={() => window.print()} className="btn-primary inline-flex print:hidden">
       <span>Download PDF</span>
     </button>
   );

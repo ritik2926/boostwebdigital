@@ -134,7 +134,7 @@ function HowIWorkIcon({ id, delay = 0 }: { id: HowIWorkId; delay?: number }) {
 
 function WhoWeAreCard({ item }: { item: (typeof WHO_WE_ARE)[number] }) {
   return (
-    <div className="group flex h-full flex-col overflow-hidden rounded-2xl border border-[#08080a]/10 transition-all duration-300 hover:-translate-y-1.5 hover:border-[#08080a]/20 hover:shadow-[0_20px_50px_rgba(0,0,0,0.15)]">
+    <div className="group flex h-full flex-col overflow-hidden rounded-2xl border border-[#08080a]/10 transition-colors duration-200 ease-(--ease-signature) hover:border-[#08080a]/20">
       <div className="relative aspect-4/3 w-full shrink-0 overflow-hidden bg-[#08080a]/5">
         {item.id === "ritik" ? (
           <Image
@@ -142,10 +142,10 @@ function WhoWeAreCard({ item }: { item: (typeof WHO_WE_ARE)[number] }) {
             alt="Ritik Malhotra, founder of Boost Web Digital"
             fill
             sizes="(min-width: 1024px) 33vw, 90vw"
-            className="object-cover grayscale contrast-125 transition-transform duration-300 group-hover:scale-105"
+            className="object-cover grayscale contrast-125"
           />
         ) : (
-          <div className="h-full w-full transition-transform duration-300 group-hover:scale-105">
+          <div className="h-full w-full">
             {item.id === "hair-restoration" ? <HairRestorationGraphic /> : <IndexGraphic />}
           </div>
         )}
@@ -260,7 +260,7 @@ export function LightBand() {
           >
             {HOW_I_WORK.map((item, i) => (
               <RevealItem as="li" key={item.id}>
-                <div className={cn("flex min-h-55 flex-col rounded-2xl border border-[#08080a]/12 bg-[#08080a]/4 transition-all duration-300 hover:-translate-y-1.5 hover:border-[#08080a]/25 hover:bg-[#08080a]/6 hover:shadow-[0_16px_40px_rgba(0,0,0,0.12)]", CARD_PADDING.standard)}>
+                <div className={cn("flex min-h-55 flex-col rounded-2xl border border-[#08080a]/12 bg-[#08080a]/4 transition-colors duration-200 ease-(--ease-signature) hover:border-[#08080a]/25 hover:bg-[#08080a]/6", CARD_PADDING.standard)}>
                   <HowIWorkIcon id={item.id} delay={i * 0.3} />
                   <h3 className="mt-5 font-display text-lg font-semibold text-[#08080a]">{item.heading}</h3>
                   <p className="mt-2 text-sm leading-relaxed text-[#08080a]/70">{item.body}</p>

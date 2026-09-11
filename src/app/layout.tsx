@@ -66,19 +66,23 @@ const switzer = localFont({
 });
 
 /**
- * Preloads only the two weights every page actually needs above the fold —
- * Regular 400 (default body/paragraph text) and Medium 500 (the sticky
- * Navbar's CTA button, `.shiny-cta`/`.ghost-cta` in globals.css) — instead of
- * the ~230ms/70KB critical-chain cost of the browser discovering all of them
- * itself. Deliberately unused below: `localFont()`'s preload behavior is a
- * build-time side effect of the call itself, not of consuming its return
- * value, so this never touches `--font-switzer` or risks colliding with the
- * `switzer` object above — every other weight still loads exactly as before.
+ * Preloads only the weights every page actually needs above the fold —
+ * Regular 400 (default body/paragraph text) and Semibold 600 (`.btn-primary`
+ * in globals.css, the sitewide CTA — Navbar's button and every hero/closing
+ * CTA render one above the fold) — instead of the ~230ms/70KB critical-chain
+ * cost of the browser discovering all of them itself. Medium 500 dropped
+ * from this list in the 2026-09-11 button-system consolidation: `.shiny-cta`
+ * (500) no longer exists, and nothing else above the fold depends on 500
+ * specifically. Deliberately unused below: `localFont()`'s preload behavior
+ * is a build-time side effect of the call itself, not of consuming its
+ * return value, so this never touches `--font-switzer` or risks colliding
+ * with the `switzer` object above — every other weight still loads exactly
+ * as before.
  */
 const switzerCriticalPreload = localFont({
   src: [
     { path: "../fonts/switzer/Switzer-Regular.woff2", weight: "400", style: "normal" },
-    { path: "../fonts/switzer/Switzer-Medium.woff2", weight: "500", style: "normal" },
+    { path: "../fonts/switzer/Switzer-Semibold.woff2", weight: "600", style: "normal" },
   ],
   preload: true,
 });

@@ -3,7 +3,7 @@
 import { useState, useSyncExternalStore } from "react";
 import { motion } from "framer-motion";
 import { RevealGroup, RevealItem } from "@/components/Reveal";
-import { MagneticButton, GhostButton } from "@/components/Buttons";
+import { SecondaryCta } from "@/components/StaticCta";
 import { REVEAL, GRID_GAP, CARD_PADDING, CARD_RADIUS } from "@/lib/tokens";
 import { cn } from "@/lib/utils";
 
@@ -276,9 +276,13 @@ export function PricingPlansCards() {
 
                 <div className="mt-auto pt-6">
                   {plan.featured ? (
-                    <MagneticButton className="flex w-full items-center justify-center">Get My Free AI Visibility Report</MagneticButton>
+                    <button type="button" className="btn-primary flex w-full justify-center">
+                      <span>Get My Free AI Visibility Report</span>
+                    </button>
                   ) : (
-                    <GhostButton className="inline-flex w-full items-center justify-center">Get My Free AI Visibility Report</GhostButton>
+                    <SecondaryCta href="#" className="flex w-full justify-center">
+                      Get My Free AI Visibility Report
+                    </SecondaryCta>
                   )}
                   <p className="mt-4 text-xs text-white/45">
                     <span className="font-medium text-white/60">Best for:</span> {plan.bestFor}
