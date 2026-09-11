@@ -16,6 +16,8 @@ import { TableOfContents, TableOfContentsMobile } from "@/components/blog/TableO
 import { ShareRail } from "@/components/blog/ShareRail";
 import { AuthorCard } from "@/components/blog/AuthorCard";
 import { RelatedPosts } from "@/components/blog/RelatedPosts";
+import { InlineCheckerCta } from "@/components/blog/InlineCheckerCta";
+import { splitAfterHeading } from "@/lib/blog/splitAfterHeading";
 
 const SITE_URL = "https://boostwebdigital.com";
 
@@ -149,7 +151,16 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                       lib/blog/wordpress.ts, off the same slug rule the old
                       rehype-slug pipeline used (github-slugger), so the TOC
                       on the right still resolves every #anchor correctly. */}
-                  <div className="wp-post-content" dangerouslySetInnerHTML={{ __html: post.content }} />
+                  {(() => {
+                    const { before, after } = splitAfterHeading(post.content, 3);
+                    return (
+                      <>
+                        <div className="wp-post-content" dangerouslySetInnerHTML={{ __html: before }} />
+                        <InlineCheckerCta />
+                        {after && <div className="wp-post-content" dangerouslySetInnerHTML={{ __html: after }} />}
+                      </>
+                    );
+                  })()}
 
                   <Reveal className="mt-16">
                     <AuthorCard author={post.author} />

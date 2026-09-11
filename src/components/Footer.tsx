@@ -5,8 +5,10 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { Container } from "@/components/Container";
 import { Reveal, RevealGroup, RevealItem, usePrefersReducedMotion } from "@/components/Reveal";
-import { SecondaryCta } from "@/components/StaticCta";
+import { PrimaryCta } from "@/components/StaticCta";
 import { SubscribeForm } from "@/components/newsletter/SubscribeForm";
+import { getConfirmedSocialLinks } from "@/lib/socialLinks";
+import { SOCIAL_ICONS } from "@/components/conversion/icons";
 import { cn, seeded } from "@/lib/utils";
 import { EASE } from "@/lib/tokens";
 
@@ -250,23 +252,73 @@ function BoostWordmark() {
   );
 }
 
+/**
+ * Footer-only, per this task's brief — no floating social icons anywhere
+ * on the site; a floating social icon's only function is to send a
+ * qualified B2B visitor to a different website, which is the opposite of
+ * conversion. Renders nothing at all until at least one profile in
+ * src/lib/socialLinks.ts is confirmed live (`url` set) — an empty row is
+ * worse than no row.
+ */
+function SocialLinksRow() {
+  const links = getConfirmedSocialLinks();
+  if (links.length === 0) return null;
+
+  return (
+    <div className="border-t border-white/8 py-8">
+      <ul className="flex flex-wrap gap-2">
+        {links.map((link) => {
+          const Icon = SOCIAL_ICONS[link.id];
+          return (
+            <li key={link.id}>
+              <a
+                href={link.url}
+                target="_blank"
+                rel="noopener"
+                aria-label={`Boost Web Digital on ${link.platform}`}
+                className="flex h-11 w-11 items-center justify-center rounded-full border border-white/8 text-white/60 transition-colors duration-200 ease-(--ease-signature) hover:border-white/25 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--accent-outline)"
+              >
+                <Icon />
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
+
 export function Footer() {
   return (
     <footer className="relative overflow-hidden border-t border-white/8">
       <FooterPaths />
       <Container className="relative">
-        <RevealGroup as="div" className={cn("flex flex-col gap-8 py-16 sm:flex-row sm:items-end sm:justify-between")}>
-          <RevealItem>
-            <h2 className="font-display text-[1.875rem] font-bold leading-[1.1] tracking-[-0.01em] text-white sm:text-[2.5rem]">
-              Let&apos;s Grow Your Practice.
-            </h2>
-          </RevealItem>
-          <RevealItem>
-            <SecondaryCta href="mailto:contact@boostwebdigital.com" className="inline-flex">
-              Start a Conversation
-            </SecondaryCta>
-          </RevealItem>
-        </RevealGroup>
+        {/*
+          Footer CTA band (2026-09-11, conversion layer) — the one thing
+          almost every visitor sees regardless of how far they scrolled or
+          which page they landed on, so it gets the checker, not a generic
+          "get in touch." `id="footer-cta"` is load-bearing: CheckerFab
+          observes this exact element to hide the mobile sticky bar (and
+          skip the desktop pill) once this band is in view, per this
+          task's "two competing CTAs convert worse than one" rule.
+        */}
+        <div id="footer-cta">
+          <RevealGroup as="div" className={cn("flex flex-col gap-6 py-16 sm:flex-row sm:items-end sm:justify-between")}>
+            <RevealItem>
+              <h2 className="font-display text-[1.875rem] font-bold leading-[1.1] tracking-[-0.01em] text-white sm:text-[2.5rem]">
+                Let&apos;s Grow Your Practice.
+              </h2>
+            </RevealItem>
+            <RevealItem>
+              <div className="flex flex-col items-start gap-3 sm:items-end">
+                <PrimaryCta href="/tools/ai-visibility-checker/" dataCta="footer-cta">
+                  Check My Practice&rsquo;s AI Visibility
+                </PrimaryCta>
+                <p className="text-sm text-white/45">Free. No card. About 40 seconds.</p>
+              </div>
+            </RevealItem>
+          </RevealGroup>
+        </div>
 
         <RevealGroup as="div" className="grid gap-10 border-t border-white/8 py-14 sm:grid-cols-2 lg:grid-cols-6">
           <RevealItem>
@@ -326,6 +378,12 @@ export function Footer() {
                   Book a Call
                 </Link>
               </li>
+              {/* No confirmed phone line or business hours exist yet — literal
+                  visible brackets rather than an invented number or a
+                  plausible-sounding "9am–5pm EST" that doesn't reflect where
+                  the team actually is. Fill in once real. */}
+              <li className="text-sm text-white/50">[PHONE NUMBER]</li>
+              <li className="text-sm text-white/50">[BUSINESS HOURS] [TIMEZONE]</li>
             </ul>
           </RevealItem>
 
@@ -353,6 +411,8 @@ export function Footer() {
             <BoostWordmark />
           </div>
         </Reveal>
+
+        <SocialLinksRow />
 
         <div className="flex flex-col gap-4 border-t border-white/8 py-8 text-xs text-white/40 sm:flex-row sm:items-center sm:justify-between">
           <span>© {new Date().getFullYear()} Boost Web Digital. All rights reserved.</span>

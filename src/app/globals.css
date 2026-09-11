@@ -100,6 +100,15 @@
   --font-display: var(--font-switzer);
 }
 
+/* Reserves the scrollbar's own width permanently (2026-09-11, conversion
+   layer) so locking body scroll while the checker modal is open — or any
+   future scroll-locked overlay — never shifts layout when the scrollbar
+   disappears. Zero visual difference on any page that already scrolls;
+   only matters at the instant something toggles `overflow: hidden`. */
+html {
+  scrollbar-gutter: stable;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
@@ -110,6 +119,22 @@ body {
      back past Arial to the browser's system-font stack. Reference the real
      next/font-generated variable directly instead. */
   font-family: var(--font-switzer), Arial, Helvetica, sans-serif;
+}
+
+/* Reserves room for the mobile checker sticky bar (CheckerFab.tsx) below
+   the md breakpoint (768px) so it can never cover the last section above
+   the footer while it's visible — the bar itself hides once the footer's
+   own CTA band scrolls into view, but everything ABOVE that band on a
+   given page is content this stylesheet has no way to know about page by
+   page, so the safety margin is reserved sitewide instead of per-page.
+   Sized to the bar's own height (under 64px, per this task's brief) plus
+   its safe-area padding. A small, constant bit of extra whitespace at the
+   very bottom of every mobile page — the trade-off for guaranteeing the
+   bar never sits on top of body text or a form field. */
+@media (max-width: 767px) {
+  body {
+    padding-bottom: calc(4.5rem + env(safe-area-inset-bottom));
+  }
 }
 
 /* §6 Motion System — always-on ambient loops, CSS-driven (zero JS cost) */
@@ -938,5 +963,74 @@ body {
     opacity: 1 !important;
     transform: none !important;
     animation: none !important;
+  }
+}
+
+/*
+  Checker FAB modal (2026-09-11, conversion layer) — native <dialog>,
+  showModal(), per this task's brief: the focus trap, backdrop, and
+  Escape-to-close all come from the platform, not a hand-rolled div. This
+  class only resets the UA default box (border/padding/background/max
+  dimensions) and adds an entrance transition; CheckerFab.tsx owns every
+  behavioural piece (focus-on-open, focus-return-on-close, backdrop click).
+
+  The entrance transition uses @starting-style + `transition-behavior:
+  allow-discrete`, both Baseline-2024 CSS — the same "progressive
+  enhancement over a plain, acceptable default" posture as
+  `.scroll-fade-inout` elsewhere in this file. A browser that doesn't
+  understand @starting-style just shows/hides the dialog instantly, which
+  already satisfies this task's own reduced-motion rule ("no slide, just
+  appear") — no @supports gate needed, there's no broken in-between state.
+*/
+.checker-fab-dialog {
+  position: relative;
+  isolation: isolate;
+  width: min(30rem, calc(100vw - 2rem));
+  max-height: min(38rem, calc(100vh - 4rem));
+  overflow-y: auto;
+  margin: auto;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1.25rem;
+  padding: 0;
+  background: var(--background);
+  color: var(--foreground);
+  opacity: 0;
+  transform: scale(0.96);
+  transition:
+    opacity 0.2s var(--ease-signature),
+    transform 0.2s var(--ease-signature),
+    overlay 0.2s allow-discrete,
+    display 0.2s allow-discrete;
+}
+.checker-fab-dialog[open] {
+  opacity: 1;
+  transform: scale(1);
+}
+@starting-style {
+  .checker-fab-dialog[open] {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+.checker-fab-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.6);
+  opacity: 0;
+  transition:
+    opacity 0.2s var(--ease-signature),
+    overlay 0.2s allow-discrete,
+    display 0.2s allow-discrete;
+}
+.checker-fab-dialog[open]::backdrop {
+  opacity: 1;
+}
+@starting-style {
+  .checker-fab-dialog[open]::backdrop {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .checker-fab-dialog,
+  .checker-fab-dialog::backdrop {
+    transition: none;
   }
 }

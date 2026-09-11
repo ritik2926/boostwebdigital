@@ -1,7 +1,11 @@
+import { getConfirmedSocialLinks } from "@/lib/socialLinks";
+
 /**
  * Shared JSON-LD nodes, referenced by @id across every page's @graph.
  * Matches the style of src/lib/specialties.ts — plain exported consts and
- * helper functions, no framework imports.
+ * helper functions, no framework imports (this file's own one exception:
+ * socialLinks.ts, so sameAs below and the footer icon row can never drift
+ * out of sync with each other).
  */
 
 const SITE_URL = "https://boostwebdigital.com";
@@ -37,11 +41,10 @@ export const ORGANIZATION = {
   founder: { "@id": `${SITE_URL}/#ritik` },
   // Only add URLs to profiles that are confirmed live. A sameAs pointing
   // at a 404 is worse than an omitted field. Never emit an empty array.
-  sameAs: [
-    "https://www.linkedin.com/company/boostwebdigital",
-    "https://www.instagram.com/boostwebdigital/",
-    "https://www.facebook.com/boostwebdigitals",
-  ],
+  // Derived from src/lib/socialLinks.ts (2026-09-11) rather than a second
+  // hardcoded list — the footer icon row and this array now read from the
+  // one place a platform gets confirmed, so they can't drift apart.
+  sameAs: getConfirmedSocialLinks().map((link) => link.url),
   knowsAbout: [
     "healthcare marketing",
     "generative engine optimization",

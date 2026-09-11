@@ -5,6 +5,7 @@ import localFont from "next/font/local";
 import { Analytics as VercelAnalytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@/components/Analytics";
+import { CheckerFab } from "@/components/conversion/CheckerFab";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -101,6 +102,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <style>{'[style*="opacity:0"],[style*="opacity: 0"]{opacity:1!important;transform:none!important}'}</style>
         </noscript>
         {children}
+        <CheckerFab />
         <Analytics />
         <VercelAnalytics />
         <SpeedInsights />
