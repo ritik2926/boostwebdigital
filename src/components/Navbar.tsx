@@ -29,6 +29,7 @@ const SERVICES_SUBLINKS: Array<{ label: string; href: string }> = [
   { label: "Healthcare SEO", href: "/healthcare-seo/" },
   { label: "Reputation Management", href: "/healthcare-reputation-management/" },
   { label: "Social Media Management", href: "/healthcare-social-media-management/" },
+  { label: "Medical Website Design", href: "/medical-website-design/" },
   { label: "Dermatology Marketing", href: "/dermatology-marketing/" },
   { label: "Dental Marketing", href: "/dental-marketing/" },
 ];
