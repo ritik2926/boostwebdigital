@@ -1,79 +1,58 @@
+import Link from "next/link";
 import { Container } from "@/components/Container";
 import { Kicker } from "@/components/Kicker";
-import { RevealGroup, RevealItem } from "@/components/Reveal";
-import { ServicesCtaButton } from "@/components/services/ServicesCtaButton";
 import { Sparkles } from "@/components/services/Sparkles";
-import { HeroKeywordPills } from "@/components/services/HeroKeywordPills";
-import { HeroCursorGlow } from "@/components/services/HeroCursorGlow";
-import { STACK } from "@/lib/tokens";
+import { StaticGlow } from "@/components/StaticGlow";
+import { PrimaryCta, SecondaryCta } from "@/components/StaticCta";
+import { SECTION_PADDING } from "@/lib/tokens";
+import { cn } from "@/lib/utils";
 
 /**
- * "Moon on the horizon" focal element — a large circle pushed mostly below
- * the hero via `translate-y`, so only its top arc rises into view. The
- * rotating stroke is a filled conic-gradient circle carved into a ring by
- * `mask-image` (not `filter: blur()` — a previous version of this file hit
- * a real Chromium rendering bug combining `blur()` with `transform:
- * rotate()`; `mask-image` doesn't share that interaction, verified by
- * screenshot before relying on it here too). The glow behind it IS blurred,
- * but that layer never rotates, so it's unaffected. Pure CSS — no JS, so
- * this stays a Server Component; `prefers-reduced-motion` freezes the
- * rotation via `.services-hero-ring`'s own media query (globals.css).
+ * Rebuilt 2026-09-12 — the previous version used RevealGroup/RevealItem
+ * (framer-motion) throughout. This page is now framer-motion-free end to
+ * end, matching the healthcare-seo / healthcare-reputation-management /
+ * healthcare-social-media-management / medical-website-design hubs.
  */
-function HeroRing() {
-  return (
-    <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-      <div
-        className="absolute bottom-0 left-1/2 h-160 w-160 -translate-x-1/2 translate-y-[45%] rounded-full sm:h-220 sm:w-220"
-        style={{
-          background: "radial-gradient(circle, rgba(var(--accent-rgb),0.28), transparent 70%)",
-          filter: "blur(80px)",
-        }}
-      />
-      <div
-        className="services-hero-ring absolute bottom-0 left-1/2 h-175 w-175 -translate-x-1/2 translate-y-[55%] rounded-full sm:h-[90vw] sm:w-[90vw]"
-        style={{
-          background: "conic-gradient(rgba(var(--accent-rgb),0.7), transparent 45%, transparent 55%, rgba(var(--accent-rgb),0.7))",
-          maskImage:
-            "radial-gradient(circle, transparent calc(50% - 3px), black calc(50% - 2px), black 50%, transparent calc(50% + 1px))",
-          WebkitMaskImage:
-            "radial-gradient(circle, transparent calc(50% - 3px), black calc(50% - 2px), black 50%, transparent calc(50% + 1px))",
-        }}
-      />
-      <div className="absolute bottom-0 left-1/2 h-140 w-140 -translate-x-1/2 translate-y-[55%] rounded-full border border-white/8 sm:h-[70vw] sm:w-[70vw]" />
-    </div>
-  );
-}
-
 export function ServicesHero() {
   return (
     <section
-      id="services-hero"
-      className="relative flex min-h-[calc(100vh-8rem)] flex-col items-center justify-center overflow-hidden pt-24 pb-16 text-center lg:pt-40 lg:pb-24"
+      id="hero"
+      className={cn("relative flex flex-col justify-center overflow-hidden lg:max-h-[70vh]", SECTION_PADDING.default)}
     >
-      <HeroRing />
-      <Sparkles seedOffset={0} />
-      <HeroKeywordPills />
-      <HeroCursorGlow />
-      <Container className="mx-auto">
-        <RevealGroup as="div" trigger="mount" stagger={0.1} className="flex flex-col items-center">
-          <RevealItem>
-            <Kicker>Services</Kicker>
-          </RevealItem>
-          <RevealItem className={STACK.kickerToHeading}>
-            <h1 className="mx-auto max-w-3xl font-display text-[2.5rem] font-extrabold leading-[0.98] tracking-[-0.02em] text-white sm:text-6xl lg:text-[4.5rem]">
-              Healthcare Marketing <span className="text-shimmer">Services</span>
-            </h1>
-          </RevealItem>
-          <RevealItem className={STACK.headingToSub}>
-            <p className="mx-auto max-w-2xl text-white/70">
-              Three services, built around one question: when a patient asks an AI for a recommendation, does it say
-              your name? Everything below serves that. Nothing below is sold separately.
-            </p>
-          </RevealItem>
-          <RevealItem className="mt-10">
-            <ServicesCtaButton href="/contact/">Get my free report</ServicesCtaButton>
-          </RevealItem>
-        </RevealGroup>
+      <StaticGlow corner="top-left" />
+      <StaticGlow corner="bottom-right" />
+      <Sparkles seedOffset={7} />
+      <Container>
+        <div className="max-w-3xl">
+          <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm text-white/50">
+            <Link href="/" className="transition-colors hover:text-white/80">
+              Home
+            </Link>
+            <span aria-hidden>›</span>
+            <span className="text-white/70">Services</span>
+          </nav>
+          <Kicker className="mt-6">Services</Kicker>
+          <h1 className="mt-7 max-w-[19ch] font-display text-[clamp(2rem,4.4vw,3.05rem)] font-extrabold leading-[1.08] tracking-[-0.02em] text-white">
+            You Probably Don&rsquo;t Need All Five of These
+          </h1>
+          <p className="mt-6 max-w-[58ch] text-white/70">
+            Three agencies have probably told you that you need a full digital strategy. Most practices need one of
+            the five services below, not all of them. The table under this section takes about two minutes and
+            points at the one to start with, before you talk to anyone, including us.
+          </p>
+          <p className="mt-4 max-w-[58ch] text-white/70">
+            A reader who leaves this page knowing what to fix first is a win, even if that answer is not us.
+          </p>
+          <div className="mt-10 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:gap-6">
+            <PrimaryCta href="/tools/ai-visibility-checker/" dataCta="services-hero-primary">
+              Check My Practice&rsquo;s AI Visibility
+            </PrimaryCta>
+            <SecondaryCta href="#diagnostic" dataCta="services-hero-secondary">
+              Find out what I need first
+            </SecondaryCta>
+          </div>
+          <p className="mt-4 text-sm text-white/45">Free. No card. About 40 seconds.</p>
+        </div>
       </Container>
     </section>
   );

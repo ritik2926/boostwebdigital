@@ -1,137 +1,79 @@
 import Link from "next/link";
 import { Container } from "@/components/Container";
-import { Reveal, RevealGroup, RevealItem } from "@/components/Reveal";
-import { REVEAL, SECTION_PADDING, STACK, GRID_GAP, CARD_PADDING, CARD_RADIUS } from "@/lib/tokens";
-import { SERVICES } from "@/lib/services";
-import { SpotlightField } from "@/components/services/SpotlightField";
-import { SpotlightTitleCard } from "@/components/services/SpotlightTitleCard";
+import { Kicker } from "@/components/Kicker";
+import { SECTION_PADDING, STACK, CARD_PADDING } from "@/lib/tokens";
 import { cn } from "@/lib/utils";
 
-function ServiceBlock({ service, isLast }: { service: (typeof SERVICES)[number]; isLast: boolean }) {
-  return (
-    <div className={cn(!isLast && "border-b border-white/8 pb-16 lg:pb-20", "pt-16 first:pt-0 lg:pt-20")}>
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-10">
-        <Reveal className="lg:col-span-3">
-          <span aria-hidden className="font-display text-6xl font-extrabold text-white/10 sm:text-8xl">
-            {service.number}
-          </span>
-        </Reveal>
-        <RevealGroup as="div" className="lg:col-span-9">
-          <RevealItem>
-            <h2 className="font-display text-[1.875rem] font-bold leading-[1.1] tracking-[-0.01em] text-white sm:text-[2.5rem]">
-              {service.name}
-            </h2>
-          </RevealItem>
-          <RevealItem className={STACK.headingToSub}>
-            <p className="max-w-2xl text-lg font-medium text-white/90">{service.lead}</p>
-          </RevealItem>
-          <RevealItem className={cn(STACK.headingToSub, "flex max-w-2xl flex-col gap-4 text-white/70")}>
-            {service.body.map((p) => (
-              <p key={p}>{p}</p>
-            ))}
-          </RevealItem>
-          {service.id === "ai-visibility" && (
-            <RevealItem className={STACK.headingToSub}>
-              <Link
-                href="/ai-visibility-geo/"
-                className="group inline-flex items-center gap-2 font-medium text-white/70 underline-offset-4 hover:text-accent hover:underline"
-              >
-                See how we approach AI visibility
-                <span aria-hidden className="inline-block transition-transform duration-200 group-hover:translate-x-1">
-                  →
-                </span>
-              </Link>
-            </RevealItem>
-          )}
-          {service.id === "healthcare-seo" && (
-            <RevealItem className={cn(STACK.headingToSub, "flex flex-col gap-2")}>
-              <Link
-                href="/dermatology-marketing/"
-                className="group inline-flex items-center gap-2 font-medium text-white/70 underline-offset-4 hover:text-accent hover:underline"
-              >
-                See how we approach dermatology marketing
-                <span aria-hidden className="inline-block transition-transform duration-200 group-hover:translate-x-1">
-                  →
-                </span>
-              </Link>
-              <Link
-                href="/dental-marketing/"
-                className="group inline-flex items-center gap-2 font-medium text-white/70 underline-offset-4 hover:text-accent hover:underline"
-              >
-                See how we approach dental marketing
-                <span aria-hidden className="inline-block transition-transform duration-200 group-hover:translate-x-1">
-                  →
-                </span>
-              </Link>
-            </RevealItem>
-          )}
-        </RevealGroup>
-      </div>
+const H2 = "font-display text-[1.875rem] font-bold leading-[1.1] tracking-[-0.01em] text-white sm:text-[2.5rem]";
 
-      <SpotlightField className={STACK.subToContent}>
-        <RevealGroup
-          as="ul"
-          trigger="viewport"
-          stagger={REVEAL.cardStagger}
-          className={cn("grid grid-cols-1 sm:grid-cols-2", GRID_GAP.default)}
-        >
-          {service.whatWeDo.map((item) => (
-            <RevealItem as="li" key={item.title}>
-              <SpotlightTitleCard title={item.title} body={item.body} />
-            </RevealItem>
-          ))}
-        </RevealGroup>
-      </SpotlightField>
-
-      {service.callout && (
-        <Reveal className={STACK.headingToSub}>
-          <p
-            className={cn(
-              "card-hairline max-w-2xl bg-white/[0.03] text-lg leading-relaxed text-white/80 italic",
-              CARD_RADIUS.standard,
-              CARD_PADDING.standard
-            )}
-          >
-            {service.callout}
-          </p>
-        </Reveal>
-      )}
-    </div>
-  );
-}
+const CARDS: Array<{ name: string; what: string; who: string; href: string; anchor: string }> = [
+  {
+    name: "AI Search Visibility (GEO)",
+    what: "Entity consistency, structured data, and the third-party mentions that get a practice named inside an AI-generated answer.",
+    who: "For practices with something worth citing whose own site doesn't say so consistently.",
+    href: "/ai-visibility-geo/",
+    anchor: "See how AI visibility works",
+  },
+  {
+    name: "Healthcare SEO",
+    what: "Technical foundations, specialty-specific content, and local visibility — the base layer AI systems read before recommending anyone.",
+    who: "For practices invisible for the specific procedures that pay the bills.",
+    href: "/healthcare-seo/",
+    anchor: "See our healthcare SEO approach",
+  },
+  {
+    name: "Reputation Management",
+    what: "A safe reply process and consistent listings across every platform patients actually check before booking.",
+    who: "For practices with real review volume and no process for replying to any of it.",
+    href: "/healthcare-reputation-management/",
+    anchor: "See our reputation management approach",
+  },
+  {
+    name: "Social Media Management",
+    what: "A verification presence, not an acquisition channel — kept current, HIPAA-aware, and nothing more.",
+    who: "For cosmetic and elective practices whose patients check social media before booking.",
+    href: "/healthcare-social-media-management/",
+    anchor: "See our social media approach",
+  },
+  {
+    name: "Medical Website Design",
+    what: "A rebuilt technical foundation: page speed, a short booking path, and real accessibility.",
+    who: "For practices whose site measurably fails on speed, booking, or accessibility, not just looks dated.",
+    href: "/medical-website-design/",
+    anchor: "See our website design approach",
+  },
+];
 
 export function ServicesGrid() {
   return (
-    <section className={SECTION_PADDING.compact}>
+    <section className={cn("relative", SECTION_PADDING.default)}>
       <Container>
-        {SERVICES.map((service, i) => (
-          <ServiceBlock key={service.id} service={service} isLast={i === SERVICES.length - 1} />
-        ))}
+        <Kicker>The Five Services</Kicker>
+        <h2 className={cn(H2, STACK.kickerToHeading, "max-w-2xl")}>Once You Know What&rsquo;s Wrong, Here&rsquo;s the Page for It</h2>
 
-        <div className={cn(STACK.subToContent, "grid grid-cols-1 gap-6 border-t border-white/8 pt-16 lg:grid-cols-12 lg:gap-10 lg:pt-20")}>
-          <Reveal className="lg:col-span-3">
-            <span aria-hidden className="font-display text-6xl font-extrabold text-white/10 sm:text-8xl">
-              +
-            </span>
-          </Reveal>
-          <RevealGroup as="div" className="lg:col-span-9">
-            <RevealItem>
-              <h2 className="font-display text-[1.875rem] font-bold leading-[1.1] tracking-[-0.01em] text-white sm:text-[2.5rem]">
-                What else we do
-              </h2>
-            </RevealItem>
-            <RevealItem className={cn(STACK.headingToSub, "flex max-w-2xl flex-col gap-4 text-white/70")}>
-              <p>
-                Websites, content production, campaigns, paid search and reporting automation. All real work, all
-                delivered where it serves the three services above.
-              </p>
-              <p>
-                We do not sell any of it as a standalone engagement. If a new site is what stands between you and
-                being recommended, we build it. If it is not, we will tell you that instead of quoting for one.
-              </p>
-            </RevealItem>
-          </RevealGroup>
-        </div>
+        <ul className={cn(STACK.subToContent, "grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3")}>
+          {CARDS.map((card) => (
+            <li key={card.name}>
+              <Link
+                href={card.href}
+                className={cn(
+                  "group flex h-full flex-col rounded-2xl border border-white/8 bg-white/[0.02] transition-colors duration-200 hover:border-white/25",
+                  CARD_PADDING.standard
+                )}
+              >
+                <h3 className="font-display text-lg font-semibold text-white">{card.name}</h3>
+                <p className="mt-3 text-sm leading-relaxed text-white/60">{card.what}</p>
+                <p className="mt-3 text-sm leading-relaxed text-white/50">{card.who}</p>
+                <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-white">
+                  {card.anchor}
+                  <span aria-hidden className="transition-transform duration-200 group-hover:translate-x-1">
+                    →
+                  </span>
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
       </Container>
     </section>
   );

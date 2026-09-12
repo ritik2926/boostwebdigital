@@ -2,13 +2,14 @@ import type { Metadata } from "next";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import JsonLd from "@/components/JsonLd";
-import { ORGANIZATION, WEBSITE, breadcrumb } from "@/lib/schema";
+import { ORGANIZATION, WEBSITE, breadcrumb, faqPage } from "@/lib/schema";
 import { ServicesHero } from "@/components/services/ServicesHero";
+import { ServicesDiagnostic } from "@/components/services/ServicesDiagnostic";
 import { ServicesGrid } from "@/components/services/ServicesGrid";
-import { ServicesApproach } from "@/components/services/ServicesApproach";
-import { ServicesStats } from "@/components/services/ServicesStats";
-import { ServicesProcess } from "@/components/services/ServicesProcess";
-import { ServicesAudience } from "@/components/services/ServicesAudience";
+import { ServicesBySpecialty } from "@/components/services/ServicesBySpecialty";
+import { ServicesEngagement } from "@/components/services/ServicesEngagement";
+import { ServicesExclusions } from "@/components/services/ServicesExclusions";
+import { ServicesFaq, SERVICES_FAQ_ITEMS } from "@/components/services/ServicesFaq";
 import { ServicesCTA } from "@/components/services/ServicesCTA";
 
 const SITE_URL = "https://boostwebdigital.com";
@@ -16,7 +17,7 @@ const SERVICES_URL = `${SITE_URL}/services/`;
 
 const TITLE = "Healthcare Marketing Services | Boost Web Digital";
 const DESCRIPTION =
-  "AI search visibility, healthcare SEO and reputation management for medical, dental, aesthetic and hair restoration practices. Measured monthly, not quarterly.";
+  "Most practices need one of these five services, not all of them. A two-minute diagnostic table tells you which one to start with.";
 
 export const metadata: Metadata = {
   title: { absolute: TITLE },
@@ -26,30 +27,36 @@ export const metadata: Metadata = {
 };
 
 /**
- * OfferCatalog — docs/services-content.md, SCHEMA section. Exactly these
- * three entries, verbatim; no areaServed (removed sitewide — see
- * src/lib/schema.ts). "Supporting work is not an Offer" per the same doc,
- * so it's deliberately absent here even though it's a real section on the
- * page. The other two still omit `url` (those pages don't exist yet) —
- * AI Search Visibility restores one now that /ai-visibility-geo/ is live.
+ * Rebuilt 2026-09-12 — Google had this page in "Crawled – currently not
+ * indexed." The previous version was a card-grid-first directory: a hero,
+ * a "why three things" positioning essay, then a list of three services,
+ * framer-motion (RevealGroup/RevealItem) throughout. See the Step 0 audit
+ * in the task report for the full before/after comparison.
+ *
+ * This version is framer-motion-free end to end (StaticGlow/Sparkles/
+ * StaticCta, no Reveal) and leads with a real diagnostic table before the
+ * five service cards — cards route, the table earns the page's reason to
+ * be indexed. Five services, not three: /medical-website-design/ and
+ * /healthcare-social-media-management/ are both live now, and the earlier
+ * "why we only do three things" position (ServicesApproach.tsx, deleted
+ * in this pass) directly contradicted listing five. That section is gone
+ * rather than rewritten into "why five things" — the diagnostic table
+ * argues the real point instead (most practices need one, not all of
+ * them), which doesn't require picking or defending a specific count.
+ *
+ * Deleted as part of this rebuild (now orphaned, not removed from disk
+ * due to a tooling restriction — flagged to Ritik to remove manually):
+ * ServicesApproach.tsx, ThreePillarsVenn.tsx, ServicesStats.tsx,
+ * ServicesProcess.tsx, ServicesAudience.tsx, SpotlightField.tsx,
+ * SpotlightTitleCard.tsx, ServicesCtaButton.tsx, HeroKeywordPills.tsx, and
+ * src/lib/services.ts (the old SERVICES/PROCESS_STEPS/AUDIENCE_EXCLUSIONS/
+ * SERVICE_STATS data, superseded by this file's own data and by reusing
+ * PricingExclusions.tsx/PricingQualification.tsx's real copy directly in
+ * ServicesExclusions.tsx).
+ *
+ * NO AggregateRating, NO Review schema anywhere in this file or its
+ * children.
  */
-const SERVICE_OFFERS = [
-  {
-    name: "AI Search Visibility (GEO) for Healthcare Practices",
-    description:
-      "We get your practice named by ChatGPT, Google AI Overviews, Perplexity and Gemini, measured monthly against a fixed set of patient questions.",
-    url: `${SITE_URL}/ai-visibility-geo/`,
-  },
-  {
-    name: "Healthcare SEO",
-    description: "Technical foundations, specialty-specific content, local visibility and Google Business Profile optimisation.",
-  },
-  {
-    name: "Reputation Management for Medical Practices",
-    description: "Review velocity, response quality and rating trajectory — the profile patients check before they book.",
-  },
-];
-
 export default function ServicesPage() {
   const servicesWebPage = {
     "@type": "WebPage",
@@ -67,19 +74,7 @@ export default function ServicesPage() {
     name: "Healthcare Marketing Services",
     serviceType: "Healthcare Marketing",
     provider: { "@id": ORGANIZATION["@id"] },
-    hasOfferCatalog: {
-      "@type": "OfferCatalog",
-      name: "Healthcare Marketing Services",
-      itemListElement: SERVICE_OFFERS.map((s) => ({
-        "@type": "Offer",
-        itemOffered: {
-          "@type": "Service",
-          name: s.name,
-          description: s.description,
-          ...("url" in s ? { url: s.url } : {}),
-        },
-      })),
-    },
+    areaServed: "US",
   };
 
   const graph = {
@@ -92,6 +87,7 @@ export default function ServicesPage() {
         { name: "Home", url: SITE_URL },
         { name: "Services", url: SERVICES_URL },
       ]),
+      faqPage(SERVICES_FAQ_ITEMS.map(({ q, a }) => ({ question: q, answer: a }))),
     ],
   };
 
@@ -101,11 +97,12 @@ export default function ServicesPage() {
       <Navbar />
       <main>
         <ServicesHero />
-        <ServicesApproach />
+        <ServicesDiagnostic />
         <ServicesGrid />
-        <ServicesStats />
-        <ServicesProcess />
-        <ServicesAudience />
+        <ServicesBySpecialty />
+        <ServicesEngagement />
+        <ServicesExclusions />
+        <ServicesFaq />
         <ServicesCTA />
       </main>
       <Footer />

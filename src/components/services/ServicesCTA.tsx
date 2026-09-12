@@ -1,48 +1,50 @@
+import Link from "next/link";
 import { Container } from "@/components/Container";
-import { Kicker } from "@/components/Kicker";
-import { RevealGroup, RevealItem } from "@/components/Reveal";
-import { AmbientGlow } from "@/components/AmbientGlow";
-import { ServicesCtaButton } from "@/components/services/ServicesCtaButton";
-import { Sparkles } from "@/components/services/Sparkles";
-import { SECTION_PADDING, STACK } from "@/lib/tokens";
+import { StaticGlow } from "@/components/StaticGlow";
+import { PrimaryCta } from "@/components/StaticCta";
+import { SECTION_PADDING } from "@/lib/tokens";
 import { cn } from "@/lib/utils";
 
+const H2 = "font-display text-[1.875rem] font-bold leading-[1.1] tracking-[-0.01em] text-white sm:text-[2.5rem]";
+
 /**
- * Bespoke closing CTA (not the shared FinalCTA this round) — the spec calls
- * for a two-line heading with a shimmering second line and the same
- * redesigned button as the Hero, which FinalCTA's fixed copy/button
- * doesn't support. Corner glow (#5, AmbientGlow) + sparkle field (#3),
- * matching the reference's closing composition. Content: docs/services-
- * content.md, FINAL CTA.
+ * Rewritten 2026-09-12. The previous version of this section said "Fifteen
+ * questions, four AI engines" — inconsistent with the single-engine
+ * checker described correctly everywhere else on the site (Hero/ClosingCta
+ * copy on every other service hub), and with this task's own instruction
+ * not to imply the free checker queries multiple named engines. Fixed here
+ * to match the correct, sitewide copy.
  */
 export function ServicesCTA() {
   return (
     <section className={cn("relative overflow-hidden", SECTION_PADDING.default)}>
-      <AmbientGlow corner="top-right" duration={72} />
-      <AmbientGlow corner="bottom-left" duration={85} />
-      <Sparkles seedOffset={41} />
+      <StaticGlow corner="top-right" />
+      <StaticGlow corner="bottom-left" />
       <Container>
-        <RevealGroup as="div" className="mx-auto flex max-w-2xl flex-col items-center text-center">
-          <RevealItem>
-            <Kicker>Free report</Kicker>
-          </RevealItem>
-          <RevealItem className={STACK.kickerToHeading}>
-            <h2 className="font-display text-[1.875rem] font-bold leading-[1.1] tracking-[-0.01em] sm:text-[2.5rem]">
-              <span className="text-white">See what AI says</span>
-              <br />
-              <span className="text-shimmer">about your practice</span>
-            </h2>
-          </RevealItem>
-          <RevealItem className={cn(STACK.headingToSub, "max-w-155 text-white/70")}>
-            <p>
-              Fifteen questions, four AI engines, one free report. No call required, and you will get three specific
-              fixes even if you never hire us.
-            </p>
-          </RevealItem>
-          <RevealItem className="mt-10">
-            <ServicesCtaButton href="/contact/">Get my free report</ServicesCtaButton>
-          </RevealItem>
-        </RevealGroup>
+        <div className="mx-auto flex max-w-2xl flex-col items-center text-center">
+          <h2 className={H2}>See What AI Says About Your Practice</h2>
+          <p className="mt-6 max-w-2xl text-white/70">
+            We send three real patient questions to a live AI answer engine and show you the exact answers it gives
+            back — who gets named, and who does not. No call required, and the report is yours either way.
+          </p>
+          <div className="mt-10">
+            <PrimaryCta href="/tools/ai-visibility-checker/" dataCta="services-closing">
+              Check My Practice&rsquo;s AI Visibility
+            </PrimaryCta>
+          </div>
+          <p className="mt-4 text-sm text-white/45">Free. No card. About 40 seconds.</p>
+          <p className="mt-8 max-w-xl text-sm text-white/45">
+            Still not sure where to start?{" "}
+            <Link href="#diagnostic" className="text-white/70 underline-offset-4 hover:text-accent hover:underline">
+              Go back to the diagnostic table
+            </Link>
+            , or read more on{" "}
+            <Link href="/about/" className="text-white/70 underline-offset-4 hover:text-accent hover:underline">
+              how we work
+            </Link>
+            .
+          </p>
+        </div>
       </Container>
     </section>
   );
