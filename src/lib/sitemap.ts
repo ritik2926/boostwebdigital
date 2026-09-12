@@ -32,6 +32,7 @@ const PAGE_DATES: Record<string, string> = {
   "/dental-marketing/": "2026-09-11",
   "/healthcare-seo/": "2026-09-11",
   "/healthcare-reputation-management/": "2026-09-12",
+  "/healthcare-social-media-management/": "2026-09-12",
 };
 
 /**
@@ -48,8 +49,13 @@ const PAGE_DATES: Record<string, string> = {
  * (live 2026-09-12 — was blocking, blog post 1 and the homepage both
  * linked here while it 404'd; same root-vs-nested slug conflict as
  * /healthcare-seo/ above, this time against two different planned slugs
- * in docs/13-URL-ARCHITECTURE.md — see that page's own comment) are live
- * today. `/blog/` itself is a 301 redirect to /blogs/
+ * in docs/13-URL-ARCHITECTURE.md — see that page's own comment), and
+ * /healthcare-social-media-management/ (live 2026-09-12 — a services-axis
+ * hub; conflicts with TWO different planned slugs in that same doc,
+ * `/healthcare-marketing/healthcare-social-media/` and
+ * `/services/social-media-marketing/` — neither matches, same
+ * reconciliation-pass note applies) are live today. `/blog/` itself is a
+ * 301 redirect to /blogs/
  * (next.config.ts) and is deliberately NOT listed here — a redirecting URL
  * in a sitemap is a Search Console warning. `/design-lab` is excluded from
  * production entirely (see its page.tsx), `/api/contact/` is a route
@@ -106,6 +112,10 @@ export function getStaticPageEntries(): SitemapUrlEntry[] {
     {
       url: `${SITE_URL}/healthcare-reputation-management/`,
       lastModified: PAGE_DATES["/healthcare-reputation-management/"],
+    },
+    {
+      url: `${SITE_URL}/healthcare-social-media-management/`,
+      lastModified: PAGE_DATES["/healthcare-social-media-management/"],
     },
   ];
 }

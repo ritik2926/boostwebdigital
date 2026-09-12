@@ -3,6 +3,18 @@
  * (the content doc pasted directly into the session — replaces the earlier
  * agency-template placeholder data this file used to hold). Do not add a
  * fourth service or extra copy beyond what that doc specifies.
+ *
+ * 2026-09-12: a task asked to "add /healthcare-social-media-management/ to
+ * /services/" and a fourth entry was drafted here, then reverted. This
+ * page is not a peer to the three above — ServicesApproach.tsx runs an
+ * entire section ("Why we only do three things") built on the explicit
+ * claim "three steps, three failure points... we work on those three and
+ * nothing else." A fourth SERVICES entry directly contradicts that
+ * argued position, not just its count. See that component's own comment.
+ * Left for a real decision: either revise "why three things" into "why
+ * four things" (a real rewrite, not a find-and-replace), or keep this
+ * page linked from the nav only, as services-adjacent rather than a core
+ * service. Not resolved unilaterally here.
  */
 export const SERVICES = [
   {

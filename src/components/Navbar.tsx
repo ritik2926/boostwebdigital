@@ -26,6 +26,9 @@ const NAV_LINKS = [
 const SERVICES_SUBLINKS: Array<{ label: string; href: string }> = [
   { label: "All Services", href: "/services/" },
   { label: "AI Search Visibility", href: "/ai-visibility-geo/" },
+  { label: "Healthcare SEO", href: "/healthcare-seo/" },
+  { label: "Reputation Management", href: "/healthcare-reputation-management/" },
+  { label: "Social Media Management", href: "/healthcare-social-media-management/" },
   { label: "Dermatology Marketing", href: "/dermatology-marketing/" },
   { label: "Dental Marketing", href: "/dental-marketing/" },
 ];
