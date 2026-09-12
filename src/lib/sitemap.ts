@@ -31,6 +31,7 @@ const PAGE_DATES: Record<string, string> = {
   "/dermatology-marketing/": "2026-09-10",
   "/dental-marketing/": "2026-09-11",
   "/healthcare-seo/": "2026-09-11",
+  "/healthcare-reputation-management/": "2026-09-12",
 };
 
 /**
@@ -39,11 +40,16 @@ const PAGE_DATES: Record<string, string> = {
  * except /ai-visibility-geo/, now live), /faq/, /ai-visibility-geo/,
  * /tools/ai-visibility-checker/, /dermatology-marketing/ and
  * /dental-marketing/ (both live 2026-09-10 — the first two specialty hubs
- * from the list below), and /healthcare-seo/ (live 2026-09-11, a services
+ * from the list below), /healthcare-seo/ (live 2026-09-11, a services
  * axis method hub — see its own page.tsx for why it sits flat at root
  * instead of docs/13-URL-ARCHITECTURE.md's planned
  * /healthcare-marketing/healthcare-seo/ nested slug; that doc still needs a
- * deliberate reconciliation pass) are live today. `/blog/` itself is a 301 redirect to /blogs/
+ * deliberate reconciliation pass), and /healthcare-reputation-management/
+ * (live 2026-09-12 — was blocking, blog post 1 and the homepage both
+ * linked here while it 404'd; same root-vs-nested slug conflict as
+ * /healthcare-seo/ above, this time against two different planned slugs
+ * in docs/13-URL-ARCHITECTURE.md — see that page's own comment) are live
+ * today. `/blog/` itself is a 301 redirect to /blogs/
  * (next.config.ts) and is deliberately NOT listed here — a redirecting URL
  * in a sitemap is a Search Console warning. `/design-lab` is excluded from
  * production entirely (see its page.tsx), `/api/contact/` is a route
@@ -97,6 +103,10 @@ export function getStaticPageEntries(): SitemapUrlEntry[] {
     { url: `${SITE_URL}/dermatology-marketing/`, lastModified: PAGE_DATES["/dermatology-marketing/"] },
     { url: `${SITE_URL}/dental-marketing/`, lastModified: PAGE_DATES["/dental-marketing/"] },
     { url: `${SITE_URL}/healthcare-seo/`, lastModified: PAGE_DATES["/healthcare-seo/"] },
+    {
+      url: `${SITE_URL}/healthcare-reputation-management/`,
+      lastModified: PAGE_DATES["/healthcare-reputation-management/"],
+    },
   ];
 }
 
