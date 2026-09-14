@@ -62,6 +62,7 @@ export default function DermatologyMarketingPage() {
       service,
       breadcrumb([
         { name: "Home", url: SITE_URL },
+        { name: "Services", url: `${SITE_URL}/services/` },
         { name: "Dermatology Marketing", url: PAGE_URL },
       ]),
       faqPage(DERMATOLOGY_FAQ_ITEMS.map(({ q, a }) => ({ question: q, answer: a }))),

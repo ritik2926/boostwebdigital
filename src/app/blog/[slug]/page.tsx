@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -190,9 +191,9 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                 </p>
               </RevealItem>
               <RevealItem className={STACK.contentToCta}>
-                <button type="button" className="btn-primary inline-flex">
+                <Link href="/contact/" data-cta="blog-closing" className="btn-primary inline-flex">
                   <span>{post.cta?.label ?? "Get My Free AI Visibility Report"}</span>
-                </button>
+                </Link>
               </RevealItem>
               <RevealItem className={cn(STACK.contentToCta, "w-full max-w-md border-t border-white/8 pt-12")}>
                 <SubscribeForm source="blog-post" className="mx-auto" />

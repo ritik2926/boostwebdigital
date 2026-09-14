@@ -39,6 +39,7 @@ const SERVICES_SUBLINKS: Array<{ label: string; href: string }> = [
 // (no fake functional UI, per CLAUDE.md's honesty rule).
 const OTHER_LINKS: Array<{ label: string; href: string | null }> = [
   { label: "AI Visibility Checker", href: "/tools/ai-visibility-checker/" },
+  { label: "Free Tools", href: "/tools/" },
   { label: "Blogs", href: "/blogs/" },
   { label: "AI News", href: null },
   { label: "FAQs", href: "/faq/" },

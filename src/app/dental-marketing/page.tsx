@@ -69,6 +69,7 @@ export default function DentalMarketingPage() {
       service,
       breadcrumb([
         { name: "Home", url: SITE_URL },
+        { name: "Services", url: `${SITE_URL}/services/` },
         { name: "Dental Marketing", url: PAGE_URL },
       ]),
       faqPage(DENTAL_FAQ_ITEMS.map(({ q, a }) => ({ question: q, answer: a }))),

@@ -266,7 +266,18 @@ export default function AiVisibilityGeoPage() {
           <Sparkles seedOffset={7} />
           <HeroCursorGlow targetId="hero" />
           <Container>
-            <RevealGroup as="div" trigger="mount" stagger={0.08} className="flex flex-col items-center">
+            <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm text-white/50">
+              <Link href="/" className="transition-colors hover:text-white/80">
+                Home
+              </Link>
+              <span aria-hidden>›</span>
+              <Link href="/services/" className="transition-colors hover:text-white/80">
+                Services
+              </Link>
+              <span aria-hidden>›</span>
+              <span className="text-white/70">AI Search Visibility</span>
+            </nav>
+            <RevealGroup as="div" trigger="mount" stagger={0.08} className="mt-6 flex flex-col items-center">
               <RevealItem>
                 <Kicker>Service 01 — AI Search Visibility</Kicker>
               </RevealItem>
@@ -619,6 +630,22 @@ export default function AiVisibilityGeoPage() {
               </RevealItem>
               <RevealItem className="mt-2">
                 <p className="text-sm text-white/35">If we find nothing wrong, we&rsquo;ll tell you that.</p>
+              </RevealItem>
+              <RevealItem className="mt-8">
+                <p className="max-w-xl text-sm text-white/45">
+                  GEO works alongside the fundamentals, not instead of them — see how we handle{" "}
+                  <Link href="/healthcare-seo/" className="text-white/70 underline-offset-4 hover:text-accent hover:underline">
+                    healthcare SEO
+                  </Link>{" "}
+                  and{" "}
+                  <Link
+                    href="/healthcare-reputation-management/"
+                    className="text-white/70 underline-offset-4 hover:text-accent hover:underline"
+                  >
+                    review profiles
+                  </Link>
+                  , the two signals AI systems weight most heavily besides entity data.
+                </p>
               </RevealItem>
             </RevealGroup>
           </Container>

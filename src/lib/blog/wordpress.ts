@@ -123,11 +123,49 @@ function toIsoUtc(gmtDate: string): string {
   return gmtDate.endsWith("Z") ? gmtDate : `${gmtDate}Z`;
 }
 
+/** Wraps existing, unmodified phrases in a hub link — never invents or
+ * alters wording, just wires up a link the sentence already earns. Each
+ * find/replace pair is a verified-unique substring, applied once via
+ * String#replace (which only ever touches the first match). Slug-keyed so a
+ * post with no matching entry (or a phrase WordPress has since edited away)
+ * passes through completely unchanged. */
+const CONTEXTUAL_LINKS: Record<string, Array<{ find: string; replace: string }>> = {
+  "the-ultimate-guide-to-med-spa-marketing-2026": [
+    {
+      find: "<strong>GEO — Generative Engine Optimization</strong>",
+      replace: '<a href="/ai-visibility-geo/"><strong>GEO — Generative Engine Optimization</strong></a>',
+    },
+    {
+      find: "Local SEO helps your practice compete for location-based searches.",
+      replace:
+        '<a href="/healthcare-seo/">Local SEO</a> helps your practice compete for location-based searches.',
+    },
+  ],
+  "why-healthcare-practices-are-invisible-in-ai-search": [
+    {
+      find: "A dermatology practice we looked at recently holds the #1 organic spot",
+      replace:
+        'A <a href="/dermatology-marketing/">dermatology practice</a> we looked at recently holds the #1 organic spot',
+    },
+    {
+      find: "a thin, dated review profile can be named by the AI",
+      replace:
+        'a thin, dated <a href="/healthcare-reputation-management/">review profile</a> can be named by the AI',
+    },
+  ],
+};
+
+function injectContextualLinks(html: string, slug: string): string {
+  const pairs = CONTEXTUAL_LINKS[slug];
+  if (!pairs) return html;
+  return pairs.reduce((acc, { find, replace }) => (acc.includes(find) ? acc.replace(find, replace) : acc), html);
+}
+
 function mapPost(wp: WPPost): BlogPost {
   const title = decodeHtmlEntities(wp.title.rendered);
   const rawContentHtml = wp.content.rendered;
   const { html: withHeadingIds, headings } = processContent(rawContentHtml);
-  const content = ensureLazyImages(wrapScrollableBlocks(withHeadingIds));
+  const content = injectContextualLinks(ensureLazyImages(wrapScrollableBlocks(withHeadingIds)), wp.slug);
 
   const termGroups = wp._embedded?.["wp:term"] ?? [];
   const allTerms = termGroups.flat();

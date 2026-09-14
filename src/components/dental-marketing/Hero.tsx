@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Container } from "@/components/Container";
 import { Kicker } from "@/components/Kicker";
 import { Sparkles } from "@/components/services/Sparkles";
@@ -51,7 +52,18 @@ export function DentalHero() {
       <Container>
         <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:gap-10">
           <div>
-            <Kicker>Dental Marketing</Kicker>
+            <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm text-white/50">
+              <Link href="/" className="transition-colors hover:text-white/80">
+                Home
+              </Link>
+              <span aria-hidden>›</span>
+              <Link href="/services/" className="transition-colors hover:text-white/80">
+                Services
+              </Link>
+              <span aria-hidden>›</span>
+              <span className="text-white/70">Dental Marketing</span>
+            </nav>
+            <Kicker className="mt-6">Dental Marketing</Kicker>
             <h1 className="mt-7 max-w-[19ch] font-display text-[clamp(2rem,4.4vw,3.05rem)] font-extrabold leading-[1.08] tracking-[-0.02em] text-white">
               Dental Marketing Split by How Patients Actually Decide
             </h1>

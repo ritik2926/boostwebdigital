@@ -1,6 +1,8 @@
 # Link Targets — Live Inventory & Blog Linking Reference
 
-Audited 2026-09-12 directly against production (`https://boostwebdigital.com`) and the repo at that commit. This is a reference document, not a design doc — open it mid-task, get an answer, move on. Re-audit and update the date whenever a new page ships or a route changes.
+Audited 2026-09-14 directly against a local production build and the repo at that commit (previous audit: 2026-09-12, now superseded). This is a reference document, not a design doc — open it mid-task, get an answer, move on. Re-audit and update the date whenever a new page ships or a route changes.
+
+**What changed since 2026-09-12:** `/medical-website-design/` and `/tools/` shipped; `/services/` was rebuilt from a 3-service card grid into a 5-card diagnostic hub; the up-link gaps on `/ai-visibility-geo/`, `/dental-marketing/` and `/dermatology-marketing/` (flagged below in a prior version of this doc) are now fixed — schema and visible nav both present on all three; both live blog posts now carry real in-body links to a service hub via a slug-keyed transform in `src/lib/blog/wordpress.ts`; `/tools/` was found orphaned from sitewide nav (Navbar/Footer linked straight to the checker, skipping the new index) and fixed by adding a "Free Tools" entry to both.
 
 `trailingSlash: true` is set in `next.config.ts` — every URL below is written with the trailing slash on purpose. Never link without it.
 
@@ -12,13 +14,15 @@ Audited 2026-09-12 directly against production (`https://boostwebdigital.com`) a
 |---|---|---|
 | `/` | Homepage | "Boost Web Digital" / "our homepage" |
 | `/about/` | Agency story, founder, E-E-A-T | "how Boost Web Digital works" |
-| `/services/` | Services hub (3 core services, not 4 — see Rule note below) | "our full range of services" |
+| `/services/` | Services hub — diagnostic table + routing cards to all 5 live service hubs | "our full range of services" |
 | `/ai-visibility-geo/` | Service hub — AI Search Visibility (GEO) | "AI search visibility (GEO)" |
 | `/healthcare-seo/` | Service hub — Healthcare SEO | "healthcare SEO" |
 | `/healthcare-reputation-management/` | Service hub — Reputation Management | "healthcare reputation management" |
 | `/healthcare-social-media-management/` | Service hub — Social Media Management | "healthcare social media management" |
+| `/medical-website-design/` | Service hub — Medical Website Design | "medical website design" |
 | `/dental-marketing/` | Specialty hub — Dental | "dental marketing" |
 | `/dermatology-marketing/` | Specialty hub — Dermatology | "dermatology marketing" |
+| `/tools/` | Free tools index (one live entry: the AI visibility checker) | "our free tools" |
 | `/tools/ai-visibility-checker/` | Free AI visibility checker (the lead magnet) | "run the free AI visibility check" / "check your AI visibility" |
 | `/pricing/` | Pricing tiers (Visibility $1,500/mo, Growth $3,500/mo, Market Leader $7,500/mo) | "our pricing" |
 | `/contact/` | Contact form | "get in touch" / "talk to us" |
@@ -40,13 +44,13 @@ Never use "click here" or "learn more" as the entire anchor for any of these —
 | `/plastic-surgery-marketing/` | Specialty hub | Not built. 404 live, correctly gated. |
 | `/orthodontist-marketing/` | Specialty hub | Not built. 404 live, correctly gated. |
 | `/healthcare-paid-search/` | Service hub — Paid Search & Social | Not built. Referenced in `src/components/HomePage.tsx`'s `SERVICES` array but that array is explicitly dead data (rendered as a plain `<div>`, not a link — see that file's own comment). 404 live. |
-| `/research/`, `/tools/`, `/compare/` | Parent/index paths | None of the three resolve — no page file exists for any of them, and none has real children beyond `/tools/ai-visibility-checker/`. Confirmed 404 live for all three. |
-| Any `/services/{service}/` page (`/services/seo/`, `/services/web-design/`, etc.) | Generic service pillar pages per `docs/13-URL-ARCHITECTURE.md` | Not built. `/services/` currently lists exactly 3 services (AI Visibility, Healthcare SEO, Reputation Management) — see Rule note below. |
+| `/research/`, `/compare/` | Parent/index paths | Neither resolves — no page file exists for either, and neither has any children. Confirmed 404 live for both. (`/tools/` graduated out of this row on 2026-09-14 — it's a real, live index now, see Section A.) |
+| Any `/services/{service}/` page (`/services/seo/`, `/services/web-design/`, etc.) | Generic service pillar pages per `docs/13-URL-ARCHITECTURE.md` | Not built. `/services/` links out to the 5 hubs already listed in Section A instead — no separate pillar-page layer exists. |
 | `/case-studies/`, `/team/`, `/resources/`, `/vs/{competitor}/` | Planned per URL architecture doc | Not built at all. |
 
 A blog post linking to anything in this table ships with a 404. If in doubt, curl it against production before publishing.
 
-**Open positioning conflict, not resolved as of this audit:** `src/lib/services.ts`'s `SERVICES` array (source for `/services/`) intentionally still has only 3 entries. `ServicesApproach.tsx` runs a whole section arguing "why we only do three things." Adding Social Media Management as a 4th formal service there was drafted and reverted for this reason — it's linked from the nav only, not listed as a core service. Don't add a 4th entry to that array without deciding to rewrite that section first.
+**Resolved as of 2026-09-14:** the old `/services/` (card grid, `ServicesApproach.tsx`'s "why we only do three things" essay, `src/lib/services.ts`'s 3-entry array) was fully replaced by a diagnostic-table hub routing to all 5 live service cards. `ServicesApproach.tsx`, `src/lib/services.ts`, and five other now-dead components were deleted in the same pass (zero remaining references confirmed via grep before deletion). There is no 3-vs-4-services conflict left to resolve.
 
 ---
 
@@ -63,7 +67,12 @@ Every post must link to: **its specialty hub, one service hub, and the checker.*
 | Med spa posts | **No live hub. `/med-spa-marketing/` does not exist yet.** | `/ai-visibility-geo/` or `/healthcare-seo/`, whichever fits | `/tools/ai-visibility-checker/` |
 | Plastic surgery / orthodontist posts | **No live hub for either.** | — | — |
 
-**Current reality check:** the two blog posts live today do not yet follow this rule. Both link to the checker and to each other, but neither links to a specialty hub or a service hub in body content (only the sitewide nav/footer touch those URLs). Worth fixing on the next editorial pass, not urgent enough to block this audit.
+**Resolved as of 2026-09-14:** both live posts now carry real in-body links via a slug-keyed transform in `src/lib/blog/wordpress.ts` (`injectContextualLinks`) — it wraps an existing, unmodified phrase already in the post's own sentence, so nothing was invented or bolted on.
+
+- *The Ultimate Guide to Med Spa Marketing (2026)* has no live specialty hub (`/med-spa-marketing/` doesn't exist) — links "**GEO — Generative Engine Optimization**" → `/ai-visibility-geo/` and "**Local SEO**" → `/healthcare-seo/` instead. The checker link comes from the sitewide `InlineCheckerCta` component already injected mid-article by `blog/[slug]/page.tsx`, not from this transform.
+- *Why Healthcare Practices Are Invisible in AI Search* links "**dermatology practice**" (inside a sentence that already discusses one) → `/dermatology-marketing/`, and "**review profile**" → `/healthcare-reputation-management/`. Same checker CTA, same mechanism.
+- **Flag, not yet fixable from this repo:** the "dermatology practice" sentence in the second post ("A dermatology practice we looked at recently holds the #1 organic spot…") reads as an implied real case example with no bracket marking it hypothetical. Dermatology has no real case study per CLAUDE.md's honesty rule (Kaja Hair Studio is the only nameable client). This is WordPress-hosted prose, outside this repo's edit surface — needs a WordPress-side edit, not a code fix.
+- The closing CTA on every post used to be a dead `<button>` with no `onClick` and no destination — fixed to a real `<Link href="/contact/">` in the same pass (the default copy describes the paid GEO consulting service, so `/contact/` is correct, not the checker).
 
 ---
 
@@ -76,13 +85,14 @@ Flat URLs, so the hierarchy exists only in `BreadcrumbList` schema and in-page l
 | `/healthcare-seo/` | Home → **Services** → Healthcare SEO (visible link + schema, both present) |
 | `/healthcare-reputation-management/` | Home → **Services** → Healthcare Reputation Management (visible link + schema, both present) |
 | `/healthcare-social-media-management/` | Home → **Services** → Healthcare Social Media Management (visible link + schema, both present) |
-| `/ai-visibility-geo/` | Home → **Services** → AI Search Visibility — **schema only, no visible on-page link to `/services/`** |
-| `/dental-marketing/` | Home → Dental Marketing — **no Services parent at all, schema or visible** |
-| `/dermatology-marketing/` | Home → Dermatology Marketing — **no Services parent at all, schema or visible** |
-| `/blog/{slug}/` | Home → Blog → post (no BreadcrumbList schema found tying a post to its money-page cluster) |
+| `/medical-website-design/` | Home → **Services** → Medical Website Design (visible link + schema, both present) |
+| `/ai-visibility-geo/` | Home → **Services** → AI Search Visibility (visible link + schema, both present — fixed 2026-09-14, was schema-only) |
+| `/dental-marketing/` | Home → **Services** → Dental Marketing (visible link + schema, both present — fixed 2026-09-14, had no Services parent at all) |
+| `/dermatology-marketing/` | Home → **Services** → Dermatology Marketing (visible link + schema, both present — fixed 2026-09-14, had no Services parent at all) |
+| `/blog/{slug}/` | Home → Blog → post title (`BreadcrumbList` schema present in `src/app/blog/[slug]/page.tsx`, confirmed on both live posts) |
 | Legal pages | Standalone, no parent (correctly `noindex`) |
 
-Specialty hubs (dental, dermatology) are intentionally root-level per `docs/13-URL-ARCHITECTURE.md` Rule 2 ("hierarchy is expressed through breadcrumbs + internal links, not URL depth") — but right now neither one actually expresses that hierarchy. See the Up-Link finding below.
+Specialty hubs (dental, dermatology) are intentionally root-level per `docs/13-URL-ARCHITECTURE.md` Rule 2 ("hierarchy is expressed through breadcrumbs + internal links, not URL depth") — all 7 service/specialty hubs now express that hierarchy in both schema and visible on-page nav. No open up-link gaps as of this audit.
 
 ---
 
@@ -99,7 +109,7 @@ Specialty hubs (dental, dermatology) are intentionally root-level per `docs/13-U
 
 ## Appendix · Full route inventory (repo vs. production)
 
-All 24 `page.tsx` files are **Server Components** at the top level (none declare `"use client"` themselves — interactivity is delegated to client child components: `Navbar`, `Footer`, forms, the checker widget, `Reveal`-based sections).
+All 27 `page.tsx` files are **Server Components** at the top level (none declare `"use client"` themselves — interactivity is delegated to client child components: `Navbar`, `Footer`, forms, the checker widget, `Reveal`-based sections).
 
 | Route | File | Prod status | Body word count* |
 |---|---|---|---|
@@ -119,18 +129,22 @@ All 24 `page.tsx` files are **Server Components** at the top level (none declare
 | `/healthcare-reputation-management/` | `src/app/healthcare-reputation-management/page.tsx` | 200 | 1,724 |
 | `/healthcare-seo/` | `src/app/healthcare-seo/page.tsx` | 200 | 1,702 |
 | `/healthcare-social-media-management/` | `src/app/healthcare-social-media-management/page.tsx` | 200 | 1,622 |
+| `/medical-website-design/` | `src/app/medical-website-design/page.tsx` | 200 | 1,789 |
 | `/newsletter/confirmed/` | `src/app/newsletter/confirmed/page.tsx` | 200 (noindex, orphan by design) | 15 |
 | `/newsletter/unsubscribe/` | `src/app/newsletter/unsubscribe/page.tsx` | 200 (noindex, orphan by design) | 4 |
 | `/pricing/` | `src/app/pricing/page.tsx` | 200 | 1,316 |
 | `/privacy/` | `src/app/privacy/page.tsx` | 200 (noindex) | 1,477 |
 | `/refund-policy/` | `src/app/refund-policy/page.tsx` | 200 (noindex) | 722 |
-| `/services/` | `src/app/services/page.tsx` | 200 | 1,122 |
+| `/services/` | `src/app/services/page.tsx` | 200 | 1,188 (rebuilt 2026-09-14 — was 1,122, card-grid layout, now a diagnostic-table hub) |
 | `/terms/` | `src/app/terms/page.tsx` | 200 (noindex) | 1,485 |
+| `/tools/` | `src/app/tools/page.tsx` | 200 | 406 |
 | `/tools/ai-visibility-checker/` | `src/app/tools/ai-visibility-checker/page.tsx` | 200 | 415 |
 | `/tools/ai-visibility-checker/report/{id}/` | `src/app/tools/ai-visibility-checker/report/[id]/page.tsx` | 404 for any non-real id (correct — noindex + robots disallow, no static id to sample) | N/A |
 
 \* Real prose inside `<main>` only — nav and footer chrome excluded, `<svg>`/`<script>` content stripped. Measured against the running build, not estimated.
 
-**Sitemap check:** `page-sitemap.xml` (14 URLs) and `post-sitemap.xml` (2 URLs) match `src/lib/sitemap.ts` exactly. Zero sitemap URLs 404. Zero live, indexable routes missing from the sitemap — every route excluded from it (legal ×5, newsletter ×2, `/handbook/`, `/design-lab/`, the dynamic report route) carries its own `noindex`, so the exclusion is correct, not an oversight.
+**Sitemap check:** `page-sitemap.xml` (16 URLs, up from 14 — `/medical-website-design/` and `/tools/` added) and `post-sitemap.xml` (2 URLs) match `src/lib/sitemap.ts` exactly. Zero sitemap URLs 404. Zero live, indexable routes missing from the sitemap — every route excluded from it (legal ×5, newsletter ×2, `/handbook/`, `/design-lab/`, the dynamic report route) carries its own `noindex`, so the exclusion is correct, not an oversight.
+
+**Orphan check (2026-09-14):** a full crawl of every sitemap URL plus both blog posts, following every internal `href` found, turned up one orphan — `/tools/` had zero inbound links from `Navbar.tsx` or `Footer.tsx` (both linked straight to `/tools/ai-visibility-checker/`, skipping the new index). Fixed by adding a "Free Tools" entry to both nav arrays, pointing at `/tools/`. Zero orphans remain.
 
 **No orphaned deploy found** — every route that returned 200 in production corresponds to a real file in the repo. Caveat: this was checked by curling every route discoverable from the repo, the sitemap, and the rendered internal link graph — not a blind crawl, so a truly unlinked, un-sitemapped live route would not surface with this method.

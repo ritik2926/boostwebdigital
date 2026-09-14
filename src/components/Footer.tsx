@@ -45,6 +45,7 @@ import { EASE } from "@/lib/tokens";
 const FOOTER_NAV = {
   company: [
     { label: "AI Visibility Checker", href: "/tools/ai-visibility-checker/" },
+    { label: "Free Tools", href: "/tools/" },
     { label: "Blog", href: "/blogs/" },
     { label: "About", href: "/about/" },
     { label: "Services", href: "/services/" },
