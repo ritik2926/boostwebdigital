@@ -8,20 +8,20 @@ import { usePathname } from "next/navigation";
 import { Container } from "@/components/Container";
 import { cn } from "@/lib/utils";
 import { EASE } from "@/lib/tokens";
-import { SERVICES, INDUSTRIES, RESOURCES, getLiveGroupItems, type NavItem } from "@/lib/navigation";
+import { SERVICES, INDUSTRIES, RESOURCES, getLiveGroupItems, type NavGroup } from "@/lib/navigation";
+import { MegaMenu } from "@/components/MegaMenu";
 
 // ---------------------------------------------------------------------------
 // Navbar — layoutId-shared active/hover highlight, per the locked spec in
 // docs/12-DESIGN-STANDARDS.md §8 (Navigation).
 //
-// Sourced from src/lib/navigation.ts (Phase 1, single nav source of truth)
-// rather than hardcoded arrays. This dropdown's shape (one flat list mixing
-// SERVICES and the two live INDUSTRIES entries) predates that file and
-// isn't changed here — a real three-column Services/Industries/Resources
-// menu is Phase 4's job, not this wiring pass's. A `live:false` nav item
-// (Paid Search, Research, every unbuilt industry, the checker before
-// Phase 3 ships) now simply never appears, replacing the old disabled
-// "Soon" placeholder row — no dropdown item is ever unclickable.
+// Desktop's Services/Industries/Resources disclosure is MegaMenu.tsx (Phase
+// 4's full-width mega menu, itself sourced from src/lib/navigation.ts) — the
+// old ServicesDropdown/OtherDropdown pair (two small panels holding a
+// hand-mixed set of links) is gone. The mobile sheet below keeps its own
+// pattern per that same task's explicit instruction ("NOT a mega menu"),
+// now with three expandable groups instead of two, matching the real group
+// boundaries in navigation.ts instead of the old ad hoc split.
 // ---------------------------------------------------------------------------
 
 const NAV_LINKS = [
@@ -30,33 +30,12 @@ const NAV_LINKS = [
   { label: "Contact", href: "/contact/" },
 ];
 
-// Services renders as its own dropdown (see ServicesDropdown) rather than a
-// plain NAV_LINKS entry, so /ai-visibility-geo/ can live as a real sub-page
-// under it without a second top-level nav item. Mixes SERVICES with the
-// live INDUSTRIES entries (dental, dermatology, and med spa once Phase 2
-// ships) — same grouping the dropdown has always shown, now sourced from
-// one file instead of two duplicated ones.
-const SERVICES_SUBLINKS: Array<{ label: string; href: string }> = [
-  { label: "All Services", href: SERVICES.overviewHref ?? "/services/" },
-  ...getLiveGroupItems(SERVICES),
-  ...getLiveGroupItems(INDUSTRIES),
-];
-
-// The "Other" dropdown's live resources, minus About/Contact — both already
-// have their own permanent top-level link in NAV_LINKS above, so repeating
-// them here would just duplicate an existing link rather than surface a
-// new one.
-const OTHER_LINKS: NavItem[] = getLiveGroupItems(RESOURCES).filter(
-  (item) => item.href !== "/about/" && item.href !== "/contact/"
-);
-
 const MotionLink = motion.create(Link);
 
 // Real routes (no "#") are matched against the current pathname so the
-// underline follows the page you're actually on; anchor links only ever
-// activate on hover since there's no scroll-spy tracking which section is
-// in view. A real route living inside the "Other" dropdown (e.g. Blogs)
-// activates the "Other" trigger itself rather than nothing at all.
+// underline follows the page you're actually on. Services/Industries/
+// Resources pages activate MegaMenu's own trigger highlight directly (see
+// that component) rather than being tracked here.
 function getActiveLabel(pathname: string) {
   if (pathname === "/") return "Home";
   for (const item of NAV_LINKS) {
@@ -64,19 +43,6 @@ function getActiveLabel(pathname: string) {
     const hrefPath = item.href.replace(/\/$/, "");
     if (pathname === hrefPath || pathname.startsWith(`${hrefPath}/`)) {
       return item.label;
-    }
-  }
-  for (const item of SERVICES_SUBLINKS) {
-    const hrefPath = item.href.replace(/\/$/, "");
-    if (pathname === hrefPath || pathname.startsWith(`${hrefPath}/`)) {
-      return "Services";
-    }
-  }
-  for (const item of OTHER_LINKS) {
-    if (!item.href || item.href.includes("#")) continue;
-    const hrefPath = item.href.replace(/\/$/, "");
-    if (pathname === hrefPath || pathname.startsWith(`${hrefPath}/`)) {
-      return "Other";
     }
   }
   return "";
@@ -90,148 +56,6 @@ function NavHighlight() {
       style={{ boxShadow: "0 0 6px rgba(255,255,255,0.55), 0 -8px 10px -4px rgba(255,255,255,0.35)" }}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
     />
-  );
-}
-
-/**
- * Unlike OtherDropdown, "Services" has a real destination of its own, so
- * the trigger is a genuine <Link> to /services/ (not just a toggle button)
- * — the chevron is decorative only. Hovering/focusing still reveals the
- * sub-page list underneath, same panel mechanics as OtherDropdown.
- */
-function ServicesDropdown({ active, onHover }: { active: boolean; onHover: (label: string | null) => void }) {
-  const [open, setOpen] = useState(false);
-
-  return (
-    <div
-      className="relative"
-      onMouseEnter={() => {
-        onHover("Services");
-        setOpen(true);
-      }}
-      onMouseLeave={() => setOpen(false)}
-      onFocus={() => {
-        onHover("Services");
-        setOpen(true);
-      }}
-      onBlur={(e) => {
-        if (!e.currentTarget.contains(e.relatedTarget as Node)) setOpen(false);
-      }}
-    >
-      <Link href="/services/" className="relative flex items-center gap-1 px-4 py-2 text-sm">
-        {active && <NavHighlight />}
-        <span className={cn("relative transition-colors", active ? "text-white" : "text-white/60")}>Services</span>
-        <svg
-          width="10"
-          height="10"
-          viewBox="0 0 10 10"
-          fill="none"
-          aria-hidden
-          className={cn("relative mt-px text-white/50 transition-transform duration-200", open && "rotate-180")}
-        >
-          <path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      </Link>
-
-      {/* Always rendered — see OtherDropdown's identical note on crawlers
-          that never fire hover/focus. */}
-      <motion.div
-        initial={false}
-        animate={{ opacity: open ? 1 : 0, y: open ? 0 : 6 }}
-        transition={{ duration: 0.2, ease: EASE.primary }}
-        style={{ pointerEvents: open ? "auto" : "none" }}
-        aria-hidden={!open}
-        className="absolute left-1/2 top-full z-(--z-raised) w-56 -translate-x-1/2 pt-3"
-      >
-        <div className="overflow-hidden rounded-2xl border border-white/8 bg-[#0b0b0f]/95 py-2 shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-xl">
-          {SERVICES_SUBLINKS.map((item) => (
-            <Link
-              key={item.label}
-              href={item.href}
-              tabIndex={open ? 0 : -1}
-              onClick={() => setOpen(false)}
-              className="block px-4 py-2.5 text-sm text-white/70 transition-colors hover:bg-white/5 hover:text-white"
-            >
-              {item.label}
-            </Link>
-          ))}
-        </div>
-      </motion.div>
-    </div>
-  );
-}
-
-function OtherDropdown({ active, onHover }: { active: boolean; onHover: (label: string | null) => void }) {
-  const [open, setOpen] = useState(false);
-
-  return (
-    <div
-      className="relative"
-      onMouseEnter={() => {
-        onHover("Other");
-        setOpen(true);
-      }}
-      onMouseLeave={() => setOpen(false)}
-      onFocus={() => {
-        onHover("Other");
-        setOpen(true);
-      }}
-      onBlur={(e) => {
-        if (!e.currentTarget.contains(e.relatedTarget as Node)) setOpen(false);
-      }}
-    >
-      <button
-        type="button"
-        aria-haspopup="true"
-        aria-expanded={open}
-        className="relative flex items-center gap-1 px-4 py-2 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-      >
-        {active && <NavHighlight />}
-        <span className={cn("relative transition-colors", active ? "text-white" : "text-white/60")}>Other</span>
-        <svg
-          width="10"
-          height="10"
-          viewBox="0 0 10 10"
-          fill="none"
-          aria-hidden
-          className={cn("relative mt-px text-white/50 transition-transform duration-200", open && "rotate-180")}
-        >
-          <path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      </button>
-
-      {/* Always rendered (not `{open && ...}`) — a non-JS crawler (GPTBot,
-          ClaudeBot, etc.) never fires the hover/focus handlers above, so
-          conditionally mounting this menu left Blogs/FAQs/Pricing entirely
-          out of the server HTML. Hidden via opacity/pointer-events/
-          aria-hidden instead, which is invisible to sighted mouse users but
-          not to a crawler reading the raw HTML. */}
-      <motion.div
-        initial={false}
-        animate={{ opacity: open ? 1 : 0, y: open ? 0 : 6 }}
-        transition={{ duration: 0.2, ease: EASE.primary }}
-        style={{ pointerEvents: open ? "auto" : "none" }}
-        aria-hidden={!open}
-        // pt-3 (padding, not margin) keeps the gap to the trigger inside
-        // this element's own hoverable box — a margin-based gap here is
-        // a dead zone the mouse falls out of before reaching the panel.
-        className="absolute left-1/2 top-full z-(--z-raised) w-48 -translate-x-1/2 pt-3"
-      >
-        <div className="overflow-hidden rounded-2xl border border-white/8 bg-[#0b0b0f]/95 py-2 shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-xl">
-          {OTHER_LINKS.map((item) => (
-            <Link
-              key={item.label}
-              href={item.href}
-              tabIndex={open ? 0 : -1}
-              onClick={() => setOpen(false)}
-              className="block px-4 py-2.5 text-sm text-white/70 transition-colors hover:bg-white/5 hover:text-white"
-            >
-              {item.label}
-            </Link>
-          ))}
-        </div>
-      </motion.div>
-    </div>
   );
 }
 
@@ -263,7 +87,7 @@ function DesktopNavLinks({ className }: { className?: string }) {
         );
       })}
 
-      <ServicesDropdown active={active === "Services"} onHover={setHovered} />
+      <MegaMenu />
 
       {NAV_LINKS.slice(2).map((item) => {
         const isActive = active === item.label;
@@ -281,16 +105,88 @@ function DesktopNavLinks({ className }: { className?: string }) {
           </Link>
         );
       })}
-
-      <OtherDropdown active={active === "Other"} onHover={setHovered} />
     </div>
+  );
+}
+
+// Three real groups (Phase 4), matching src/lib/navigation.ts exactly —
+// replaces the old Services (which used to also carry Industries) + Other
+// split. Blurbs are dropped here (see MobileGroup below): at mobile's large
+// font-display item size, a second line under all ~16 live items would
+// roughly double the sheet's height. Said here once rather than at every
+// call site.
+const MOBILE_GROUPS: NavGroup[] = [SERVICES, INDUSTRIES, RESOURCES];
+
+function MobileGroup({ group, open, onToggle, onNavigate }: { group: NavGroup; open: boolean; onToggle: () => void; onNavigate: () => void }) {
+  const items = getLiveGroupItems(group);
+  const panelId = `mobile-group-${group.id}`;
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-expanded={open}
+        aria-controls={panelId}
+        className="font-display flex items-center gap-2 py-3 text-3xl text-white/80 transition-colors hover:text-white sm:text-4xl"
+      >
+        {group.title}
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 10 10"
+          fill="none"
+          aria-hidden
+          className={cn("text-white/40 transition-transform duration-200", open && "rotate-180")}
+        >
+          <path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </button>
+
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            id={panelId}
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3, ease: EASE.primary }}
+            className="flex w-full flex-col items-center overflow-hidden"
+          >
+            {group.overviewHref && (
+              <Link
+                href={group.overviewHref}
+                onClick={onNavigate}
+                className="font-display py-2 text-xl text-white/60 transition-colors hover:text-white sm:text-2xl"
+              >
+                All {group.title}
+              </Link>
+            )}
+            {items.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={onNavigate}
+                className="font-display py-2 text-xl text-white/60 transition-colors hover:text-white sm:text-2xl"
+              >
+                {item.label}
+              </Link>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 }
 
 function MobileNav() {
   const [open, setOpen] = useState(false);
-  const [otherOpen, setOtherOpen] = useState(false);
-  const [servicesOpen, setServicesOpen] = useState(false);
+  // A record, not one value — Services/Industries/Resources each expand
+  // independently, same as the original two-boolean (Services, Other)
+  // version. A single "which one is open" value would silently collapse
+  // Services the moment Industries opened, which is not the existing
+  // pattern this task's mobile section says to keep.
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     if (!open) return;
@@ -301,13 +197,10 @@ function MobileNav() {
     };
   }, [open]);
 
-  // Collapse the "Other"/"Services" panels every time the menu itself
-  // closes, so they don't reopen already-expanded next time.
+  // Collapse every group panel every time the menu itself closes, so none
+  // reopen already-expanded next time.
   useEffect(() => {
-    if (!open) {
-      setOtherOpen(false);
-      setServicesOpen(false);
-    }
+    if (!open) setOpenGroups({});
   }, [open]);
 
   return (
@@ -373,62 +266,23 @@ function MobileNav() {
                 </MotionLink>
               ))}
 
-              <motion.div
-                initial={{ opacity: 0, y: 22 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 14 }}
-                transition={{ duration: 0.4, delay: 0.16 + 0.06 * 2, ease: EASE.primary }}
-                className="flex items-center gap-2"
-              >
-                <MotionLink
-                  href="/services/"
-                  onClick={() => setOpen(false)}
-                  className="font-display py-3 text-3xl text-white/80 transition-colors hover:text-white sm:text-4xl"
+              {MOBILE_GROUPS.map((group, i) => (
+                <motion.div
+                  key={group.id}
+                  initial={{ opacity: 0, y: 22 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 14 }}
+                  transition={{ duration: 0.4, delay: 0.16 + 0.06 * (2 + i), ease: EASE.primary }}
+                  className="flex w-full flex-col items-center"
                 >
-                  Services
-                </MotionLink>
-                <button
-                  type="button"
-                  onClick={() => setServicesOpen((v) => !v)}
-                  aria-expanded={servicesOpen}
-                  aria-label="Toggle services sub-menu"
-                  className="flex h-8 w-8 items-center justify-center"
-                >
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 10 10"
-                    fill="none"
-                    aria-hidden
-                    className={cn("text-white/40 transition-transform duration-200", servicesOpen && "rotate-180")}
-                  >
-                    <path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </button>
-              </motion.div>
-
-              <AnimatePresence initial={false}>
-                {servicesOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.3, ease: EASE.primary }}
-                    className="flex w-full flex-col items-center overflow-hidden"
-                  >
-                    {SERVICES_SUBLINKS.map((item) => (
-                      <Link
-                        key={item.label}
-                        href={item.href}
-                        onClick={() => setOpen(false)}
-                        className="font-display py-2 text-xl text-white/60 transition-colors hover:text-white sm:text-2xl"
-                      >
-                        {item.label}
-                      </Link>
-                    ))}
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                  <MobileGroup
+                    group={group}
+                    open={Boolean(openGroups[group.id])}
+                    onToggle={() => setOpenGroups((v) => ({ ...v, [group.id]: !v[group.id] }))}
+                    onNavigate={() => setOpen(false)}
+                  />
+                </motion.div>
+              ))}
 
               {NAV_LINKS.slice(2).map((item, i) => (
                 <MotionLink
@@ -438,64 +292,18 @@ function MobileNav() {
                   initial={{ opacity: 0, y: 22 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 14 }}
-                  transition={{ duration: 0.4, delay: 0.16 + 0.06 * (3 + i), ease: EASE.primary }}
+                  transition={{ duration: 0.4, delay: 0.16 + 0.06 * (5 + i), ease: EASE.primary }}
                   className="font-display py-3 text-3xl text-white/80 transition-colors hover:text-white sm:text-4xl"
                 >
                   {item.label}
                 </MotionLink>
               ))}
 
-              <motion.button
-                type="button"
-                onClick={() => setOtherOpen((v) => !v)}
-                aria-expanded={otherOpen}
-                initial={{ opacity: 0, y: 22 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 14 }}
-                transition={{ duration: 0.4, delay: 0.16 + 0.06 * 4, ease: EASE.primary }}
-                className="font-display flex items-center gap-2 py-3 text-3xl text-white/80 transition-colors hover:text-white sm:text-4xl"
-              >
-                Other
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 10 10"
-                  fill="none"
-                  aria-hidden
-                  className={cn("text-white/40 transition-transform duration-200", otherOpen && "rotate-180")}
-                >
-                  <path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </motion.button>
-
-              <AnimatePresence initial={false}>
-                {otherOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.3, ease: EASE.primary }}
-                    className="flex w-full flex-col items-center overflow-hidden"
-                  >
-                    {OTHER_LINKS.map((item) => (
-                      <Link
-                        key={item.label}
-                        href={item.href}
-                        onClick={() => setOpen(false)}
-                        className="font-display py-2 text-xl text-white/60 transition-colors hover:text-white sm:text-2xl"
-                      >
-                        {item.label}
-                      </Link>
-                    ))}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
               <motion.div
                 initial={{ opacity: 0, y: 22 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 14 }}
-                transition={{ duration: 0.4, delay: 0.16 + 0.06 * 5, ease: EASE.primary }}
+                transition={{ duration: 0.4, delay: 0.16 + 0.06 * 6, ease: EASE.primary }}
                 className="mx-auto mt-8 w-full max-w-xs px-2"
               >
                 <Link href="/contact/" className="btn-primary flex w-full justify-center">

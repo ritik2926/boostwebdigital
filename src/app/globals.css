@@ -1034,3 +1034,38 @@ body {
     transition: none;
   }
 }
+
+/*
+  Full-width mega menu panel (Phase 4, src/components/MegaMenu.tsx) — toggled
+  via the `hidden` DOM attribute (not an opacity/pointer-events trick), so a
+  closed panel is genuinely removed from layout, the accessibility tree, and
+  tab order: never Tab-reachable, never swallows a click. `[hidden]` computes
+  to `display: none`, which a plain CSS transition cannot animate across —
+  same `@starting-style` + `transition-behavior: allow-discrete` technique
+  already used on `.checker-fab-dialog` above, so this fades/slides in on
+  open while still being truly hidden at rest.
+*/
+.mega-menu-panel {
+  opacity: 0;
+  transform: translate(-50%, -6px);
+  transition:
+    opacity 0.18s var(--ease-signature),
+    transform 0.18s var(--ease-signature),
+    overlay 0.18s allow-discrete,
+    display 0.18s allow-discrete;
+}
+.mega-menu-panel:not([hidden]) {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+@starting-style {
+  .mega-menu-panel:not([hidden]) {
+    opacity: 0;
+    transform: translate(-50%, -6px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mega-menu-panel {
+    transition: none;
+  }
+}
