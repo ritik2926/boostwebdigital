@@ -170,7 +170,7 @@ export const RESOURCES: NavGroup = {
       label: "Review Reply Checker",
       href: "/tools/review-reply-hipaa-checker/",
       blurb: "Flags possible HIPAA-risk phrases in a draft review reply.",
-      live: false,
+      live: true,
     },
     {
       label: "Blog",
