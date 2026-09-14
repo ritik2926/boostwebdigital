@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Container } from "@/components/Container";
 import { Kicker } from "@/components/Kicker";
 import { SECTION_PADDING, STACK } from "@/lib/tokens";
@@ -40,7 +41,11 @@ export function DermatologyProblem() {
             <p className="mt-3 text-white/70">
               A patient comparing Botox providers is asking a genuinely different question. Increasingly, an AI
               tool is the one answering it. The competitor isn&apos;t only the practice across town — it&apos;s the
-              aesthetics-focused med spa that isn&apos;t a medical practice at all.
+              aesthetics-focused{" "}
+              <Link href="/med-spa-marketing/" className="text-white underline decoration-white/30 underline-offset-4 hover:decoration-white/70">
+                med spa
+              </Link>{" "}
+              that isn&apos;t a medical practice at all.
             </p>
             <p className="mt-3 text-white/70">
               That med spa carries none of your clinical credentials, and it often invests more in the exact

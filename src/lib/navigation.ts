@@ -108,7 +108,7 @@ export const INDUSTRIES: NavGroup = {
       label: "Med Spa Marketing",
       href: "/med-spa-marketing/",
       blurb: "Credibility-first marketing for a business that isn't a medical practice.",
-      live: false, // flips true in Phase 2, once /med-spa-marketing/ actually exists
+      live: true,
     },
     {
       label: "Plastic Surgery",

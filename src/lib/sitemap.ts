@@ -35,6 +35,7 @@ const PAGE_DATES: Record<string, string> = {
   "/healthcare-social-media-management/": "2026-09-12",
   "/medical-website-design/": "2026-09-12",
   "/tools/": "2026-09-14",
+  "/med-spa-marketing/": "2026-09-14",
 };
 
 /**
@@ -127,6 +128,7 @@ export function getStaticPageEntries(): SitemapUrlEntry[] {
     },
     { url: `${SITE_URL}/medical-website-design/`, lastModified: PAGE_DATES["/medical-website-design/"] },
     { url: `${SITE_URL}/tools/`, lastModified: PAGE_DATES["/tools/"] },
+    { url: `${SITE_URL}/med-spa-marketing/`, lastModified: PAGE_DATES["/med-spa-marketing/"] },
   ];
 }
 
