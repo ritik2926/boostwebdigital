@@ -1,4 +1,42 @@
+import fs from "node:fs";
+import path from "node:path";
 import type { NextConfig } from "next";
+import { getAllNavItems } from "./src/lib/navigation";
+
+/**
+ * Build-time assertion (Phase 1, sitewide nav map): every `live: true` href
+ * declared in src/lib/navigation.ts must resolve to a real
+ * `src/app/**‍/page.tsx` — a live nav entry pointing at a route that
+ * doesn't exist yet is a shipped 404, not a plumbing detail. Runs here
+ * (plain Node, evaluated once at the very start of `next build`/`next
+ * dev`, never bundled into client code) rather than inside a component,
+ * so a broken mapping fails the build itself with the offending href named
+ * in the message, instead of surfacing as a runtime 404 a visitor finds
+ * first.
+ */
+function assertLiveNavRoutesExist(): void {
+  const appDir = path.join(__dirname, "src", "app");
+  const missing: string[] = [];
+
+  for (const item of getAllNavItems()) {
+    if (!item.live) continue;
+    const relative = item.href.replace(/^\/+|\/+$/g, "");
+    const pagePath = path.join(appDir, relative, "page.tsx");
+    if (!fs.existsSync(pagePath)) {
+      missing.push(`"${item.href}" (expected src/app/${relative}/page.tsx)`);
+    }
+  }
+
+  if (missing.length > 0) {
+    throw new Error(
+      `[src/lib/navigation.ts] ${missing.length} live nav href(s) have no matching route:\n  - ${missing.join(
+        "\n  - "
+      )}\nEither build the missing page(s) or set live: false until they exist.`
+    );
+  }
+}
+
+assertLiveNavRoutesExist();
 
 const nextConfig: NextConfig = {
   trailingSlash: true,

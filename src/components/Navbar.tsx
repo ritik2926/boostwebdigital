@@ -8,10 +8,20 @@ import { usePathname } from "next/navigation";
 import { Container } from "@/components/Container";
 import { cn } from "@/lib/utils";
 import { EASE } from "@/lib/tokens";
+import { SERVICES, INDUSTRIES, RESOURCES, getLiveGroupItems, type NavItem } from "@/lib/navigation";
 
 // ---------------------------------------------------------------------------
 // Navbar — layoutId-shared active/hover highlight, per the locked spec in
 // docs/12-DESIGN-STANDARDS.md §8 (Navigation).
+//
+// Sourced from src/lib/navigation.ts (Phase 1, single nav source of truth)
+// rather than hardcoded arrays. This dropdown's shape (one flat list mixing
+// SERVICES and the two live INDUSTRIES entries) predates that file and
+// isn't changed here — a real three-column Services/Industries/Resources
+// menu is Phase 4's job, not this wiring pass's. A `live:false` nav item
+// (Paid Search, Research, every unbuilt industry, the checker before
+// Phase 3 ships) now simply never appears, replacing the old disabled
+// "Soon" placeholder row — no dropdown item is ever unclickable.
 // ---------------------------------------------------------------------------
 
 const NAV_LINKS = [
@@ -22,29 +32,23 @@ const NAV_LINKS = [
 
 // Services renders as its own dropdown (see ServicesDropdown) rather than a
 // plain NAV_LINKS entry, so /ai-visibility-geo/ can live as a real sub-page
-// under it without a second top-level nav item.
+// under it without a second top-level nav item. Mixes SERVICES with the
+// live INDUSTRIES entries (dental, dermatology, and med spa once Phase 2
+// ships) — same grouping the dropdown has always shown, now sourced from
+// one file instead of two duplicated ones.
 const SERVICES_SUBLINKS: Array<{ label: string; href: string }> = [
-  { label: "All Services", href: "/services/" },
-  { label: "AI Search Visibility", href: "/ai-visibility-geo/" },
-  { label: "Healthcare SEO", href: "/healthcare-seo/" },
-  { label: "Reputation Management", href: "/healthcare-reputation-management/" },
-  { label: "Social Media Management", href: "/healthcare-social-media-management/" },
-  { label: "Medical Website Design", href: "/medical-website-design/" },
-  { label: "Dermatology Marketing", href: "/dermatology-marketing/" },
-  { label: "Dental Marketing", href: "/dental-marketing/" },
+  { label: "All Services", href: SERVICES.overviewHref ?? "/services/" },
+  ...getLiveGroupItems(SERVICES),
+  ...getLiveGroupItems(INDUSTRIES),
 ];
 
-// Grouped under the "Other" dropdown. `href: null` means the page doesn't
-// exist yet — rendered disabled with a "Soon" tag rather than a dead link
-// (no fake functional UI, per CLAUDE.md's honesty rule).
-const OTHER_LINKS: Array<{ label: string; href: string | null }> = [
-  { label: "AI Visibility Checker", href: "/tools/ai-visibility-checker/" },
-  { label: "Free Tools", href: "/tools/" },
-  { label: "Blogs", href: "/blogs/" },
-  { label: "AI News", href: null },
-  { label: "FAQs", href: "/faq/" },
-  { label: "Pricing", href: "/pricing/" },
-];
+// The "Other" dropdown's live resources, minus About/Contact — both already
+// have their own permanent top-level link in NAV_LINKS above, so repeating
+// them here would just duplicate an existing link rather than surface a
+// new one.
+const OTHER_LINKS: NavItem[] = getLiveGroupItems(RESOURCES).filter(
+  (item) => item.href !== "/about/" && item.href !== "/contact/"
+);
 
 const MotionLink = motion.create(Link);
 
@@ -214,26 +218,17 @@ function OtherDropdown({ active, onHover }: { active: boolean; onHover: (label: 
         className="absolute left-1/2 top-full z-(--z-raised) w-48 -translate-x-1/2 pt-3"
       >
         <div className="overflow-hidden rounded-2xl border border-white/8 bg-[#0b0b0f]/95 py-2 shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-xl">
-          {OTHER_LINKS.map((item) =>
-            item.href ? (
-              <Link
-                key={item.label}
-                href={item.href}
-                tabIndex={open ? 0 : -1}
-                onClick={() => setOpen(false)}
-                className="block px-4 py-2.5 text-sm text-white/70 transition-colors hover:bg-white/5 hover:text-white"
-              >
-                {item.label}
-              </Link>
-            ) : (
-              <span key={item.label} className="flex items-center justify-between px-4 py-2.5 text-sm text-white/30">
-                {item.label}
-                <span className="rounded-full border border-white/10 px-1.5 py-0.5 font-mono text-[0.6rem] font-semibold uppercase tracking-wide text-white/30">
-                  Soon
-                </span>
-              </span>
-            )
-          )}
+          {OTHER_LINKS.map((item) => (
+            <Link
+              key={item.label}
+              href={item.href}
+              tabIndex={open ? 0 : -1}
+              onClick={() => setOpen(false)}
+              className="block px-4 py-2.5 text-sm text-white/70 transition-colors hover:bg-white/5 hover:text-white"
+            >
+              {item.label}
+            </Link>
+          ))}
         </div>
       </motion.div>
     </div>
@@ -482,28 +477,16 @@ function MobileNav() {
                     transition={{ duration: 0.3, ease: EASE.primary }}
                     className="flex w-full flex-col items-center overflow-hidden"
                   >
-                    {OTHER_LINKS.map((item) =>
-                      item.href ? (
-                        <Link
-                          key={item.label}
-                          href={item.href}
-                          onClick={() => setOpen(false)}
-                          className="font-display py-2 text-xl text-white/60 transition-colors hover:text-white sm:text-2xl"
-                        >
-                          {item.label}
-                        </Link>
-                      ) : (
-                        <span
-                          key={item.label}
-                          className="font-display flex items-center gap-2.5 py-2 text-xl text-white/25 sm:text-2xl"
-                        >
-                          {item.label}
-                          <span className="rounded-full border border-white/10 px-2 py-0.5 font-mono text-[0.55rem] font-semibold uppercase tracking-wide text-white/30">
-                            Soon
-                          </span>
-                        </span>
-                      )
-                    )}
+                    {OTHER_LINKS.map((item) => (
+                      <Link
+                        key={item.label}
+                        href={item.href}
+                        onClick={() => setOpen(false)}
+                        className="font-display py-2 text-xl text-white/60 transition-colors hover:text-white sm:text-2xl"
+                      >
+                        {item.label}
+                      </Link>
+                    ))}
                   </motion.div>
                 )}
               </AnimatePresence>

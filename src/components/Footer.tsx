@@ -11,6 +11,7 @@ import { getConfirmedSocialLinks } from "@/lib/socialLinks";
 import { SOCIAL_ICONS } from "@/components/conversion/icons";
 import { cn, seeded } from "@/lib/utils";
 import { EASE } from "@/lib/tokens";
+import { SERVICES, INDUSTRIES, RESOURCES, getLiveGroupItems } from "@/lib/navigation";
 
 // ---------------------------------------------------------------------------
 // Footer — "Premium Footer." Adapted from two pasted external references
@@ -42,19 +43,30 @@ import { EASE } from "@/lib/tokens";
 // column is restored as its own fifth grid item, real this time.
 // ---------------------------------------------------------------------------
 
+// Sourced from src/lib/navigation.ts (Phase 1, single nav source of truth).
+// `company` keeps its existing curated order/set rather than dumping every
+// live RESOURCES entry here (Contact and FAQ already have their own
+// reachable homes elsewhere) — findResource just removes the duplicated,
+// hand-typed href each of these already had. `specialties` DOES render
+// every live INDUSTRIES entry, so it grows on its own (med spa, once
+// Phase 2 flips it live) instead of needing a second manual edit here.
+const liveResources = getLiveGroupItems(RESOURCES);
+function findResource(href: string) {
+  const item = liveResources.find((i) => i.href === href);
+  if (!item) throw new Error(`Footer: expected a live RESOURCES entry for "${href}" in src/lib/navigation.ts`);
+  return item;
+}
+
 const FOOTER_NAV = {
   company: [
-    { label: "AI Visibility Checker", href: "/tools/ai-visibility-checker/" },
-    { label: "Free Tools", href: "/tools/" },
-    { label: "Blog", href: "/blogs/" },
-    { label: "About", href: "/about/" },
-    { label: "Services", href: "/services/" },
-    { label: "Pricing", href: "/pricing/" },
+    findResource("/tools/ai-visibility-checker/"),
+    findResource("/tools/"),
+    findResource("/blogs/"),
+    findResource("/about/"),
+    { label: "Services", href: SERVICES.overviewHref ?? "/services/" },
+    findResource("/pricing/"),
   ],
-  specialties: [
-    { label: "Dermatology Marketing", href: "/dermatology-marketing/" },
-    { label: "Dental Marketing", href: "/dental-marketing/" },
-  ],
+  specialties: getLiveGroupItems(INDUSTRIES),
   legal: [
     { label: "Terms & Conditions", href: "/terms/" },
     { label: "Privacy Policy", href: "/privacy/" },
