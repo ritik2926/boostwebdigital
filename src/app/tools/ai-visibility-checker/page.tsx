@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import JsonLd from "@/components/JsonLd";
+import Link from "next/link";
 import { Container } from "@/components/Container";
 import { Kicker } from "@/components/Kicker";
 import { CheckerWidget } from "@/components/checker/CheckerWidget";
@@ -55,6 +56,7 @@ export default function AiVisibilityCheckerPage() {
       webApplication,
       breadcrumb([
         { name: "Home", url: SITE_URL },
+        { name: "Tools", url: `${SITE_URL}/tools/` },
         { name: "AI Visibility Checker", url: PAGE_URL },
       ]),
     ],
@@ -69,7 +71,18 @@ export default function AiVisibilityCheckerPage() {
       <main>
         <section className={cn("relative overflow-hidden", SECTION_PADDING.default)}>
           <Container size="prose" className="checker-print-doc">
-            <Kicker>Free Tool</Kicker>
+            <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm text-white/50 print:hidden">
+              <Link href="/" className="transition-colors hover:text-white/80">
+                Home
+              </Link>
+              <span aria-hidden>›</span>
+              <Link href="/tools/" className="transition-colors hover:text-white/80">
+                Tools
+              </Link>
+              <span aria-hidden>›</span>
+              <span className="text-white/70">AI Visibility Checker</span>
+            </nav>
+            <Kicker className="mt-6">Free Tool</Kicker>
             <h1 className={cn(STACK.kickerToHeading, "font-display text-[1.875rem] font-bold leading-[1.1] tracking-[-0.01em] text-white sm:text-[2.5rem]")}>
               AI Visibility Checker
             </h1>

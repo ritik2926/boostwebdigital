@@ -34,6 +34,7 @@ const PAGE_DATES: Record<string, string> = {
   "/healthcare-reputation-management/": "2026-09-12",
   "/healthcare-social-media-management/": "2026-09-12",
   "/medical-website-design/": "2026-09-12",
+  "/tools/": "2026-09-14",
 };
 
 /**
@@ -59,7 +60,9 @@ const PAGE_DATES: Record<string, string> = {
  * 2026-09-12 — built ahead of the /services/ rebuild so that rebuild could
  * link to a real page instead of a 404; same root-vs-nested conflict
  * against `/services/web-design/` and `/{specialty}-marketing/
- * {specialty}-website-design/` in that doc) are live today. `/blog/` itself
+ * {specialty}-website-design/` in that doc), and /tools/ (live 2026-09-14 —
+ * the index this checker page sits under; previously 404'd while linked
+ * from nearly every page's nav/footer) are live today. `/blog/` itself
  * is a 301 redirect to /blogs/
  * (next.config.ts) and is deliberately NOT listed here — a redirecting URL
  * in a sitemap is a Search Console warning. `/design-lab` is excluded from
@@ -123,6 +126,7 @@ export function getStaticPageEntries(): SitemapUrlEntry[] {
       lastModified: PAGE_DATES["/healthcare-social-media-management/"],
     },
     { url: `${SITE_URL}/medical-website-design/`, lastModified: PAGE_DATES["/medical-website-design/"] },
+    { url: `${SITE_URL}/tools/`, lastModified: PAGE_DATES["/tools/"] },
   ];
 }
 
