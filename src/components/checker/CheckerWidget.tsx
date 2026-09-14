@@ -557,7 +557,7 @@ export function CheckerWidget() {
     return (
       <div className="flex flex-col items-start gap-4 rounded-xl border border-white/10 p-6">
         <h2 className="font-display text-xl font-semibold text-white">No AI answer came back</h2>
-        <div className="text-sm text-white/45">
+        <div className="text-sm text-white/50">
           <p>Questions sent:</p>
           <ul className="mt-1 flex flex-col gap-0.5">
             {view.queries.map((q) => (

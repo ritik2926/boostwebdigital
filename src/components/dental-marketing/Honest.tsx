@@ -45,7 +45,7 @@ export function DentalHonest() {
           <PrimaryCta href="/tools/ai-visibility-checker/" dataCta="dental-midpage">
             Check My Practice&rsquo;s AI Visibility
           </PrimaryCta>
-          <p className="mt-4 text-sm text-white/45">Free. No card. About 40 seconds.</p>
+          <p className="mt-4 text-sm text-white/50">Free. No card. About 40 seconds.</p>
         </div>
       </Container>
     </section>

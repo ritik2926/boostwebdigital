@@ -24,7 +24,7 @@ export function DermatologyClosingCta() {
               Get My Free Report
             </PrimaryCta>
           </div>
-          <p className="mt-8 max-w-xl text-sm text-white/45">
+          <p className="mt-8 max-w-xl text-sm text-white/50">
             Also run a dental practice as part of a multi-specialty group? Swap medical/cosmetic for
             emergency/elective and the same logic holds. See our{" "}
             <Link href="/dental-marketing/" className="text-white/70 underline-offset-4 hover:text-accent hover:underline">

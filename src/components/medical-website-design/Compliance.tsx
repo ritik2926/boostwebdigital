@@ -44,7 +44,7 @@ export function MwdCompliance() {
           ))}
         </ul>
 
-        <p className={cn(STACK.subToContent, "text-sm text-white/45")}>
+        <p className={cn(STACK.subToContent, "text-sm text-white/50")}>
           This is not legal advice. Whether your current site creates real exposure is a question for your own
           counsel. We build to WCAG 2.1 AA as a working standard because it is the one most consistently referenced
           in actual settlements, not because any single law names it for every practice.

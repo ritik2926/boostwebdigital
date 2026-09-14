@@ -131,7 +131,7 @@ export default function ToolsIndexPage() {
                   Run the Free AI Visibility Check
                 </PrimaryCta>
               </div>
-              <p className="mt-3 text-sm text-white/45">Free. No card. About 40 seconds.</p>
+              <p className="mt-3 text-sm text-white/50">Free. No card. About 40 seconds.</p>
             </div>
 
             <div className={cn(STACK.subToContent, "rounded-2xl border border-white/8 bg-white/[0.02] p-8")}>
@@ -152,7 +152,7 @@ export default function ToolsIndexPage() {
                   Check My Reply
                 </PrimaryCta>
               </div>
-              <p className="mt-3 text-sm text-white/45">Free. Runs entirely in your browser.</p>
+              <p className="mt-3 text-sm text-white/50">Free. Runs entirely in your browser.</p>
             </div>
           </Container>
         </section>

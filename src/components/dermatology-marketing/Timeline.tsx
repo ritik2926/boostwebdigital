@@ -30,7 +30,7 @@ export function DermatologyTimeline() {
         <div className={cn(STACK.subToContent, "grid grid-cols-1 gap-8 lg:grid-cols-3 lg:gap-6")}>
           {PHASES.map((phase) => (
             <div key={phase.name} className="flex flex-col gap-2 border-t border-white/8 pt-6">
-              <p className="font-mono text-xs uppercase tracking-[0.1em] text-white/45">{phase.name}</p>
+              <p className="font-mono text-xs uppercase tracking-[0.1em] text-white/50">{phase.name}</p>
               <p className="text-white/70">{phase.body}</p>
             </div>
           ))}

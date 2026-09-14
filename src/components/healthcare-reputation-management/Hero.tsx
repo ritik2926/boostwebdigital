@@ -49,7 +49,7 @@ export function HrmHero() {
               Read this before you reply
             </SecondaryCta>
           </div>
-          <p className="mt-4 text-sm text-white/45">Free. No card. About 40 seconds.</p>
+          <p className="mt-4 text-sm text-white/50">Free. No card. About 40 seconds.</p>
         </div>
       </Container>
     </section>

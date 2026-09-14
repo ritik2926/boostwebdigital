@@ -12,7 +12,7 @@ export function HealthcareSeoAiAnswers() {
       <Container size="prose">
         <Kicker>What We&rsquo;ve Observed</Kicker>
         <h2 className={cn(H2, STACK.kickerToHeading)}>What&rsquo;s Changed With AI Answers</h2>
-        <p className={cn(STACK.headingToSub, "text-sm italic text-white/45")}>
+        <p className={cn(STACK.headingToSub, "text-sm italic text-white/50")}>
           We&rsquo;re telling you what we&rsquo;ve observed, not what any vendor has confirmed.
         </p>
 

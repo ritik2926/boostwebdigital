@@ -228,7 +228,7 @@ function TestimonialCard({ quote, name, brand, from, to }: { quote: string; name
         <GradientTile from={from} to={to} label={initials(name)} shapeClassName="h-10 w-10 shrink-0 rounded-full" labelClassName="text-xs text-white/90" />
         <div>
           <p className="text-sm font-semibold text-white">{name}</p>
-          <p className="font-mono text-[0.7rem] uppercase tracking-widest text-white/45">{brand}</p>
+          <p className="font-mono text-[0.7rem] uppercase tracking-widest text-white/50">{brand}</p>
         </div>
       </div>
     </div>

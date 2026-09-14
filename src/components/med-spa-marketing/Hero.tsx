@@ -54,7 +54,7 @@ export function MedSpaHero() {
               See the credibility gap
             </SecondaryCta>
           </div>
-          <p className="mt-4 text-sm text-white/45">Free. All we need is your practice name.</p>
+          <p className="mt-4 text-sm text-white/50">Free. All we need is your practice name.</p>
         </div>
       </Container>
     </section>

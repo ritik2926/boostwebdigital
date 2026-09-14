@@ -284,7 +284,7 @@ export function PricingPlansCards() {
                       Get My Free AI Visibility Report
                     </SecondaryCta>
                   )}
-                  <p className="mt-4 text-xs text-white/45">
+                  <p className="mt-4 text-xs text-white/50">
                     <span className="font-medium text-white/60">Best for:</span> {plan.bestFor}
                   </p>
                 </div>

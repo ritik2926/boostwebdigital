@@ -61,7 +61,7 @@ function LatestPostRow({ post, categoryOrder }: { post: BlogPost; categoryOrder:
         <h3 className="font-display text-[0.9375rem] font-semibold leading-snug text-white/90 line-clamp-2 transition-colors group-hover:text-white">
           {post.title}
         </h3>
-        <div className="mt-2 flex items-center gap-2 text-xs text-white/45">
+        <div className="mt-2 flex items-center gap-2 text-xs text-white/50">
           <time dateTime={post.publishedAt}>{formatDate(post.publishedAt)}</time>
           <span aria-hidden>·</span>
           <span>{post.readingTime} min read</span>

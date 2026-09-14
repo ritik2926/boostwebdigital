@@ -100,7 +100,7 @@ function SourcesSection({ sources }: { sources: RankedSource[] }) {
   const ownDomainSource = sources.find((s) => s.isOwnDomain);
   return (
     <section aria-labelledby="checker-sources-heading">
-      <h3 id="checker-sources-heading" className="font-mono text-xs font-semibold uppercase tracking-[0.14em] text-white/45">
+      <h3 id="checker-sources-heading" className="font-mono text-xs font-semibold uppercase tracking-[0.14em] text-white/50">
         1 · The sources AI read
       </h3>
       <p className={ownDomainSource ? "mt-2 text-sm text-white" : "mt-2 text-sm text-white/60"}>
@@ -141,7 +141,7 @@ function NamedSection({ report }: { report: CheckerReportData }) {
   const matchedAnswers = report.answers.filter((a) => a.ok && a.matched);
   return (
     <section aria-labelledby="checker-named-heading">
-      <h3 id="checker-named-heading" className="font-mono text-xs font-semibold uppercase tracking-[0.14em] text-white/45">
+      <h3 id="checker-named-heading" className="font-mono text-xs font-semibold uppercase tracking-[0.14em] text-white/50">
         2 · Were you named
       </h3>
       <p className="mt-2 text-sm text-white/70">
@@ -195,7 +195,7 @@ function AnswerCard({ answer }: { answer: QueryAnswer }) {
 function AnswersSection({ answers }: { answers: QueryAnswer[] }) {
   return (
     <section aria-labelledby="checker-answers-heading">
-      <h3 id="checker-answers-heading" className="font-mono text-xs font-semibold uppercase tracking-[0.14em] text-white/45">
+      <h3 id="checker-answers-heading" className="font-mono text-xs font-semibold uppercase tracking-[0.14em] text-white/50">
         3 · The answers themselves
       </h3>
       <div className="mt-3 flex flex-col gap-3">
@@ -211,7 +211,7 @@ function ScoreSection({ report }: { report: CheckerReportData }) {
   const earnedSignals = new Set(report.breakdown.map((row) => row.signal));
   return (
     <section aria-labelledby="checker-score-heading">
-      <h3 id="checker-score-heading" className="font-mono text-xs font-semibold uppercase tracking-[0.14em] text-white/45">
+      <h3 id="checker-score-heading" className="font-mono text-xs font-semibold uppercase tracking-[0.14em] text-white/50">
         4 · Visibility score
       </h3>
       <p className="mt-2 font-display text-4xl font-extrabold text-white">
@@ -258,7 +258,7 @@ function ScoreSection({ report }: { report: CheckerReportData }) {
 function CompetitorsSection({ competitors }: { competitors: CheckerReportData["competitors"] }) {
   return (
     <section aria-labelledby="checker-competitors-heading">
-      <h3 id="checker-competitors-heading" className="font-mono text-xs font-semibold uppercase tracking-[0.14em] text-white/45">
+      <h3 id="checker-competitors-heading" className="font-mono text-xs font-semibold uppercase tracking-[0.14em] text-white/50">
         5 · Named instead
       </h3>
       {competitors === null ? (
@@ -288,7 +288,7 @@ function StrengthsWeaknesses({ strengths, weaknesses }: { strengths: string[] | 
   if (strengths === null && weaknesses === null) {
     return (
       <section aria-labelledby="checker-sw-heading">
-        <h3 id="checker-sw-heading" className="font-mono text-xs font-semibold uppercase tracking-[0.14em] text-white/45">
+        <h3 id="checker-sw-heading" className="font-mono text-xs font-semibold uppercase tracking-[0.14em] text-white/50">
           6 · Strengths &amp; weaknesses
         </h3>
         <p className="mt-3 text-sm text-white/40">Not available for this report.</p>
@@ -298,7 +298,7 @@ function StrengthsWeaknesses({ strengths, weaknesses }: { strengths: string[] | 
   return (
     <section aria-labelledby="checker-sw-heading">
       <div className="flex items-baseline gap-2">
-        <h3 id="checker-sw-heading" className="font-mono text-xs font-semibold uppercase tracking-[0.14em] text-white/45">
+        <h3 id="checker-sw-heading" className="font-mono text-xs font-semibold uppercase tracking-[0.14em] text-white/50">
           6 · Strengths &amp; weaknesses
         </h3>
         <span className="text-[11px] text-white/35">— AI-generated interpretation, not a measured score</span>
@@ -330,7 +330,7 @@ const EFFORT_LABEL: Record<string, string> = { low: "Low effort", medium: "Mediu
 function RecommendationsSection({ recommendations }: { recommendations: CheckerReportData["recommendations"] }) {
   return (
     <section aria-labelledby="checker-recs-heading">
-      <h3 id="checker-recs-heading" className="font-mono text-xs font-semibold uppercase tracking-[0.14em] text-white/45">
+      <h3 id="checker-recs-heading" className="font-mono text-xs font-semibold uppercase tracking-[0.14em] text-white/50">
         Recommendations
       </h3>
       {recommendations === null ? (

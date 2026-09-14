@@ -42,7 +42,7 @@ export function DentalTwoTrack() {
 
         <div className={cn(STACK.subToContent, "grid grid-cols-1 gap-10 lg:grid-cols-2 lg:gap-8")}>
           <div className="rounded-2xl border border-white/12 bg-white/[0.04] p-6 sm:p-8">
-            <p className="font-mono text-xs uppercase tracking-[0.1em] text-white/45">Track One</p>
+            <p className="font-mono text-xs uppercase tracking-[0.1em] text-white/50">Track One</p>
             <h3 className={cn(H3, "mt-2")}>Emergency</h3>
             <p className="mt-3 text-white/70">
               A patient searching for an emergency dentist, a same-day root canal, or an emergency extraction is

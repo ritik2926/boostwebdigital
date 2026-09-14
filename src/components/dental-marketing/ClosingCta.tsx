@@ -24,8 +24,8 @@ export function DentalClosingCta() {
               Check My Practice&rsquo;s AI Visibility
             </PrimaryCta>
           </div>
-          <p className="mt-4 text-sm text-white/45">Free. No card. About 40 seconds.</p>
-          <p className="mt-8 max-w-xl text-sm text-white/45">
+          <p className="mt-4 text-sm text-white/50">Free. No card. About 40 seconds.</p>
+          <p className="mt-8 max-w-xl text-sm text-white/50">
             Run a multi-specialty group that also includes a dermatology practice? The same split-query logic
             applies there — different domain, same reason it works. Medical and cosmetic instead of emergency and
             elective, but the underlying problem is identical. See our{" "}

@@ -15,7 +15,7 @@ import { CATEGORY_LABEL, SAFE_REPLY_TEMPLATE, scanReviewReply, segmentText, type
  */
 
 const UNDERLINE_TEXTAREA =
-  "w-full resize-y rounded-lg border border-white/15 bg-white/[0.02] p-3 text-[15px] text-white outline-none transition-colors placeholder:text-white/35 focus:border-accent";
+  "w-full resize-y rounded-lg border border-white/15 bg-white/[0.02] p-3 text-[15px] text-white outline-none transition-colors placeholder:text-white/50 focus:border-accent";
 
 function FlagRow({ flag }: { flag: Flag }) {
   return (
@@ -75,7 +75,7 @@ export function ReviewReplyChecker() {
           placeholder="Paste the reply you're about to post..."
           className={cn("mt-2", UNDERLINE_TEXTAREA)}
         />
-        <p className="mt-2 text-xs text-white/40">Your text never leaves this browser. Nothing is sent to us, stored, or logged.</p>
+        <p className="mt-2 text-xs text-white/50">Your text never leaves this browser. Nothing is sent to us, stored, or logged.</p>
       </div>
 
       <div>

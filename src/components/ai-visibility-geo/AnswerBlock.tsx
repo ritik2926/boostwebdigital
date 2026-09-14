@@ -158,7 +158,7 @@ export function AnswerBlock({ ctaHref }: { ctaHref: string }) {
       </p>
 
       <p
-        className="mt-6 font-mono text-xs uppercase tracking-[0.14em] text-white/45 transition-opacity duration-500"
+        className="mt-6 font-mono text-xs uppercase tracking-[0.14em] text-white/50 transition-opacity duration-500"
         style={{ opacity: showCaption ? 1 : 0 }}
       >
         Four engines. One answer. Two or three names in it.

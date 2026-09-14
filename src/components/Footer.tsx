@@ -327,7 +327,7 @@ export function Footer() {
                 <PrimaryCta href="/tools/ai-visibility-checker/" dataCta="footer-cta">
                   Check My Practice&rsquo;s AI Visibility
                 </PrimaryCta>
-                <p className="text-sm text-white/45">Free. No card. About 40 seconds.</p>
+                <p className="text-sm text-white/50">Free. No card. About 40 seconds.</p>
               </div>
             </RevealItem>
           </RevealGroup>

@@ -65,7 +65,7 @@ export function HrmReplyLiability() {
               feedback seriously, and ask them to reach out directly by phone or email. No confirmation, no clinical
               detail, no defense of the treatment. The diagram below sets out exactly when even that much is right.
             </p>
-            <p className="text-sm text-white/45">
+            <p className="text-sm text-white/50">
               This is not legal advice. Confirm anything specific to your situation with your own counsel before you
               rely on it.
             </p>

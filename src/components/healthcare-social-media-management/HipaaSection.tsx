@@ -44,7 +44,7 @@ export function HsmmHipaaSection() {
           ))}
         </ul>
 
-        <p className={cn(STACK.subToContent, "text-sm text-white/45")}>
+        <p className={cn(STACK.subToContent, "text-sm text-white/50")}>
           This is not legal advice. Confirm anything specific to your practice with your own counsel. Check your
           state medical board&rsquo;s advertising rules too — some restrict before-and-after claims further than
           HIPAA alone does.

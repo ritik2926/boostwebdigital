@@ -18,7 +18,7 @@ function formatDate(iso: string): string {
 
 function SectionHeading({ n, children }: { n: number; children: ReactNode }) {
   return (
-    <h2 className="font-mono text-xs font-semibold uppercase tracking-[0.14em] text-white/45">
+    <h2 className="font-mono text-xs font-semibold uppercase tracking-[0.14em] text-white/50">
       {n} · {children}
     </h2>
   );
@@ -146,7 +146,7 @@ export function FullReport({ report }: { report: FullReportData }) {
         <div>
           <Image src="/logo/logo-dark.svg" alt="Boost Web Digital" width={180} height={40} className="hidden h-9 w-auto print:hidden sm:block" />
           <Image src="/logo/logo-light.svg" alt="Boost Web Digital" width={180} height={40} className="hidden h-9 w-auto print:block" />
-          <p className="mt-4 font-mono text-xs font-semibold uppercase tracking-[0.14em] text-white/45">AI Visibility Report</p>
+          <p className="mt-4 font-mono text-xs font-semibold uppercase tracking-[0.14em] text-white/50">AI Visibility Report</p>
           <h1 className="mt-2 font-display text-2xl font-bold text-white sm:text-3xl">{report.businessName}</h1>
         </div>
         <div className="flex flex-col items-start gap-3 sm:items-end">
@@ -353,7 +353,7 @@ export function FullReport({ report }: { report: FullReportData }) {
       <div className="flex flex-col gap-6">
         <FounderBlock />
 
-        <footer data-print-avoid-break className="border-t border-white/8 pt-6 text-sm text-white/45">
+        <footer data-print-avoid-break className="border-t border-white/8 pt-6 text-sm text-white/50">
           <p>Boost Web Digital &middot; {SITE_URL.replace("https://", "")}</p>
           <p className="mt-1">
             <a href={`mailto:${CONTACT_EMAIL}`} className="underline-offset-4 hover:text-white hover:underline">

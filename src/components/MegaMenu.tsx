@@ -61,7 +61,7 @@ function MegaMenuColumn({ group, pathname }: { group: NavGroup; pathname: string
               className="block rounded-lg px-3 py-2.5 transition-colors duration-150 hover:bg-white/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
             >
               <span className="block text-sm font-medium text-white">{item.label}</span>
-              <span className="mt-0.5 line-clamp-2 block text-xs leading-snug text-white/45">{item.blurb}</span>
+              <span className="mt-0.5 line-clamp-2 block text-xs leading-snug text-white/50">{item.blurb}</span>
             </Link>
           </li>
         ))}

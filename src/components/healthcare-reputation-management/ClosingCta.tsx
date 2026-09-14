@@ -28,8 +28,8 @@ export function HrmClosingCta() {
               Check My Practice&rsquo;s AI Visibility
             </PrimaryCta>
           </div>
-          <p className="mt-4 text-sm text-white/45">Free. No card. About 40 seconds.</p>
-          <p className="mt-8 max-w-xl text-sm text-white/45">
+          <p className="mt-4 text-sm text-white/50">Free. No card. About 40 seconds.</p>
+          <p className="mt-8 max-w-xl text-sm text-white/50">
             Read more about the method behind this on our{" "}
             <Link href="/healthcare-seo/" className="text-white/70 underline-offset-4 hover:text-accent hover:underline">
               healthcare SEO

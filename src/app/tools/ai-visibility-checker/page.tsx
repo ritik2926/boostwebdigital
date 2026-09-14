@@ -91,7 +91,7 @@ export default function AiVisibilityCheckerPage() {
               including whether your business gets named, and which pages it read to answer them instead.
             </p>
             <p className="mt-2 text-white/70">It&rsquo;s free, and it takes about a minute.</p>
-            <p className="mt-2 text-sm text-white/45">Built by a healthcare marketing agency. Works for any local business.</p>
+            <p className="mt-2 text-sm text-white/50">Built by a healthcare marketing agency. Works for any local business.</p>
 
             <div className={STACK.subToContent}>
               <CheckerWidget />

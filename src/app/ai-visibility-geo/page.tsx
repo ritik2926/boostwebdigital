@@ -241,7 +241,7 @@ function Bridge({ children }: { children: ReactNode }) {
   return (
     <div className="py-10 lg:py-14">
       <Reveal>
-        <p className="mx-auto max-w-xl px-6 text-center text-white/45">{children}</p>
+        <p className="mx-auto max-w-xl px-6 text-center text-white/50">{children}</p>
       </Reveal>
     </div>
   );
@@ -302,7 +302,7 @@ export default function AiVisibilityGeoPage() {
                 </SecondaryCta>
               </RevealItem>
               <RevealItem className="mt-4">
-                <p className="text-sm text-white/45">Free. All we need is your practice name.</p>
+                <p className="text-sm text-white/50">Free. All we need is your practice name.</p>
               </RevealItem>
             </RevealGroup>
           </Container>
@@ -328,7 +328,7 @@ export default function AiVisibilityGeoPage() {
                 <RevealItem as="li" key={stat.label} className="flex flex-col gap-3 py-8 sm:px-8 sm:py-10 first:sm:pl-0">
                   <StatCounter value={stat.value} suffix={stat.suffix} />
                   <p className="max-w-xs text-white/70">{stat.label}</p>
-                  <p className="text-sm text-white/45">{stat.sub}</p>
+                  <p className="text-sm text-white/50">{stat.sub}</p>
                 </RevealItem>
               ))}
             </RevealGroup>
@@ -435,7 +435,7 @@ export default function AiVisibilityGeoPage() {
               <div className="flex flex-col items-center gap-5 border-y border-white/8 py-10 text-center sm:flex-row sm:justify-between sm:text-left">
                 <div>
                   <p className="text-white">We run all four checks on your practice before you pay anything.</p>
-                  <p className="mt-1 text-sm text-white/45">Fifteen questions, four engines, three specific fixes. Free.</p>
+                  <p className="mt-1 text-sm text-white/50">Fifteen questions, four engines, three specific fixes. Free.</p>
                 </div>
                 <Link href={CTA_HREF} data-cta="levers-band" className="btn-primary inline-flex">
                   <span>See where my practice stands</span>
@@ -522,7 +522,7 @@ export default function AiVisibilityGeoPage() {
                       {step.number}
                     </span>
                     <p className="font-semibold text-white">{step.name}</p>
-                    <p className="font-mono text-xs uppercase tracking-[0.1em] text-white/45">{step.when}</p>
+                    <p className="font-mono text-xs uppercase tracking-[0.1em] text-white/50">{step.when}</p>
                     <p className="mt-1 text-white/70">{step.body}</p>
                   </RevealItem>
                 ))}
@@ -626,13 +626,13 @@ export default function AiVisibilityGeoPage() {
                 </Link>
               </RevealItem>
               <RevealItem className="mt-4">
-                <p className="text-sm text-white/45">No credit card. No call. Nothing gated.</p>
+                <p className="text-sm text-white/50">No credit card. No call. Nothing gated.</p>
               </RevealItem>
               <RevealItem className="mt-2">
                 <p className="text-sm text-white/35">If we find nothing wrong, we&rsquo;ll tell you that.</p>
               </RevealItem>
               <RevealItem className="mt-8">
-                <p className="max-w-xl text-sm text-white/45">
+                <p className="max-w-xl text-sm text-white/50">
                   GEO works alongside the fundamentals, not instead of them — see how we handle{" "}
                   <Link href="/healthcare-seo/" className="text-white/70 underline-offset-4 hover:text-accent hover:underline">
                     healthcare SEO
