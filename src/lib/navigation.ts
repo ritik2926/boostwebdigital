@@ -79,19 +79,17 @@ export const SERVICES: NavGroup = {
   ],
 };
 
-/**
- * `/hair-restoration-marketing/` is not in the task brief's literal list
- * but was already declared in src/lib/specialties.ts (the flagship
- * specialty, the one with a real client — see CLAUDE.md's honesty rule)
- * with `built` unset. Dropping it here would silently lose that fact
- * rather than reconcile it, so it's kept as a live:false entry — same
- * pattern as every other unbuilt industry below, invisible until flipped.
- */
 export const INDUSTRIES: NavGroup = {
   id: "industries",
   title: "Industries",
   subtitle: "The same method, different buyer.",
   items: [
+    {
+      label: "Hair Restoration Marketing",
+      href: "/hair-restoration-marketing/",
+      blurb: "The flagship specialty — the only one with a real client.",
+      live: true,
+    },
     {
       label: "Dental Marketing",
       href: "/dental-marketing/",
@@ -138,12 +136,6 @@ export const INDUSTRIES: NavGroup = {
       label: "Veterinary",
       href: "/veterinary-marketing/",
       blurb: "Pet-owner search and local visibility for animal hospitals.",
-      live: false,
-    },
-    {
-      label: "Hair Restoration Marketing",
-      href: "/hair-restoration-marketing/",
-      blurb: "The flagship specialty — the only one with a real client.",
       live: false,
     },
   ],

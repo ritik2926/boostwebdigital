@@ -24,7 +24,22 @@ export function HealthcareSeoBySpecialty() {
           between.
         </p>
 
-        <div className={cn(STACK.subToContent, "grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-6")}>
+        <div className={cn(STACK.subToContent, "grid grid-cols-1 gap-8 lg:grid-cols-3 lg:gap-6")}>
+          <div className={cn("rounded-2xl border border-white/8 bg-white/[0.02]", CARD_PADDING.standard)}>
+            <h3 className={H3}>Hair Restoration</h3>
+            <p className="mt-3 text-sm leading-relaxed text-white/60">
+              A hair transplant decision runs six to twelve months, almost entirely private — patients rarely ask
+              anyone they know, and increasingly ask an AI tool directly instead of a search engine. We scan for
+              every stage of that window, not one generic keyword list.
+            </p>
+            <Link
+              href="/hair-restoration-marketing/"
+              className="mt-4 inline-block text-sm font-semibold text-white underline decoration-white/30 underline-offset-4 hover:decoration-white/70"
+            >
+              See our hair restoration marketing approach
+            </Link>
+          </div>
+
           <div className={cn("rounded-2xl border border-white/8 bg-white/[0.02]", CARD_PADDING.standard)}>
             <h3 className={H3}>Dental</h3>
             <p className="mt-3 text-sm leading-relaxed text-white/60">
