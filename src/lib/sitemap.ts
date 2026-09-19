@@ -37,6 +37,9 @@ const PAGE_DATES: Record<string, string> = {
   "/tools/": "2026-09-14",
   "/med-spa-marketing/": "2026-09-14",
   "/tools/review-reply-hipaa-checker/": "2026-09-14",
+  "/hair-restoration-marketing/": "2026-09-18",
+  "/hair-restoration-seo/": "2026-09-18",
+  "/hair-restoration-google-ads/": "2026-09-19",
 };
 
 /**
@@ -64,7 +67,20 @@ const PAGE_DATES: Record<string, string> = {
  * against `/services/web-design/` and `/{specialty}-marketing/
  * {specialty}-website-design/` in that doc), and /tools/ (live 2026-09-14 —
  * the index this checker page sits under; previously 404'd while linked
- * from nearly every page's nav/footer) are live today. `/blog/` itself
+ * from nearly every page's nav/footer), and /hair-restoration-marketing/
+ * (live 2026-09-18 — the flagship specialty, the only one with a real
+ * client behind it per docs/13-URL-ARCHITECTURE.md's honesty gate) plus
+ * /hair-restoration-seo/ (also live 2026-09-18 — flat at root, NOT nested
+ * under the hub as docs/13-URL-ARCHITECTURE.md's "Specialty × SEO" formula
+ * specifies; corrected same-day to match the site's actual, five-times-
+ * repeated flat-at-root convention for this exact page shape — see
+ * /healthcare-seo/, /healthcare-reputation-management/, /healthcare-
+ * social-media-management/ and /medical-website-design/'s own comments,
+ * and this page's own page.tsx comment), plus /hair-restoration-google-ads/
+ * (live 2026-09-19 — the first page built against the flat
+ * `{specialty}-{service}` slug pattern approved the same day, explicitly
+ * NOT the doc's `google-ads-for-{plural}` tail) are live today. `/blog/`
+ * itself
  * is a 301 redirect to /blogs/
  * (next.config.ts) and is deliberately NOT listed here — a redirecting URL
  * in a sitemap is a Search Console warning. `/design-lab` is excluded from
@@ -84,11 +100,15 @@ const PAGE_DATES: Record<string, string> = {
  *   healthcare-google-ads,healthcare-local-seo,healthcare-ai-automation,
  *   healthcare-content-marketing,healthcare-social-media,
  *   healthcare-reputation-management}/ children
- * Specialty hubs + spokes: /hair-restoration-marketing/ (P1, real case
- *   study), /plastic-surgery-marketing/, /med-spa-marketing/,
+ * Specialty hubs + spokes: /plastic-surgery-marketing/,
  *   /orthodontist-marketing/, /chiropractic-marketing/,
  *   /mental-health-marketing/ — each with its own -seo/,
  *   google-ads-for-.../, -website-design/ spokes per the slug formulas
+ *   table. (/med-spa-marketing/ hub is live — see above; its -seo/ and
+ *   other spokes are still planned. /hair-restoration-marketing/ hub,
+ *   its -seo/ spoke, AND its google-ads spoke are all live — see above —
+ *   the one remaining spoke, hair-restoration-website-design/, is still
+ *   planned, next in the approved build order.)
  *   table. (/dermatology-marketing/ and /dental-marketing/ are live — see
  *   above.)
  * Generic services layer children (hub + /ai-visibility-geo/ are live —
@@ -134,6 +154,9 @@ export function getStaticPageEntries(): SitemapUrlEntry[] {
       url: `${SITE_URL}/tools/review-reply-hipaa-checker/`,
       lastModified: PAGE_DATES["/tools/review-reply-hipaa-checker/"],
     },
+    { url: `${SITE_URL}/hair-restoration-marketing/`, lastModified: PAGE_DATES["/hair-restoration-marketing/"] },
+    { url: `${SITE_URL}/hair-restoration-seo/`, lastModified: PAGE_DATES["/hair-restoration-seo/"] },
+    { url: `${SITE_URL}/hair-restoration-google-ads/`, lastModified: PAGE_DATES["/hair-restoration-google-ads/"] },
   ];
 }
 
