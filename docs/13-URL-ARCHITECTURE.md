@@ -24,6 +24,8 @@ Concretely:
 
 ## Slug Formulas (governance)
 
+**SUPERSEDED:** flat-at-root `{specialty}-{service}` is the confirmed convention for specialty×service spokes — see built pages. (Full reconciliation of the table below is deferred — see the two dated notes under Section 4 for the history.)
+
 | Page type | Formula | Example |
 |---|---|---|
 | Vertical pillar | `/{vertical}-marketing/` | `/healthcare-marketing/` |
