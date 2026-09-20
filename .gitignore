@@ -49,3 +49,11 @@ docs/refs/shots/
 
 .vercel
 .env*
+.env*.local
+
+# scratch / reference material (kept locally, not in the repo)
+/Claude outputs/
+/PASTE-checker-open-to-all_1.txt
+/PASTE-checker-scope-progress.txt
+/PASTE-fix-render-visibility.txt
+/cluster-map.html
