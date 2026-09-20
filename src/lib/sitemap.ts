@@ -40,6 +40,7 @@ const PAGE_DATES: Record<string, string> = {
   "/hair-restoration-marketing/": "2026-09-18",
   "/hair-restoration-seo/": "2026-09-18",
   "/hair-restoration-google-ads/": "2026-09-19",
+  "/hair-restoration-website-design/": "2026-09-20",
 };
 
 /**
@@ -79,8 +80,11 @@ const PAGE_DATES: Record<string, string> = {
  * and this page's own page.tsx comment), plus /hair-restoration-google-ads/
  * (live 2026-09-19 — the first page built against the flat
  * `{specialty}-{service}` slug pattern approved the same day, explicitly
- * NOT the doc's `google-ads-for-{plural}` tail) are live today. `/blog/`
- * itself
+ * NOT the doc's `google-ads-for-{plural}` tail) plus /hair-restoration-website-design/
+ * (live 2026-09-20 — the third and, per docs/13-URL-ARCHITECTURE.md's P1/P2
+ * list, final planned spoke off this hub; copy reframed to speak to the
+ * clinic owner as buyer before this page was built — see its own page.tsx
+ * comment) are live today. `/blog/` itself
  * is a 301 redirect to /blogs/
  * (next.config.ts) and is deliberately NOT listed here — a redirecting URL
  * in a sitemap is a Search Console warning. `/design-lab` is excluded from
@@ -105,10 +109,10 @@ const PAGE_DATES: Record<string, string> = {
  *   /mental-health-marketing/ — each with its own -seo/,
  *   google-ads-for-.../, -website-design/ spokes per the slug formulas
  *   table. (/med-spa-marketing/ hub is live — see above; its -seo/ and
- *   other spokes are still planned. /hair-restoration-marketing/ hub,
- *   its -seo/ spoke, AND its google-ads spoke are all live — see above —
- *   the one remaining spoke, hair-restoration-website-design/, is still
- *   planned, next in the approved build order.)
+ *   other spokes are still planned. /hair-restoration-marketing/ hub and
+ *   all three of its planned spokes — -seo/, google-ads, and
+ *   website-design — are all live; see above. This vertical's spoke set
+ *   is now complete per the current doc.)
  *   table. (/dermatology-marketing/ and /dental-marketing/ are live — see
  *   above.)
  * Generic services layer children (hub + /ai-visibility-geo/ are live —
@@ -157,6 +161,10 @@ export function getStaticPageEntries(): SitemapUrlEntry[] {
     { url: `${SITE_URL}/hair-restoration-marketing/`, lastModified: PAGE_DATES["/hair-restoration-marketing/"] },
     { url: `${SITE_URL}/hair-restoration-seo/`, lastModified: PAGE_DATES["/hair-restoration-seo/"] },
     { url: `${SITE_URL}/hair-restoration-google-ads/`, lastModified: PAGE_DATES["/hair-restoration-google-ads/"] },
+    {
+      url: `${SITE_URL}/hair-restoration-website-design/`,
+      lastModified: PAGE_DATES["/hair-restoration-website-design/"],
+    },
   ];
 }
 
