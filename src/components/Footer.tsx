@@ -43,13 +43,19 @@ import { SERVICES, INDUSTRIES, RESOURCES, getLiveGroupItems } from "@/lib/naviga
 // column is restored as its own fifth grid item, real this time.
 // ---------------------------------------------------------------------------
 
-// Sourced from src/lib/navigation.ts (Phase 1, single nav source of truth).
-// `company` keeps its existing curated order/set rather than dumping every
-// live RESOURCES entry here (Contact and FAQ already have their own
-// reachable homes elsewhere) — findResource just removes the duplicated,
-// hand-typed href each of these already had. `specialties` DOES render
-// every live INDUSTRIES entry, so it grows on its own (med spa, once
-// Phase 2 flips it live) instead of needing a second manual edit here.
+// Sourced from src/lib/navigation.ts (Phase 1, single nav source of truth)
+// for the items that still live in RESOURCES.items — findResource removes
+// the duplicated, hand-typed href each of those already had. About,
+// Pricing, and FAQ are literal {label, href} objects instead (same
+// precedent as the pre-existing "Services" line below): the 2026-09-2x
+// mega-menu cleanup trimmed RESOURCES.items down to just Free Tools/AI
+// Visibility Checker/Review Reply Checker/Blog, so those three can no
+// longer be sourced from that array — Footer still needs a real link to
+// all three regardless of what the dropdown shows, so they're hardcoded
+// here rather than reaching into a group that no longer carries them.
+// `specialties` DOES render every live INDUSTRIES entry, so it grows on its
+// own (med spa, once Phase 2 flips it live) instead of needing a second
+// manual edit here.
 const liveResources = getLiveGroupItems(RESOURCES);
 function findResource(href: string) {
   const item = liveResources.find((i) => i.href === href);
@@ -62,9 +68,10 @@ const FOOTER_NAV = {
     findResource("/tools/ai-visibility-checker/"),
     findResource("/tools/"),
     findResource("/blogs/"),
-    findResource("/about/"),
+    { label: "About", href: "/about/" },
     { label: "Services", href: SERVICES.overviewHref ?? "/services/" },
-    findResource("/pricing/"),
+    { label: "Pricing", href: "/pricing/" },
+    { label: "FAQ", href: "/faq/" },
   ],
   specialties: getLiveGroupItems(INDUSTRIES),
   legal: [

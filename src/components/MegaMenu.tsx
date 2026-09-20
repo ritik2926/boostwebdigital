@@ -4,7 +4,19 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Container } from "@/components/Container";
-import { SERVICES, INDUSTRIES, RESOURCES, getAllNavItems, getLiveGroupItems, type NavGroup } from "@/lib/navigation";
+import { Kicker } from "@/components/Kicker";
+import {
+  SERVICES,
+  INDUSTRIES,
+  RESOURCES,
+  getAllNavItems,
+  getLiveGroupItems,
+  getFeaturedItem,
+  getLiveGroupItemsExcludingFeatured,
+  type NavGroup,
+  type NavItem,
+} from "@/lib/navigation";
+import { CARD_PADDING, CARD_RADIUS } from "@/lib/tokens";
 import { cn } from "@/lib/utils";
 
 // ---------------------------------------------------------------------------
@@ -34,8 +46,40 @@ function isCurrentPage(pathname: string, href: string): boolean {
   return pathname === hrefPath || (hrefPath !== "" && pathname.startsWith(`${hrefPath}/`));
 }
 
+/**
+ * Reused only by the Resources column today (the one group with
+ * `featuredHref` set) — pulls that single item out of the plain list into a
+ * distinct promo moment, per the mega-menu cleanup task. CARD_PADDING.feature
+ * / CARD_RADIUS.feature (the bigger, rounder tier — §2.4/§2.5 — rather than
+ * the .standard tier used by, e.g., the spoke-page WhyDifferent cards)
+ * deliberately reads as a bigger, rounder moment than a plain list item, so
+ * this is legible as "the one featured element," not just a column that
+ * rendered differently. No new tokens or colors introduced.
+ */
+function FeaturedTile({ item }: { item: NavItem }) {
+  return (
+    <div className={cn("mt-5 border border-white/8 bg-white/3", CARD_RADIUS.feature, CARD_PADDING.feature)}>
+      <Kicker>Free Tool</Kicker>
+      <p className="mt-3 text-sm font-semibold text-white">{item.label}</p>
+      <p className="mt-1.5 text-xs leading-relaxed text-white/60">
+        See if AI names your practice — or your competitor.
+      </p>
+      <Link
+        href={item.href}
+        className="group mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-white transition-colors hover:text-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+      >
+        Check my visibility
+        <span aria-hidden className="transition-transform duration-200 group-hover:translate-x-1">
+          →
+        </span>
+      </Link>
+    </div>
+  );
+}
+
 function MegaMenuColumn({ group, pathname }: { group: NavGroup; pathname: string }) {
-  const items = getLiveGroupItems(group);
+  const featured = getFeaturedItem(group);
+  const items = featured ? getLiveGroupItemsExcludingFeatured(group) : getLiveGroupItems(group);
   const headingId = `mega-heading-${group.id}`;
   // GROWTH (Phase 4): Industries is designed to grow well past its current
   // 3 live entries toward the 8 declared in src/lib/navigation.ts. Past six
@@ -52,16 +96,17 @@ function MegaMenuColumn({ group, pathname }: { group: NavGroup; pathname: string
       </h3>
       <p className="mt-1.5 text-sm text-white/50">{group.subtitle}</p>
 
+      {featured && <FeaturedTile item={featured} />}
+
       <ul aria-labelledby={headingId} className={cn("mt-5 flex flex-col gap-0.5", splitList && "grid grid-cols-2 gap-x-3 gap-y-0.5")}>
         {items.map((item) => (
           <li key={item.href}>
             <Link
               href={item.href}
               aria-current={isCurrentPage(pathname, item.href) ? "page" : undefined}
-              className="block rounded-lg px-3 py-2.5 transition-colors duration-150 hover:bg-white/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              className="block rounded-lg px-3 py-2.5 text-sm font-medium text-white transition-colors duration-150 hover:bg-white/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
             >
-              <span className="block text-sm font-medium text-white">{item.label}</span>
-              <span className="mt-0.5 line-clamp-2 block text-xs leading-snug text-white/50">{item.blurb}</span>
+              {item.label}
             </Link>
           </li>
         ))}

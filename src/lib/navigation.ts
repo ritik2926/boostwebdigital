@@ -32,6 +32,12 @@ export type NavGroup = {
   /** Set only when a real hub page exists for "see everything in this
    * group." Industries has none — do not invent one. */
   overviewHref?: string;
+  /** Set only when one item in this group should be pulled out of the plain
+   * list into a distinct "featured" treatment by consumers that support it
+   * (MegaMenu's Resources column tile; MobileNav's emphasized-first-item
+   * treatment). Only RESOURCES sets this today — do not invent a second
+   * featured item per group, the whole point is exactly one. */
+  featuredHref?: string;
 };
 
 export const SERVICES: NavGroup = {
@@ -144,7 +150,24 @@ export const INDUSTRIES: NavGroup = {
 export const RESOURCES: NavGroup = {
   id: "resources",
   title: "Resources",
-  subtitle: "Tools, writing, and what things cost.",
+  subtitle: "What's free, and what we publish.",
+  /**
+   * Mega-menu cleanup (2026-09-2x): this group used to also carry About,
+   * Contact, Pricing, and FAQ — a duplicate of the top nav plus two pages
+   * that belong in Footer instead. Trimmed to the four items that are
+   * actually "resources": tools and writing. About/Contact were already
+   * reachable via the top nav and Footer's own literal links, so dropping
+   * them here loses no path. Pricing and FAQ did NOT have another path
+   * through this same data — Footer.tsx now links both directly as literal
+   * {label, href} objects (see its own comment) instead of sourcing them
+   * from this array, so removing them here doesn't orphan either page.
+   *
+   * `featuredHref` promotes AI Visibility Checker out of the plain list and
+   * into a distinct tile in consumers that support it (MegaMenu's Resources
+   * column; MobileNav's emphasized-first-item treatment) — see
+   * `getFeaturedItem`/`getLiveGroupItemsExcludingFeatured` below.
+   */
+  featuredHref: "/tools/ai-visibility-checker/",
   items: [
     {
       label: "Free Tools",
@@ -168,38 +191,6 @@ export const RESOURCES: NavGroup = {
       label: "Blog",
       href: "/blogs/",
       blurb: "Articles on healthcare marketing, SEO, and AI search.",
-      live: true,
-    },
-    /**
-     * Not in the task brief's literal RESOURCES list, added anyway: /faq/
-     * is a real, live, sitemapped page (docs/LINK-TARGETS.md Section A)
-     * that the current Navbar/Footer already link to. Omitting it here
-     * would silently orphan it the moment this file becomes the sole nav
-     * source — the exact class of bug a prior session found and fixed for
-     * /tools/. Flagged in the Phase 1 report rather than silently added.
-     */
-    {
-      label: "FAQ",
-      href: "/faq/",
-      blurb: "Answers to the questions asked before every consultation call.",
-      live: true,
-    },
-    {
-      label: "Pricing",
-      href: "/pricing/",
-      blurb: "Published monthly tiers, no hidden custom-quote requirement.",
-      live: true,
-    },
-    {
-      label: "About",
-      href: "/about/",
-      blurb: "Who the company is, and what it won't do.",
-      live: true,
-    },
-    {
-      label: "Contact",
-      href: "/contact/",
-      blurb: "The form and email address behind every CTA here.",
       live: true,
     },
     {
@@ -227,4 +218,19 @@ export function getLiveNavItems(): NavItem[] {
 
 export function getLiveGroupItems(group: NavGroup): NavItem[] {
   return group.items.filter((item) => item.live);
+}
+
+/** The group's `featuredHref` item, resolved and live-checked — undefined
+ * if the group sets none, or if the href it names isn't live. */
+export function getFeaturedItem(group: NavGroup): NavItem | undefined {
+  if (!group.featuredHref) return undefined;
+  return getLiveGroupItems(group).find((item) => item.href === group.featuredHref);
+}
+
+/** A group's live items with its featured one (if any) excluded — what a
+ * consumer renders as the plain list once the featured item has its own
+ * separate treatment elsewhere. */
+export function getLiveGroupItemsExcludingFeatured(group: NavGroup): NavItem[] {
+  const items = getLiveGroupItems(group);
+  return group.featuredHref ? items.filter((item) => item.href !== group.featuredHref) : items;
 }

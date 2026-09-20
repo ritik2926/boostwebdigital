@@ -8,7 +8,15 @@ import { usePathname } from "next/navigation";
 import { Container } from "@/components/Container";
 import { cn } from "@/lib/utils";
 import { EASE } from "@/lib/tokens";
-import { SERVICES, INDUSTRIES, RESOURCES, getLiveGroupItems, type NavGroup } from "@/lib/navigation";
+import {
+  SERVICES,
+  INDUSTRIES,
+  RESOURCES,
+  getLiveGroupItems,
+  getFeaturedItem,
+  getLiveGroupItemsExcludingFeatured,
+  type NavGroup,
+} from "@/lib/navigation";
 import { MegaMenu } from "@/components/MegaMenu";
 
 // ---------------------------------------------------------------------------
@@ -118,7 +126,8 @@ function DesktopNavLinks({ className }: { className?: string }) {
 const MOBILE_GROUPS: NavGroup[] = [SERVICES, INDUSTRIES, RESOURCES];
 
 function MobileGroup({ group, open, onToggle, onNavigate }: { group: NavGroup; open: boolean; onToggle: () => void; onNavigate: () => void }) {
-  const items = getLiveGroupItems(group);
+  const featured = getFeaturedItem(group);
+  const items = featured ? getLiveGroupItemsExcludingFeatured(group) : getLiveGroupItems(group);
   const panelId = `mobile-group-${group.id}`;
 
   return (
@@ -160,6 +169,18 @@ function MobileGroup({ group, open, onToggle, onNavigate }: { group: NavGroup; o
                 className="font-display py-2 text-xl text-white/60 transition-colors hover:text-white sm:text-2xl"
               >
                 All {group.title}
+              </Link>
+            )}
+            {featured && (
+              <Link
+                href={featured.href}
+                onClick={onNavigate}
+                className="font-display flex items-center gap-2 py-2 text-xl text-white transition-colors hover:text-accent sm:text-2xl"
+              >
+                {featured.label}
+                <span aria-hidden className="text-accent">
+                  →
+                </span>
               </Link>
             )}
             {items.map((item) => (
